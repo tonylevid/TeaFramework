@@ -1,0 +1,7 @@
+1. Simplify router
+2. Template auto-grouping (finished)
+3. Auto model (do not need to create model class)
+4. Model add 'inc', ...etc methods
+5. Modularity
+6. Determine case-insensitive finally
+7. All configs must be class properties(IMPORTANT!!!).
