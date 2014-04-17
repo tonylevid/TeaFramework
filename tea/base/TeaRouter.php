@@ -2,6 +2,10 @@
 
 class TeaRouter {
 
+    public $routeMode = 'path'; // 'path' or 'get'
+
+    public $routeModeGetName = 'r'; // only available when route mode is 'get'
+
     public $moduleName;
 
     public $controllerName;
@@ -10,41 +14,35 @@ class TeaRouter {
 
     public $actionParams = array();
 
-    private static $_instance;
-
-    private function __construct() {
-
+    public function __construct($routeInfo = array()) {
+        Tea::setInstProps($this, Tea::getConfig(get_class($this)));
+        $this->setRouteInfo($routeInfo);
     }
 
-    private function __clone() {
-
-    }
-
-    public static function getInstance($url) {
-        $this->setRouteByUrl($url);
-        if (!self::$_instance instanceof self) {
-            self::$_instance = new self();
-        }
-        return self::$_instance;
+    /**
+     * Set moduleName, controllerName, actionName and actionParams.
+     */
+    public function setRouteInfo($routeInfo = array()) {
+        Tea::setInstProps($this, $routeInfo);
     }
 
     public function route() {
         if (!class_exists($this->getControllerName())) {
-            throw new TException("Controller '{$this->getController()}' does not exist.");
+            throw new TeaException("Controller '{$this->getControllerName()}' does not exist.");
         }
         $rfc = new ReflectionClass($this->getControllerName());
         if (!$rfc->isSubClassOf('TeaController')) {
-            throw new TException("Controller '{$this->getController()}' must extend 'TController'.");
+            throw new TeaException("Controller '{$this->getControllerName()}' must extend 'TController'.");
         }
         if (!$rfc->hasMethod($this->getActionName())) {
-            throw new TException("Action '{$this->getAction()}' does not exist.");
+            throw new TeaException("Action '{$this->getActionName()}' does not exist.");
         }
         $instance = $rfc->newInstance();
         $method = $rfc->getMethod($this->getActionName());
         if (method_exists($instance, $this->getActionName()) && $method->isPublic() && !$method->isStatic()) {
             $method->invokeArgs($instance, $this->getActionParams());
         } else {
-            throw new TException("Action '{$this->getAction()}' could not be accessed.");
+            throw new TeaException("Action '{$this->getActionName()}' could not be accessed.");
         }
     }
 
@@ -62,13 +60,6 @@ class TeaRouter {
 
     public function getActionParams() {
         return $this->actionParams;
-    }
-
-    /**
-     * Set module name, controller name, action name and action params.
-     */
-    public function setRouteByUrl() {
-
     }
 
 }

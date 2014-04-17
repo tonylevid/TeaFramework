@@ -13,6 +13,6 @@ require dirname(__FILE__) . DIRECTORY_SEPARATOR . 'TeaBase.php';
  * @license http://www.tframework.com/license/
  * @package system
  */
-class Tea extends TBase {
+class Tea extends TeaBase {
 
 }
