@@ -2,28 +2,28 @@
 
 class TeaRouter {
 
-    public $routeMode = 'path'; // 'path' or 'get'
+    public $config = array(
+        'routeMode' => 'path',  // 'path' or 'get'
+        'routeModeGetName' => 'r',  // only available when route mode is 'get'
+        'controllerSuffix' => 'Controller'
+    );
 
-    public $routeModeGetName = 'r'; // only available when route mode is 'get'
+    private $_moduleName;
 
-    public $moduleName;
+    private $_controllerName;
 
-    public $controllerName;
+    private $_actionName;
 
-    public $actionName;
+    private $_actionParams = array();
 
-    public $actionParams = array();
-
-    public function __construct($routeInfo = array()) {
-        Tea::setInstProps($this, Tea::getConfig(get_class($this)));
-        $this->setRouteInfo($routeInfo);
+    public function __construct() {
+        $this->setConfig();
+        $this->setRouteInfo();
     }
 
-    /**
-     * Set moduleName, controllerName, actionName and actionParams.
-     */
-    public function setRouteInfo($routeInfo = array()) {
-        Tea::setInstProps($this, $routeInfo);
+    public function setConfig() {
+        $classConfig = Tea::getConfig(get_class($this));
+        $this->config = ArrayHelper::mergeArray($this->config, $classConfig);
     }
 
     public function route() {
@@ -47,19 +47,46 @@ class TeaRouter {
     }
 
     public function getModuleName() {
-        return $this->moduleName;
+        return $this->_moduleName;
     }
 
     public function getControllerName() {
-        return $this->controllerName;
+        return $this->_controllerName;
     }
 
     public function getActionName() {
-        return $this->actionName;
+        return $this->_actionName;
     }
 
     public function getActionParams() {
-        return $this->actionParams;
+        return $this->_actionParams;
+    }
+
+    /**
+     * Set module name, controller name, action name and action params.
+     */
+    protected function setRouteInfo() {
+        $request = new TeaRequest();
+        $routeInfo = array();
+        switch ($this->config['routeMode']) {
+            case 'path':
+                $this->setRoutePathinfo($request->getPathinfo());
+                break;
+            case 'get':
+                $this->setRoutePathinfo($request->getQuery($this->config['routeModeGetName']));
+                break;
+            default:
+                throw new TeaException("Unable to determine route mode {$this->config['routeMode']}.");
+                break;
+        }
+    }
+
+    protected function setRoutePathinfo($pathinfo) {
+        $pathSegments = explode('/', ltrim($pathinfo, '/'));
+        $this->_moduleName = $pathSegments[0];
+        $this->_controllerName = $pathSegments[1] . $this->config['controllerSuffix'];
+        $this->_actionName = $pathSegments[2];
+        $this->_actionParams = array_slice($pathSegments, 3);
     }
 
 }

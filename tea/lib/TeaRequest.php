@@ -37,7 +37,7 @@ class TeaRequest {
 
     /**
      * Http DELETE parameters.
-     * @var array 
+     * @var array
      */
     private $_DELETE;
 
@@ -140,7 +140,7 @@ class TeaRequest {
     public function getPhpSelf() {
         return $_SERVER['PHP_SELF'];
     }
-    
+
     /**
      * Get url directory.
      * @return string Url directory.
