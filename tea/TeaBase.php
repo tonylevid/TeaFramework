@@ -19,27 +19,90 @@ class TeaBase {
 
     public static $config = array();
 
-    public static $moduleList = array();
+    public static $moduleMap = array();
+
+    public static $importMap = array();
+
+    private static $_autoLoadAlias;
 
     private static $_routerInstance;
 
     public static function run($config = array()) {
-        self::$config = ArrayHelper::mergeArray(self::getTeaBaseConfig(), $config);
-        var_dump(self::$config);
+        self::$config = ArrayHelper::mergeArray($config, self::getTeaBaseConfig());
         self::init();
         self::getRouter()->route();
     }
 
     public static function init() {
-
+        self::setModuleMap();
+        self::setAutoImport();
     }
 
-    public static function import() {
-
+    protected static function setModuleMap() {
+        $modulePaths = glob(self::aliasToPath('module.*'), GLOB_ONLYDIR);
+        if (is_array($modulePaths) && !empty($modulePaths)) {
+            foreach ($modulePaths as $modulePath) {
+                $moduleName = basename($modulePath);
+                self::$moduleMap[$moduleName] = $modulePath;
+            }
+        }
     }
 
+    protected static function setAutoImport() {
+        // import core classes and autoImport in main config.
+        $defaultLoads = self::getConfig('TeaBase.autoImport');
+        if (is_array($defaultLoads) && !empty($defaultLoads)) {
+            foreach ($defaultLoads as $alias) {
+                self::import($alias);
+            }
+        }
+    }
+
+    /**
+     * Import a class or directory.
+     * @param string $alias Dot notation alias.
+     * @param bool $forceImport Whether to import immediately.
+     * @return bool
+     */
+    public static function import($alias, $forceImport = false) {
+        $path = self::aliasToPath($alias);
+        $last = basename($path);
+        $files = array();
+        if ($last === '*') {
+            $files = glob($path . '.php');
+        } else {
+            $files = array($path . '.php');
+        }
+        if (is_array($files) && !empty($files)) {
+            foreach ($files as $file) {
+                if ($forceImport) {
+                    require $file;
+                } else {
+                    $className = basename($file, '.php');
+                    if (isset(self::$importMap[$className])) {
+                        $importedFile = self::$importMap[$className];
+                        throw new TeaException("Class '{$className}' has been imported in file '{$importedFile}', check if you have redeclared it.");
+                    } else {
+                        self::$importMap[$className] = $file;
+                    }
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Autoloader
+     * @param string $className Autoloaded class name.
+     * @return bool
+     */
     public static function autoload($className) {
-
+        if (isset(self::$importMap[$className]) && is_file(self::$importMap[$className])) {
+            include self::$importMap[$className];
+            return true;
+        }
+        return false;
     }
 
     public static function getRouter() {
@@ -55,7 +118,7 @@ class TeaBase {
      * @return string Path string.
      */
     public static function aliasToPath($alias) {
-        $pathAliases = self::getConfig('autoload.pathAliasMap');
+        $pathAliases = self::getConfig('TeaBase.pathAliasMap');
         $parts = explode('.', $alias);
         foreach ($parts as &$v) {
             if (array_key_exists($v, $pathAliases)) {
@@ -107,28 +170,36 @@ class TeaBase {
         return $config = $value;
     }
 
-    private static function getTeaBaseConfig() {
+    public static function setClassConfig($className, $configParam = 'config') {
+        $classConfig = Tea::getConfig($className);
+        if (is_array($classConfig) && !empty($classConfig)) {
+            $className::$$configParam = ArrayHelper::mergeArray($className::$$configParam, $classConfig);
+        }
+        Tea::setConfig($className, $className::$$configParam);
+    }
+
+    protected static function getTeaBaseConfig() {
         return array(
             'TeaBase' => array(
                 'pathAliasMap' => array(
                     'app' => APP_PATH,
                     'system' => TEA_PATH,
                     'protected' => APP_PATH . DIRECTORY_SEPARATOR . 'protected',
-                    'public' => APP_PATH . DIRECTORY_SEPARATOR . 'public',
-                    'cache' => APP_PATH . DIRECTORY_SEPARATOR . 'protected' . DIRECTORY_SEPARATOR . 'cache',
-                    'config' => APP_PATH . DIRECTORY_SEPARATOR . 'protected' . DIRECTORY_SEPARATOR . 'config',
-                    'controller' => APP_PATH . DIRECTORY_SEPARATOR . 'protected' . DIRECTORY_SEPARATOR . 'controller',
-                    'data' => APP_PATH . DIRECTORY_SEPARATOR . 'protected' . DIRECTORY_SEPARATOR . 'data',
-                    'helper' => APP_PATH . DIRECTORY_SEPARATOR . 'protected' . DIRECTORY_SEPARATOR . 'helper',
-                    'lib' => APP_PATH . DIRECTORY_SEPARATOR . 'protected' . DIRECTORY_SEPARATOR . 'lib',
-                    'log' => APP_PATH . DIRECTORY_SEPARATOR . 'protected' . DIRECTORY_SEPARATOR . 'log',
-                    'model' => APP_PATH . DIRECTORY_SEPARATOR . 'protected' . DIRECTORY_SEPARATOR . 'model',
                     'module' => APP_PATH . DIRECTORY_SEPARATOR . 'protected' . DIRECTORY_SEPARATOR . 'module',
-                    'vendor' => APP_PATH . DIRECTORY_SEPARATOR . 'protected' . DIRECTORY_SEPARATOR . 'vendor',
-                    'view' => APP_PATH . DIRECTORY_SEPARATOR . 'protected' . DIRECTORY_SEPARATOR . 'view',
                 ),
                 'autoImport' => array(
-
+                    'system.base.*',
+                    'system.console.*',
+                    'system.helper.*',
+                    'system.lib.*',
+                    'system.vendor.*',
+                    'system.db.rdbms.*',
+                    'system.db.rdbms.mssql.*',
+                    'system.db.rdbms.mysql.*',
+                    'system.db.rdbms.oci.*',
+                    'system.db.rdbms.odbc.*',
+                    'system.db.rdbms.pgsql.*',
+                    'system.db.rdbms.sqlite.*',
                 )
             )
         );
@@ -136,5 +207,4 @@ class TeaBase {
 
 }
 
-// register autoload
 spl_autoload_register(array('TeaBase', 'autoload'));

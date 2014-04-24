@@ -1,14 +1,14 @@
 <?php
 
 /**
- * TeaException class file
+ * TeaDbSqlBuilder class file
  *
  * @author tonylevid <tonylevid@gmail.com>
  * @link http://www.tframework.com/
  * @copyright http://tonylevid.com/
  * @license http://www.tframework.com/license/
- * @package base
+ * @package db
  */
-class TeaException extends Exception {
-
+class TeaDbSqlBuilder {
+    
 }
