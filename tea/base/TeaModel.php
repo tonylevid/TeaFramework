@@ -245,7 +245,7 @@ class TeaModel {
      * @return int
      */
     public function getRowCount() {
-        return Tea::getDbQuery()->getRowCount();
+        return $this->db->getRowCount();
     }
     
     /**
@@ -254,7 +254,7 @@ class TeaModel {
      * @return int Last insert id.
      */
     public function getLastInsertId() {
-        return Tea::getDbQuery()->getLastInsertId();
+        return $this->db->getLastInsertId();
     }
 
     /**
@@ -262,7 +262,7 @@ class TeaModel {
      * @return string Sql statement.
      */
     public function getLastSql() {
-        return Tea::getDbQuery()->getLastSql();
+        return $this->db->getLastSql();
     }
     
     /**
