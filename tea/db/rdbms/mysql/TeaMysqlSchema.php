@@ -40,8 +40,8 @@ class TeaMysqlSchema extends TeaDbSchema {
      * @return array Status information of all tables.
      */
     public function getDbTablesInfo($dbname = null) {
-        $sql = T::getDbSqlBuilder()->showTableStatus($dbname);
-        $rst = T::getDbQuery()->query($sql)->fetchRows();
+        $sql = Tea::getDbSqlBuilder()->showTableStatus($dbname);
+        $rst = Tea::getDbQuery()->query($sql)->fetchRows();
         $r = array();
         foreach ($rst as $info) {
             $r[$info['Name']] = $info;
@@ -70,8 +70,8 @@ class TeaMysqlSchema extends TeaDbSchema {
      * @return array Create table information.
      */
     public function getCreateTable($tblName) {
-        $sql = T::getDbSqlBuilder()->showCreateTable($tblName);
-        return T::getDbQuery()->query($sql)->fetchRow();
+        $sql = Tea::getDbSqlBuilder()->showCreateTable($tblName);
+        return Tea::getDbQuery()->query($sql)->fetchRow();
     }
     
     /**
@@ -93,8 +93,8 @@ class TeaMysqlSchema extends TeaDbSchema {
      * @return array All columns information of a table.
      */
     public function getTableColumns($tblName) {
-        $sql = T::getDbSqlBuilder()->showTableColumns($tblName);
-        $rst = T::getDbQuery()->query($sql)->fetchRows();
+        $sql = Tea::getDbSqlBuilder()->showTableColumns($tblName);
+        $rst = Tea::getDbQuery()->query($sql)->fetchRows();
         $r = array();
         foreach ($rst as $col) {
             $r[$col['Field']] = $col;
@@ -140,8 +140,8 @@ class TeaMysqlSchema extends TeaDbSchema {
      * @return array All indexes information of a table.
      */
     public function getTableIndexes($tblName) {
-        $sql = T::getDbSqlBuilder()->showTableIndex($tblName);
-        $rst = T::getDbQuery()->query($sql)->fetchRows();
+        $sql = Tea::getDbSqlBuilder()->showTableIndex($tblName);
+        $rst = Tea::getDbQuery()->query($sql)->fetchRows();
         $r = array();
         foreach ($rst as $index) {
             $r[$index['Key_name']][(int) $index['Seq_in_index']] = $index;

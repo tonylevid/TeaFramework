@@ -93,11 +93,10 @@ abstract class TeaDbConnection {
 
     /**
      * Constructor.
-     * @param mixed $connInfo String or array. If string, it should be the connection info group key in main config model node.
+     * @param array $connInfo Connection info array. See TeaModel::$config.
      */
     public function __construct($connInfo) {
         $this->connInfo = $connInfo;
-        is_string($connInfo) && ($this->connInfo = Tea::getConfig("model.{$connInfo}"));
         $this->setConnInfo($connInfo);
     }
 
@@ -141,7 +140,7 @@ abstract class TeaDbConnection {
             $this->_conn = new PDO($this->dsn, $this->username, $this->password, $this->connOptions());
         } catch (PDOException $e) {
             $hasErr = true;
-            throw new TDbException("{$connClass} could not connect to {$this->driverType} database '{$this->dbname}'.", (int) $e->getCode(), $e->errorInfo);
+            throw new TeaDbException("{$connClass} could not connect to {$this->driverType} database '{$this->dbname}'.", (int) $e->getCode(), $e->errorInfo);
         }
         if (!$hasErr) {
             $this->afterConnecting();

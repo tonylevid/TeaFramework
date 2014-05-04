@@ -277,7 +277,7 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
     public function insert($tblName, $vals, $criteria = null) {
         $sql = 'INSERT INTO ' . $this->quoteTable($tblName);
         if (is_array($vals)) {
-            if (T::loadHelper('array')->isMulti($vals)) {
+            if (Tea::loadHelper('array')->isMulti($vals)) {
                 $colNames = null;
                 $cols = array_keys($vals[0]);
                 if ($cols === array_filter($cols, 'is_string')) {
@@ -333,7 +333,7 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
     public function update($tblName, $vals, $criteria = null) {
         $colVals = array();
         foreach ($vals as $colName => $val) {
-            $colVals[] = $this->quoteColumn($colName) . "=" . T::getDbQuery()->escape($val);
+            $colVals[] = $this->quoteColumn($colName) . "=" . Tea::getDbQuery()->escape($val);
         }
         $colValsSql = implode(', ', $colVals);
         return "UPDATE " . $this->quoteTable($tblName) . " SET " . $colValsSql . $this->getCriteriaSql($criteria, __FUNCTION__);
@@ -367,7 +367,7 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
      */
     public function quoteTable($tblName) {
         if (preg_match('/^{{(.+)}}$/', $tblName, $matches)) {
-            $tblName = T::getDbConnection()->tablePrefix . $matches[1];
+            $tblName = Tea::getDbConnection()->tablePrefix . $matches[1];
         }
         if (strpos($tblName, '.') === false && strpos($tblName, $this->tblAliasMark) === false) {
             return $this->normalQuote($tblName);
@@ -441,7 +441,7 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
         $colNames = $colVals = array();
         foreach ($val as $colName => $colVal) {
             is_string($colName) && ($colNames[] = $this->quoteColumn($colName));
-            $colVals[] = T::getDbQuery()->escape($colVal);
+            $colVals[] = Tea::getDbQuery()->escape($colVal);
         }
         $colNamesSql = implode(', ', $colNames);
         $colValsSql = implode(', ', $colVals);
@@ -469,7 +469,7 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
         foreach ($vals as $k => $val) {
             $colVals = array();
             foreach ($val as $colVal) {
-                $colVals[] = T::getDbQuery()->escape($colVal);
+                $colVals[] = Tea::getDbQuery()->escape($colVal);
             }
             $multiColVals[$k] = "(" . implode(', ', $colVals) . ")";
         }
@@ -500,7 +500,7 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
         if ($criteria instanceof TeaMysqlCriteriaBuilder) {
             return " " . $criteria->build($allowCriteria);
         } else if (is_array($criteria)) {
-            return " " . T::getDbCriteriaBuilder()->parseCriteriaArr($criteria)->build($allowCriteria);
+            return " " . Tea::getDbCriteriaBuilder()->parseCriteriaArr($criteria)->build($allowCriteria);
         } else {
             return '';
         }

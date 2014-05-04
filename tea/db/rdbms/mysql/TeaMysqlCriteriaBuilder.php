@@ -135,7 +135,7 @@ class TeaMysqlCriteriaBuilder extends TeaDbCriteriaBuilder {
     public function duplicateUpdate($vals = array()) {
         $updateVals = array();
         foreach ($vals as $colName => $colVal) {
-            $updateVals[] = T::getDbSqlBuilder()->quoteColumn($colName) . '=' . T::getDbQuery()->escape($colVal);
+            $updateVals[] = Tea::getDbSqlBuilder()->quoteColumn($colName) . '=' . Tea::getDbQuery()->escape($colVal);
         }
         $sql = "ON DUPLICATE KEY UPDATE " . implode(', ', $updateVals);
         $this->criteriaArr[__FUNCTION__] = $vals;
@@ -184,7 +184,7 @@ class TeaMysqlCriteriaBuilder extends TeaDbCriteriaBuilder {
      */
     public function groupBy($vals = array()) {
         $this->criteriaArr[__FUNCTION__] = $vals;
-        $this->criteriaSqls[__FUNCTION__] = "GROUP BY " . T::getDbSqlBuilder()->quoteColumns($vals);
+        $this->criteriaSqls[__FUNCTION__] = "GROUP BY " . Tea::getDbSqlBuilder()->quoteColumns($vals);
         return $this;
     }
 
@@ -239,7 +239,7 @@ class TeaMysqlCriteriaBuilder extends TeaDbCriteriaBuilder {
             $colNames = array_map('trim', explode($this->colDelimiter, implode($this->opDelimiter, $parts)));
             $partsSqls = array();
             foreach ($colNames as $colName) {
-                $partsSqls[] = T::getDbSqlBuilder()->quoteColumn($colName) . ' ' . $this->orderOps[$opOrder];
+                $partsSqls[] = Tea::getDbSqlBuilder()->quoteColumn($colName) . ' ' . $this->orderOps[$opOrder];
             }
             $orderSqls[] = implode(', ', $partsSqls);
         }
@@ -257,10 +257,10 @@ class TeaMysqlCriteriaBuilder extends TeaDbCriteriaBuilder {
     public function limit($vals = array()) {
         $count = count($vals);
         if ($count === 1) {
-            $limitSql = T::getDbQuery()->escape($vals[0]);
+            $limitSql = Tea::getDbQuery()->escape($vals[0]);
         } else if ($count > 1) {
-            $from = T::getDbQuery()->escape($vals[0]);
-            $len = T::getDbQuery()->escape($vals[1]);
+            $from = Tea::getDbQuery()->escape($vals[0]);
+            $len = Tea::getDbQuery()->escape($vals[1]);
             $limitSql = "{$from}, {$len}";
         } else {
             $limitSql = '';
@@ -291,7 +291,7 @@ class TeaMysqlCriteriaBuilder extends TeaDbCriteriaBuilder {
             !array_key_exists($parts[0], $this->joinTypeMap) && array_unshift($parts, 'inner');
             $joinType = array_shift($parts);
             $tblName = array_pop($parts);
-            $joinSqls[] = $this->joinTypeMap[$joinType] . " " . T::getDbSqlBuilder()->quoteTable($tblName) . " ON " . $this->getCondValsSql($cond);
+            $joinSqls[] = $this->joinTypeMap[$joinType] . " " . Tea::getDbSqlBuilder()->quoteTable($tblName) . " ON " . $this->getCondValsSql($cond);
         }
         $this->criteriaArr[__FUNCTION__] = $vals;
         $this->criteriaSqls[__FUNCTION__] = implode(' ', $joinSqls);
@@ -376,7 +376,7 @@ class TeaMysqlCriteriaBuilder extends TeaDbCriteriaBuilder {
     private function parseCondVal($colNames, $op, $val) {
         $this->throwCondValException($op, $val);
         $parsedStr = '';
-        $colStr = T::getDbSqlBuilder()->quoteColumns($colNames);
+        $colStr = Tea::getDbSqlBuilder()->quoteColumns($colNames);
         switch ($op) {
             case 'eq':
             case 'ne':
@@ -390,59 +390,59 @@ class TeaMysqlCriteriaBuilder extends TeaDbCriteriaBuilder {
             case 'not-regexp':
             case 'iregexp':
             case 'not-iregexp':
-                $parsedStr = "{$colStr} " . $this->commonOps[$op] . " " . T::getDbQuery()->escape($val);
+                $parsedStr = "{$colStr} " . $this->commonOps[$op] . " " . Tea::getDbQuery()->escape($val);
                 break;
             case 'between':
-                $val = array_map(array(T::getDbQuery(), 'escape'), $val);
+                $val = array_map(array(Tea::getDbQuery(), 'escape'), $val);
                 $parsedStr = "{$colStr} BETWEEN {$val[0]} AND {$val[1]}";
                 break;
             case 'not-between':
-                $val = array_map(array(T::getDbQuery(), 'escape'), $val);
+                $val = array_map(array(Tea::getDbQuery(), 'escape'), $val);
                 $parsedStr = "{$colStr} NOT BETWEEN {$val[0]} AND {$val[1]}";
                 break;
             case 'like':
-                $parsedStr = "{$colStr} LIKE " . T::getDbQuery()->escape('%' . $val . '%');
+                $parsedStr = "{$colStr} LIKE " . Tea::getDbQuery()->escape('%' . $val . '%');
                 break;
             case 'not-like':
-                $parsedStr = "{$colStr} NOT LIKE " . T::getDbQuery()->escape('%' . $val . '%');
+                $parsedStr = "{$colStr} NOT LIKE " . Tea::getDbQuery()->escape('%' . $val . '%');
                 break;
             case 'llike':
-                $parsedStr = "{$colStr} LIKE " . T::getDbQuery()->escape($val . '%');
+                $parsedStr = "{$colStr} LIKE " . Tea::getDbQuery()->escape($val . '%');
                 break;
             case 'not-llike':
-                $parsedStr = "{$colStr} NOT LIKE " . T::getDbQuery()->escape($val . '%');
+                $parsedStr = "{$colStr} NOT LIKE " . Tea::getDbQuery()->escape($val . '%');
                 break;
             case 'rlike':
-                $parsedStr = "{$colStr} LIKE " . T::getDbQuery()->escape('%' . $val);
+                $parsedStr = "{$colStr} LIKE " . Tea::getDbQuery()->escape('%' . $val);
                 break;
             case 'not-rlike':
-                $parsedStr = "{$colStr} NOT LIKE " . T::getDbQuery()->escape('%' . $val);
+                $parsedStr = "{$colStr} NOT LIKE " . Tea::getDbQuery()->escape('%' . $val);
                 break;
             case 'lrlike':
-                $parsedStr = "{$colStr} LIKE " . T::getDbQuery()->escape($val[0] . '%' . $val[1]);
+                $parsedStr = "{$colStr} LIKE " . Tea::getDbQuery()->escape($val[0] . '%' . $val[1]);
                 break;
             case 'not-lrlike':
-                $parsedStr = "{$colStr} NOT LIKE " . T::getDbQuery()->escape($val[0] . '%' . $val[1]);
+                $parsedStr = "{$colStr} NOT LIKE " . Tea::getDbQuery()->escape($val[0] . '%' . $val[1]);
                 break;
             case 'in':
-                $val = array_map(array(T::getDbQuery(), 'escape'), $val);
+                $val = array_map(array(Tea::getDbQuery(), 'escape'), $val);
                 $parsedStr = "{$colStr} IN (" . implode(', ', $val) . ")";
                 break;
             case 'not-in':
-                $val = array_map(array(T::getDbQuery(), 'escape'), $val);
+                $val = array_map(array(Tea::getDbQuery(), 'escape'), $val);
                 $parsedStr = "{$colStr} NOT IN (" . implode(', ', $val) . ")";
                 break;
             case 'match':
-                $parsedStr = "MATCH ({$colStr}) AGAINST (" . T::getDbQuery()->escape($val) . ")";
+                $parsedStr = "MATCH ({$colStr}) AGAINST (" . Tea::getDbQuery()->escape($val) . ")";
                 break;
             case 'match-bool':
-                $parsedStr = "MATCH ({$colStr}) AGAINST (" . T::getDbQuery()->escape($val) . " IN BOOLEAN MODE)";
+                $parsedStr = "MATCH ({$colStr}) AGAINST (" . Tea::getDbQuery()->escape($val) . " IN BOOLEAN MODE)";
                 break;
             case 'match-ex':
-                $parsedStr = "MATCH ({$colStr}) AGAINST (" . T::getDbQuery()->escape($val) . " WITH QUERY EXPANSION)";
+                $parsedStr = "MATCH ({$colStr}) AGAINST (" . Tea::getDbQuery()->escape($val) . " WITH QUERY EXPANSION)";
                 break;
             default:
-                throw new TDbException("Could not determine the operator {$op}");
+                throw new TeaDbException("Could not determine the operator {$op}");
         }
         return $parsedStr;
     }
@@ -455,9 +455,9 @@ class TeaMysqlCriteriaBuilder extends TeaDbCriteriaBuilder {
     private function throwCondValException($op, $val) {
         $opValIsArray = array('between', 'not-between', 'lrlike', 'not-lrlike', 'in', 'not-in');
         if (in_array($op, $opValIsArray) && !is_array($val)) {
-            throw new TDbException("The value of criteria operator '{$op}' should be array.");
+            throw new TeaDbException("The value of criteria operator '{$op}' should be array.");
         } else if (!in_array($op, $opValIsArray) && is_array($val)) {
-            throw new TDbException("The value of criteria operator '{$op}' should not be array.");
+            throw new TeaDbException("The value of criteria operator '{$op}' should not be array.");
         }
     }
 

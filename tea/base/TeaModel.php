@@ -287,7 +287,7 @@ class TeaModel {
         if (is_array($pkVal)) {
             if (count($pkColNames) !== count($pkVal)) {
                 $pkValStr = implode(', ', $pkColNames);
-                throw new TDbException("PRIMARY key columns array({$pkValStr}) and parameter 1 should have an equal number of elements.");
+                throw new TeaDbException("PRIMARY key columns array({$pkValStr}) and parameter 1 should have an equal number of elements.");
             }
             $where = array_combine($pkColNames, $pkVal);
             $criteria = array('where' => $where);

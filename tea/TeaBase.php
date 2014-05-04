@@ -16,28 +16,75 @@ defined('APP_PATH') or define('APP_PATH', dirname(__FILE__));
 defined('TEA_PATH') or define('TEA_PATH', dirname(__FILE__));
 
 class TeaBase {
-
+    
+    /**
+     * Tea config array.
+     * @var array
+     */
     public static $config = array();
-
+    
+    /**
+     * All module => path map.
+     * @var array
+     */
     public static $moduleMap = array();
-
+    
+    /**
+     * Imported class => file map.
+     * @var array
+     */
     public static $importMap = array();
 
-    private static $_autoLoadAlias;
-
+    /**
+     * TeaRouter instance.
+     * @var TeaRouter
+     */
     private static $_routerInstance;
 
+    /**
+     * Proper TeaDbConnection subclass instance.
+     * @var TeaDbConnection
+     */
+    private static $_connection;
+
+    /**
+     * Connection type to connection class map.
+     * @var array
+     */
+    private static $_connectionTypeMap = array(
+        'mysql' => 'TeaMysqlConnection',
+        'mssql' => 'TeaMssqlConnection',
+        'dblib' => 'TeaMssqlConnection',
+        'sqlsrv' => 'TeaMssqlConnection',
+        'oci' => 'TeaOciConnection',
+        'pgsql' => 'TeaPgsqlConnection',
+        'sqlite' => 'TeaSqliteConnection',
+        'sqlite2' => 'TeaSqliteConnection',
+        'odbc' =>  'TeaOdbcConnection',
+        'mongodb' => 'TeaMongodbConnection'
+    );
+    
+    /**
+     * Run the application.
+     * @param array $config User's config array.
+     */
     public static function run($config = array()) {
         self::$config = ArrayHelper::mergeArray($config, self::getTeaBaseConfig());
         self::init();
         self::getRouter()->route();
     }
-
+    
+    /**
+     * Tea initialization.
+     */
     public static function init() {
         self::setModuleMap();
         self::setAutoImport();
     }
-
+    
+    /**
+     * Set module map.
+     */
     protected static function setModuleMap() {
         $modulePaths = glob(self::aliasToPath('module.*'), GLOB_ONLYDIR);
         if (is_array($modulePaths) && !empty($modulePaths)) {
@@ -47,7 +94,10 @@ class TeaBase {
             }
         }
     }
-
+    
+    /**
+     * Set auto import.
+     */
     protected static function setAutoImport() {
         // import core classes and autoImport in main config.
         $defaultLoads = self::getConfig('TeaBase.autoImport');
@@ -104,12 +154,78 @@ class TeaBase {
         }
         return false;
     }
-
+    
+    /**
+     * Get current running TeaRouter instance.
+     * @return TeaRouter Current running TeaRouter instance.
+     */
     public static function getRouter() {
         if (!self::$_routerInstance instanceof TeaRouter) {
             self::$_routerInstance = new TeaRouter();
         }
         return self::$_routerInstance;
+    }
+    
+    /**
+     * Get proper TeaDbConnection subclass instance and connect if autoConnect is true.
+     * @param mixed $connInfo String or array, defaults to string 'default'. If string, it should be the connection info group key in main config model node.
+     * @return TeaDbConnection Proper TeaDbConnection subclass instance.
+     */
+    public static function getDbConnection($connInfo = null) {
+        empty($connInfo) && ($connInfo = 'default');
+        is_string($connInfo) && ($connInfo = self::getConfig("TeaModel.{$connInfo}"));
+        $dsn = $driverType = $autoConnect = null;
+        if (is_array($connInfo)) {
+            $dsn = isset($connInfo['dsn']) ? $connInfo['dsn'] : null;
+            $driverType = preg_match('/^(\w+):/', $dsn, $matches) ? $matches[1] : null;
+            $autoConnect = isset($connInfo['autoConnect']) && $connInfo['autoConnect'] ? true : false;
+        }
+        if (isset(self::$_connectionTypeMap[$driverType])) {
+            $connClass = self::$_connectionTypeMap[$driverType];
+            if (!self::$_connection instanceof $connClass) {
+                self::$_connection = new $connClass($connInfo);
+                $autoConnect && self::$_connection->connect();
+            }
+        } else {
+            throw new TeaDbException("TeaBase could not determine the driver type, check your dsn '{$dsn}'.");
+        }
+        return self::$_connection;
+    }
+
+    /**
+     * Get proper TeaDbQuery subclass instance if autoConnect is true.
+     * @param mixed $connInfo String or array, defaults to string 'default'. If string, it should be the connection info group key in config TeaModel node.
+     * @return TeaDbQuery Proper TeaDbQuery subclass instance.
+     */
+    public static function getDbQuery($connInfo = null) {
+        return self::getDbConnection($connInfo)->getQuery();
+    }
+
+    /**
+     * Get proper TeaDbSchema subclass instance if autoConnect is true.
+     * @param mixed $connInfo String or array, defaults to string 'default'. If string, it should be the connection info group key in config TeaModel node.
+     * @return TeaDbSchema Proper TeaDbSchema subclass instance.
+     */
+    public static function getDbSchema($connInfo = null) {
+        return self::getDbConnection($connInfo)->getSchema();
+    }
+
+    /**
+     * Get proper TeaDbSqlBuilder subclass instance if autoConnect is true.
+     * @param mixed $connInfo String or array, defaults to string 'default'. If string, it should be the connection info group key in config TeaModel node.
+     * @return TeaDbSqlBuilder Proper TeaDbSqlBuilder subclass instance.
+     */
+    public static function getDbSqlBuilder($connInfo = null) {
+        return self::getDbConnection($connInfo)->getSqlBuilder();
+    }
+    
+    /**
+     * Get proper TeaDbCriteriaBuilder subclass instance if autoConnect is true.
+     * @param mixed $connInfo String or array, defaults to string 'default'. If string, it should be the connection info group key in config TeaModel node.
+     * @return TeaDbCriteriaBuilder Proper TeaDbCriteriaBuilder subclass instance.
+     */
+    public static function getDbCriteriaBuilder($connInfo = null) {
+        return self::getDbConnection($connInfo)->getCriteriaBuilder();
     }
 
     /**
@@ -169,7 +285,12 @@ class TeaBase {
         }
         return $config = $value;
     }
-
+    
+    /**
+     * Set config for class.
+     * @param string $className Class name, you can use __CLASS__ in class.
+     * @param string $configParam Config variable name, defaults to 'config'.
+     */
     public static function setClassConfig($className, $configParam = 'config') {
         $classConfig = Tea::getConfig($className);
         if (is_array($classConfig) && !empty($classConfig)) {

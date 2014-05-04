@@ -46,23 +46,23 @@ class TeaMysqlConnection extends TeaDbConnection {
     }
 
     /**
-     * Get TeaMysqlSqlBuilder instance.
-     * @return TeaMysqlSqlBuilder TeaMysqlSqlBuilder instance.
-     */
-    public function getSqlBuilder() {
-        if (!$this->_sqlBuilder instanceof TeaMysqlSqlBuilder) {
-            $this->_sqlBuilder = new TeaMysqlSqlBuilder();
-        }
-        return $this->_sqlBuilder;
-    }
-
-    /**
      * Get TeaMysqlCriteriaBuilder instance.
      * @return TeaMysqlCriteriaBuilder TeaMysqlCriteriaBuilder instance.
      */
     public function getCriteriaBuilder() {
         $this->_criteriaBuilder = new TeaMysqlCriteriaBuilder();
         return $this->_criteriaBuilder;
+    }
+
+    /**
+     * Get TeaMysqlQuery instance.
+     * @return TeaMysqlQuery TeaMysqlQuery instance.
+     */
+    public function getQuery() {
+        if (!$this->_query instanceof TeaMysqlQuery) {
+            $this->_query = new TeaMysqlQuery();
+        }
+        return $this->_query;
     }
 
     /**
@@ -75,16 +75,16 @@ class TeaMysqlConnection extends TeaDbConnection {
         }
         return $this->_schema;
     }
-
+    
     /**
-     * Get TeaMysqlQuery instance.
-     * @return TeaMysqlQuery TeaMysqlQuery instance.
+     * Get TeaMysqlSqlBuilder instance.
+     * @return TeaMysqlSqlBuilder TeaMysqlSqlBuilder instance.
      */
-    public function getQuery() {
-        if (!$this->_query instanceof TeaMysqlQuery) {
-            $this->_query = new TeaMysqlQuery();
+    public function getSqlBuilder() {
+        if (!$this->_sqlBuilder instanceof TeaMysqlSqlBuilder) {
+            $this->_sqlBuilder = new TeaMysqlSqlBuilder();
         }
-        return $this->_query;
+        return $this->_sqlBuilder;
     }
 
 }

@@ -56,7 +56,7 @@ class TeaMysqlQuery extends TeaDbQuery {
      * @return object Proper inner connection instance.
      */
     public function getConn() {
-        return T::getDbConnection()->getConn();
+        return Tea::getDbConnection()->getConn();
     }
 
     /**
@@ -69,7 +69,7 @@ class TeaMysqlQuery extends TeaDbQuery {
         try {
             $num = $this->getConn()->exec($sql);
         } catch (PDOException $e) {
-            throw new TDbException(get_class($this) . " sql execution error: {$this->getLastSql()}", (int) $e->getCode(), $e->errorInfo);
+            throw new TeaDbException(get_class($this) . " sql execution error: {$this->getLastSql()}", (int) $e->getCode(), $e->errorInfo);
         }
         return $num;
     }
@@ -110,7 +110,7 @@ class TeaMysqlQuery extends TeaDbQuery {
         try {
             $this->_statement = $this->getConn()->prepare($sql, $option);
         } catch (PDOException $e) {
-            throw new TDbException("TeaDbQuery could not prepare the statement: {$sql}.", (int) $e->getCode(), $e->errorInfo);
+            throw new TeaDbException("TeaDbQuery could not prepare the statement: {$sql}.", (int) $e->getCode(), $e->errorInfo);
         }
         return $this;
     }
@@ -174,7 +174,7 @@ class TeaMysqlQuery extends TeaDbQuery {
                 $val = gettype($val) . ' ' . var_export($val, true);
                 $errMsg .= "param {$key} => {$val}\n";
             }
-            throw new TDbException($errMsg, (int) $e->getCode(), $e->errorInfo);
+            throw new TeaDbException($errMsg, (int) $e->getCode(), $e->errorInfo);
         }
         return $this;
     }
