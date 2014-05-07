@@ -3,7 +3,8 @@
 class MainController extends TeaController {
 
     public function index($name) {
-        echo "Hello, {$name}";
+        $this->assign('name', $name);
+        $this->render();
     }
 
 }

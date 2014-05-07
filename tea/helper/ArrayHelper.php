@@ -61,4 +61,47 @@ class ArrayHelper {
         return $arr;
     }
 
+    /**
+     * Get the keys of continuous values of an array. For example:
+     * Change this array:
+     * <pre>
+     * array(
+     *      2 => 11,
+     *      3 => 11,
+     *      4 => 11,
+     *      6 => 12,
+     *      7 => 13,
+     *      8 => 13,
+     *      10 => 11,
+     *      11 => 11,
+     *      12 => 14
+     * )
+     * </pre>
+     * to this one:
+     * <pre>
+     * array(
+     *     array(2, 3, 4),
+     *     array(6),
+     *     array(7, 8),
+     *     array(10, 11),
+     *     array(12)
+     * )
+     * </pre>
+     * @param array $arr Input array.
+     * @return array Keys of continuous values.
+     */
+    public static function getArrKeysOfCV($arr) {
+        $rst = array();
+        array_walk($arr, function($value, $key) use (&$rst) {
+            static $v;
+            if ($value == $v) {
+                $rst[max(array_keys($rst))][] = $key;
+            } else {
+                $rst[] = array($key);
+            }
+            $v = $value;
+        });
+        return $rst;
+    }
+
 }

@@ -12,6 +12,7 @@ require dirname(__FILE__) . DIRECTORY_SEPARATOR . 'helper' . DIRECTORY_SEPARATOR
  * @package system
  */
 defined('APP_BEGIN_TIME') or define('APP_BEGIN_TIME', microtime(true));
+defined('APP_BEGIN_MEM') or define('APP_BEGIN_MEM', memory_get_usage());
 defined('APP_PATH') or define('APP_PATH', dirname(__FILE__));
 defined('TEA_PATH') or define('TEA_PATH', dirname(__FILE__));
 
@@ -72,6 +73,8 @@ class TeaBase {
         self::$config = ArrayHelper::mergeArray($config, self::getTeaBaseConfig());
         self::init();
         self::getRouter()->route();
+        defined('APP_END_TIME') or define('APP_END_TIME', microtime(true));
+        defined('APP_END_MEM') or define('APP_END_MEM', memory_get_usage());
     }
     
     /**
@@ -131,7 +134,7 @@ class TeaBase {
                     $className = basename($file, '.php');
                     if (isset(self::$importMap[$className])) {
                         $importedFile = self::$importMap[$className];
-                        throw new TeaException("Class '{$className}' has been imported in file '{$importedFile}', check if you have redeclared it.");
+                        throw new TeaException("Class '{$className}' has been imported, check if you have redeclared it. File '{$importedFile}'.");
                     } else {
                         self::$importMap[$className] = $file;
                     }
@@ -153,6 +156,38 @@ class TeaBase {
             return true;
         }
         return false;
+    }
+
+    public static function load($name, $args = array()) {
+        $className = array_pop(explode('.', $name));
+        if (!array_key_exists($className, self::$importMap)) {
+            $first = array_shift(explode('.', $name));
+            if (array_key_exists($first, self::getConfig('TeaBase.pathAliasMap'))) {
+                $loadName = $name;
+            } else {
+                $router = self::getRouter();
+                $moduleName = $router->getModuleName();
+                $loadName = empty($moduleName) ? 'protected.' . $name : "module.{$moduleName}." . $name;
+            }
+            self::import($loadName);
+        }
+        $rfc = new ReflectionClass($className);
+        return $rfc->newInstanceArgs($args);
+    }
+
+    public static function loadHelper($name, $args = array()) {
+        $name = ucfirst($name);
+        return self::load("helper.{$name}Helper", $args);
+    }
+
+    public static function loadLib($name, $args = array()) {
+        $name = ucfirst($name);
+        return self::load("lib.{$name}", $args);
+    }
+
+    public static function loadModel($name, $args = array()) {
+        $name = ucfirst($name);
+        return self::load("model.{$name}Model", $args);
     }
     
     /**
@@ -292,11 +327,11 @@ class TeaBase {
      * @param string $configParam Config variable name, defaults to 'config'.
      */
     public static function setClassConfig($className, $configParam = 'config') {
-        $classConfig = Tea::getConfig($className);
+        $classConfig = self::getConfig($className);
         if (is_array($classConfig) && !empty($classConfig)) {
             $className::$$configParam = ArrayHelper::mergeArray($className::$$configParam, $classConfig);
         }
-        Tea::setConfig($className, $className::$$configParam);
+        self::setConfig($className, $className::$$configParam);
     }
 
     protected static function getTeaBaseConfig() {
