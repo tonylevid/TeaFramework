@@ -13,7 +13,7 @@ require dirname(__FILE__) . DIRECTORY_SEPARATOR . 'helper' . DIRECTORY_SEPARATOR
  */
 defined('APP_BEGIN_TIME') or define('APP_BEGIN_TIME', microtime(true));
 defined('APP_BEGIN_MEM') or define('APP_BEGIN_MEM', memory_get_usage());
-defined('APP_PATH') or define('APP_PATH', dirname(__FILE__));
+defined('APP_PATH') or define('APP_PATH', dirname($_SERVER['SCRIPT_FILENAME']) . '/');
 defined('TEA_PATH') or define('TEA_PATH', dirname(__FILE__));
 
 class TeaBase {
@@ -159,9 +159,10 @@ class TeaBase {
     }
 
     public static function load($name, $args = array()) {
-        $className = array_pop(explode('.', $name));
+        $nameParts = explode('.', $name);
+        $className = array_pop($nameParts);
         if (!array_key_exists($className, self::$importMap)) {
-            $first = array_shift(explode('.', $name));
+            $first = array_shift($nameParts);
             if (array_key_exists($first, self::getConfig('TeaBase.pathAliasMap'))) {
                 $loadName = $name;
             } else {
@@ -207,8 +208,11 @@ class TeaBase {
      * @return TeaDbConnection Proper TeaDbConnection subclass instance.
      */
     public static function getDbConnection($connInfo = null) {
-        empty($connInfo) && ($connInfo = 'default');
-        is_string($connInfo) && ($connInfo = self::getConfig("TeaModel.{$connInfo}"));
+        if (empty($connInfo) && isset(self::$_connection)) {
+            return self::$_connection;
+        }
+        empty($connInfo) && ($connInfo = self::getConfig('TeaModel.defaultConnection'));
+        is_string($connInfo) && ($connInfo = self::getConfig("TeaModel.connections.{$connInfo}"));
         $dsn = $driverType = $autoConnect = null;
         if (is_array($connInfo)) {
             $dsn = isset($connInfo['dsn']) ? $connInfo['dsn'] : null;
@@ -229,38 +233,34 @@ class TeaBase {
 
     /**
      * Get proper TeaDbQuery subclass instance if autoConnect is true.
-     * @param mixed $connInfo String or array, defaults to string 'default'. If string, it should be the connection info group key in config TeaModel node.
      * @return TeaDbQuery Proper TeaDbQuery subclass instance.
      */
-    public static function getDbQuery($connInfo = null) {
-        return self::getDbConnection($connInfo)->getQuery();
+    public static function getDbQuery() {
+        return self::getDbConnection()->getQuery();
     }
 
     /**
      * Get proper TeaDbSchema subclass instance if autoConnect is true.
-     * @param mixed $connInfo String or array, defaults to string 'default'. If string, it should be the connection info group key in config TeaModel node.
      * @return TeaDbSchema Proper TeaDbSchema subclass instance.
      */
-    public static function getDbSchema($connInfo = null) {
-        return self::getDbConnection($connInfo)->getSchema();
+    public static function getDbSchema() {
+        return self::getDbConnection()->getSchema();
     }
 
     /**
      * Get proper TeaDbSqlBuilder subclass instance if autoConnect is true.
-     * @param mixed $connInfo String or array, defaults to string 'default'. If string, it should be the connection info group key in config TeaModel node.
      * @return TeaDbSqlBuilder Proper TeaDbSqlBuilder subclass instance.
      */
-    public static function getDbSqlBuilder($connInfo = null) {
-        return self::getDbConnection($connInfo)->getSqlBuilder();
+    public static function getDbSqlBuilder() {
+        return self::getDbConnection()->getSqlBuilder();
     }
     
     /**
      * Get proper TeaDbCriteriaBuilder subclass instance if autoConnect is true.
-     * @param mixed $connInfo String or array, defaults to string 'default'. If string, it should be the connection info group key in config TeaModel node.
      * @return TeaDbCriteriaBuilder Proper TeaDbCriteriaBuilder subclass instance.
      */
-    public static function getDbCriteriaBuilder($connInfo = null) {
-        return self::getDbConnection($connInfo)->getCriteriaBuilder();
+    public static function getDbCriteriaBuilder() {
+        return self::getDbConnection()->getCriteriaBuilder();
     }
 
     /**

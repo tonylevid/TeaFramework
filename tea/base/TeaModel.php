@@ -12,17 +12,27 @@
 class TeaModel extends TeaCommon {
 
     public static $config = array(
-        'default' => array(
-            'dsn' => 'mysql:host=127.0.0.1;dbname=test;',
-            'username' => 'root',
-            'password' => '123456',
-            'charset' => 'utf8', // if charset has been defined in dsn, this will be invalid.
-            'tablePrefix' => 'tb_',
-            'persistent' => true,
-            'emulatePrepare' => true,
-            'autoConnect' => true,
+        'defaultConnection' => 'default',
+        'connections' => array(
+            'default' => array(
+                'dsn' => 'mysql:host=127.0.0.1;dbname=test;',
+                'username' => 'root',
+                'password' => '123456',
+                'charset' => 'utf8', // if charset has been defined in dsn, this will be invalid.
+                'tablePrefix' => 'tb_',
+                'tableAliasMark' => '->',
+                'persistent' => true,
+                'emulatePrepare' => true,
+                'autoConnect' => true,
+            )
         )
     );
+
+    /**
+     * Proper TeaDbConnection subclass instance.
+     * @var TeaDbConnection
+     */
+    public $connection;
     
     /**
      * Proper TeaDbSqlBuilder subclass instance.
@@ -53,18 +63,33 @@ class TeaModel extends TeaCommon {
      */
     public function __construct() {
         $this->setClassConfig(__CLASS__);
+        $this->connection = $this->getDbConnection();
         $this->db = $this->getDbQuery();
         $this->sqlBuilder = $this->getDbSqlBuilder();
         $this->schema = $this->getDbSchema();
     }
     
     /**
+     * Hook method.
      * Return the table name for this model. Defaults to the lowercased and underscored model name.
      * @return string Table name.
      */
     public function tableName() {
         $className = get_class($this);
         return StringHelper::camelToUnderscore(preg_replace('/(.+)Model/', '$1', $className));
+    }
+
+    /**
+     * Get real table name. 
+     * If Table name is '{{table_name}}', and table prefix is 'tbl_'. This will return 'tbl_table_name'.
+     * @return string Real table name
+     */
+    public function getTableName() {
+        return $this->sqlBuilder->getTableName($this->tableName());
+    }
+
+    public function getTableAlias() {
+        return $this->sqlBuilder->getTableAlias($this->tableName());
     }
     
     /**

@@ -311,6 +311,11 @@ class TeaMysqlCriteriaBuilder extends TeaDbCriteriaBuilder {
         return implode(' ', $sqls);
     }
     
+    /**
+     * Get sql of condition.
+     * @param array $vals Values to be parsed.
+     * @return string Generated sql of the parsed values.
+     */
     protected function getCondValsSql($vals) {
         $this->_flattenedVals = array();
         return $this->parseCondVals($this->flattenCondVals($vals));

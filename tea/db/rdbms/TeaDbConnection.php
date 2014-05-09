@@ -60,6 +60,12 @@ abstract class TeaDbConnection {
     public $tablePrefix;
 
     /**
+     * Database table alias mark.
+     * @var string
+     */
+    public $tableAliasMark;
+
+    /**
      * Persistent connection or not.
      * @var bool
      */
@@ -88,7 +94,8 @@ abstract class TeaDbConnection {
      * @var array
      */
     protected $_connInfoKeys = array(
-        'dsn', 'username', 'password', 'charset', 'tablePrefix', 'persistent', 'emulatePrepare'
+        'dsn', 'username', 'password', 'charset', 'tablePrefix', 
+        'tableAliasMark', 'persistent', 'emulatePrepare'
     );
 
     /**

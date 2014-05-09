@@ -1,7 +1,6 @@
 <?php
 header('Content-type:text/html;charset=utf-8;');
 
-define('APP_PATH', dirname(__FILE__));
 $boot = dirname(__FILE__) . '/../tea/Tea.php';
 $config = require dirname(__FILE__) . '/protected/config/main.php';
 require_once($boot);

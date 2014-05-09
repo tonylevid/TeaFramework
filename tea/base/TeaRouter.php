@@ -14,7 +14,7 @@ class TeaRouter {
     public static $config = array(
         'routeMode' => 'path',  // 'path' or 'get'
         'routeModeGetName' => 'r',  // only available when route mode is 'get'
-        'controllerSuffix' => 'Controller'
+        'urlSuffix' => ''
     );
 
     private $_moduleName;
@@ -103,17 +103,17 @@ class TeaRouter {
     }
 
     private function setRoutePathinfo($pathinfo) {
-        $trimedPathinfo = ltrim($pathinfo, '/');
+        $trimedPathinfo = preg_replace('/' . preg_quote(self::$config['urlSuffix']) . '$/', '', ltrim($pathinfo, '/'));
         $pathSegments = !empty($trimedPathinfo) ? explode('/', $trimedPathinfo) : array();
         if (isset($pathSegments[0]) && array_key_exists($pathSegments[0], Tea::$moduleMap)) {
             $this->_moduleName = $pathSegments[0];
             $this->_urlControllerName = isset($pathSegments[1]) ? $pathSegments[1] : TeaController::$config['defaultController'];
-            $this->_controllerName = $this->_urlControllerName . self::$config['controllerSuffix'];
+            $this->_controllerName = $this->_urlControllerName . 'Controller';
             $this->_actionName = isset($pathSegments[2]) ? $pathSegments[2] : TeaController::$config['defaultAction'];
             $this->_actionParams = array_diff($pathSegments, array($this->_moduleName, $this->_urlControllerName, $this->_actionName));
         } else {
             $this->_urlControllerName = isset($pathSegments[0]) ? $pathSegments[0] : TeaController::$config['defaultController'];
-            $this->_controllerName = $this->_urlControllerName . self::$config['controllerSuffix'];
+            $this->_controllerName = $this->_urlControllerName . 'Controller';
             $this->_actionName = isset($pathSegments[1]) ? $pathSegments[1] : TeaController::$config['defaultAction'];
             $this->_actionParams = array_diff($pathSegments, array($this->_urlControllerName, $this->_actionName));
         }

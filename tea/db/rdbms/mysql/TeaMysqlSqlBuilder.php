@@ -23,12 +23,6 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
     const FK_UPDATE_CASCADE = 'ON UPDATE CASCADE';
     const FK_UPDATE_SET_NULL = 'ON UPDATE SET NULL';
     const FK_UPDATE_NO_ACTION = 'ON UPDATE NO ACTION';
-    
-    /**
-     * Table alias mark.
-     * @var string
-     */
-    public $tblAliasMark = '->';
 
     /**
      * Allowed criteria name map.
@@ -349,6 +343,44 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
         return "DELETE FROM " . $this->quoteTable($tblName) . $this->getCriteriaSql($criteria, __FUNCTION__);
     }
 
+    /**
+     * Get real table name. 
+     * If $tblName is '{{table_name}}', and table prefix is 'tbl_'. This will return 'tbl_table_name'.
+     * @param string $tblName Table name.
+     * @return string Real table name
+     */
+    public function getTableName($tblName) {
+        $tblName = preg_replace('/^{{(.+)}}$/', '$1', $tblName);
+        if (strpos($tblName, Tea::getDbConnection()->tableAliasMark) !== false) {
+            $aliasParts = explode(Tea::getDbConnection()->tableAliasMark, $tblName);
+            $tblParts = explode('.', $aliasParts[0]);
+        } else {
+            $tblParts = explode('.', $tblName);
+        }
+        $partsKeys = array_keys($tblParts);
+        $lastKey = array_pop($partsKeys);
+        foreach ($tblParts as $key => &$part) {
+            if ($key === $lastKey) {
+                $part = Tea::getDbConnection()->tablePrefix . $part;
+            }
+        }
+        return implode('.', $tblParts);
+    }
+
+    /**
+     * Get table alias name.
+     * If $tblName is '{{table_name->A}}', This will return 'A'.
+     * @param string $tblName Table name.
+     * @return string Table alias name.
+     */
+    public function getTableAlias($tblName) {
+        $tblName = preg_replace('/^{{(.+)}}$/', '$1', $tblName);
+        if (strpos($tblName, Tea::getDbConnection()->tableAliasMark) !== false) {
+            $parts = explode(Tea::getDbConnection()->tableAliasMark, $tblName);
+            return $parts[1];
+        }
+    }
+
     // Sql Quote Functions
 
     /**
@@ -366,18 +398,21 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
      * @return string Quoted table name.
      */
     public function quoteTable($tblName) {
-        if (preg_match('/^{{(.+)}}$/', $tblName, $matches)) {
-            $tblName = Tea::getDbConnection()->tablePrefix . $matches[1];
-        }
-        if (strpos($tblName, '.') === false && strpos($tblName, $this->tblAliasMark) === false) {
+        $tblName = preg_replace('/^{{(.+)}}$/', '$1', $tblName);
+        if (strpos($tblName, '.') === false && strpos($tblName, Tea::getDbConnection()->tableAliasMark) === false) {
             return $this->normalQuote($tblName);
         }
         $parts = explode('.', $tblName);
-        foreach ($parts as &$part) {
-            if (strpos($part, $this->tblAliasMark) === false) {
+        $partsKeys = array_keys($parts);
+        $lastKey = array_pop($partsKeys);
+        foreach ($parts as $key => &$part) {
+            if ($key === $lastKey) {
+                $part = Tea::getDbConnection()->tablePrefix . $part;
+            }
+            if (strpos($part, Tea::getDbConnection()->tableAliasMark) === false) {
                 $part = $this->normalQuote($part);
             } else {
-                $part = implode(' AS ', array_map(array($this, 'normalQuote'), explode($this->tblAliasMark, $part)));
+                $part = implode(' AS ', array_map(array($this, 'normalQuote'), explode(Tea::getDbConnection()->tableAliasMark, $part)));
             }
         }
         unset($part);
