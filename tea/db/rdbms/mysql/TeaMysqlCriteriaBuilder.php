@@ -291,7 +291,9 @@ class TeaMysqlCriteriaBuilder extends TeaDbCriteriaBuilder {
             !array_key_exists($parts[0], $this->joinTypeMap) && array_unshift($parts, 'inner');
             $joinType = array_shift($parts);
             $tblName = array_pop($parts);
-            $joinSqls[] = $this->joinTypeMap[$joinType] . " " . Tea::getDbSqlBuilder()->quoteTable($tblName) . " ON " . $this->getCondValsSql($cond);
+            $tblAlias = Tea::getDbSqlBuilder()->getTableAlias($tblName);
+            $asSql = !empty($tblAlias) ? " AS `{$tblAlias}`" : '';
+            $joinSqls[] = $this->joinTypeMap[$joinType] . " " . Tea::getDbSqlBuilder()->quoteTable($tblName) . $asSql . " ON " . $this->getCondValsSql($cond);
         }
         $this->criteriaArr[__FUNCTION__] = $vals;
         $this->criteriaSqls[__FUNCTION__] = implode(' ', $joinSqls);

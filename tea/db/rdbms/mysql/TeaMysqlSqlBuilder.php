@@ -306,7 +306,9 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
             }
         }
         $exprSql = implode(', ', $exprSqls);
-        return "SELECT {$exprSql} FROM " . $this->quoteTable($tblName) . $this->getCriteriaSql($criteria, __FUNCTION__);
+        $tblAlias = Tea::getDbSqlBuilder()->getTableAlias($tblName);
+        $asSql = !empty($tblAlias) && isset($criteria['join']) ? " AS `{$tblAlias}` " : '';
+        return "SELECT {$exprSql} FROM " . $this->quoteTable($tblName) . $asSql . $this->getCriteriaSql($criteria, __FUNCTION__);
     }
 
     /**
@@ -398,8 +400,8 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
      * @return string Quoted table name.
      */
     public function quoteTable($tblName) {
-        $tblName = preg_replace('/^{{(.+)}}$/', '$1', $tblName);
-        if (strpos($tblName, '.') === false && strpos($tblName, Tea::getDbConnection()->tableAliasMark) === false) {
+        $tblName = $this->getTableName($tblName);
+        if (strpos($tblName, '.') === false) {
             return $this->normalQuote($tblName);
         }
         $parts = explode('.', $tblName);
@@ -409,11 +411,7 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
             if ($key === $lastKey) {
                 $part = Tea::getDbConnection()->tablePrefix . $part;
             }
-            if (strpos($part, Tea::getDbConnection()->tableAliasMark) === false) {
-                $part = $this->normalQuote($part);
-            } else {
-                $part = implode(' AS ', array_map(array($this, 'normalQuote'), explode(Tea::getDbConnection()->tableAliasMark, $part)));
-            }
+            $part = $this->normalQuote($part);
         }
         unset($part);
         return implode('.', $parts);

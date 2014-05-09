@@ -190,6 +190,10 @@ class TeaBase {
         $name = ucfirst($name);
         return self::load("model.{$name}Model", $args);
     }
+
+    public static function getModel($tableName) {
+        return new TeaTempModel($tableName);
+    }
     
     /**
      * Get current running TeaRouter instance.

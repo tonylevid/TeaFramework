@@ -162,6 +162,17 @@ class TeaModel extends TeaCommon {
     public function findByPk($pkVal) {
         return $this->find($this->getPkCriteria($pkVal));
     }
+
+    /**
+     * Find all records by sql.
+     * @param string $sql Sql statement.
+     * @param array $params An array of values with as many elements as there are bound parameters in the sql being executed.
+     * @return array
+     */
+    public function findBySql($sql, $params = array()) {
+        $rst = $this->db->query($sql, $params)->fetchRows();
+        return $rst;
+    }
     
     /**
      * Find a single column value with the specified criteria.
@@ -239,6 +250,22 @@ class TeaModel extends TeaCommon {
      * @return bool
      */
     public function updateByPk($vals, $pkVal) {
+        return $this->update($vals, $this->getPkCriteria($pkVal));
+    }
+
+    public function increase($val, $colName, $criteria) {
+        $expr = $this->sqlBuilder->quoteColumn($colName) . ' + ' . $this->db->escape($val);
+        $vals = array(
+            $colName => new TeaDbExpr($expr)
+        );
+        return $this->update($vals, $criteria);
+    }
+
+    public function increaseByPk($val, $colName, $pkVal) {
+        $expr = $this->sqlBuilder->quoteColumn($colName) . ' + ' . $this->db->escape($val);
+        $vals = array(
+            $colName => new TeaDbExpr($expr)
+        );
         return $this->update($vals, $this->getPkCriteria($pkVal));
     }
     
