@@ -137,8 +137,8 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
      * @param array $cols Names of columns.
      * @param string $refTblName Name of the reference table.
      * @param array $refCols Names of the reference table's columns.
-     * @param string $refDeleteConst Const in this class that start with 'FK_DELETE_'.
-     * @param string $refUpdateConst Const in this class that start with 'FK_UPDATE_'.
+     * @param string $refDeleteConst Const in this class that starts with 'FK_DELETE_'.
+     * @param string $refUpdateConst Const in this class that starts with 'FK_UPDATE_'.
      * @return string Generated sql string.
      */
     public function addForeign($tblName, $symbol, $cols, $refTblName, $refCols, $refDeleteConst = null, $refUpdateConst = null) {

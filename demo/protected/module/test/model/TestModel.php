@@ -25,8 +25,7 @@ class TestModel extends TeaModel {
             ),
             'where' => array('A.id:gt' => 0)
         );
-        $this->updateByPk(array('name' => 'tonylevid'), 1);
-        //return $this->findColumn('TD.addr->td_addr', $criteria);
+        return $this->findColumn('TD.addr->td_addr', $criteria);
     }
 
 }
