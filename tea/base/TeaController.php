@@ -77,7 +77,7 @@ class TeaController extends TeaCommon {
                 return ob_get_clean();
             }
         } else {
-            throw new TeaException("Unable to render, '{$tpl}' is not a valid template.");
+            throw new TeaException("Unable to render, '{$tplName}' is not a valid template.");
         }
     }
 

@@ -7,7 +7,7 @@ require_once($boot);
 Tea::run($config);
 
 echo '<p /> Running Time: ';
-echo APP_END_TIME - APP_BEGIN_TIME . ' sec';
+echo APP_USED_TIME . ' sec';
 
-$usage = (int)((APP_END_MEM - APP_BEGIN_MEM) / 1024);
+$usage = (int)((APP_USED_MEM) / 1024);
 echo "<br /><span style='color:red'>App Used Memory {$usage} kb.</span>";

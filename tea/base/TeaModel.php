@@ -8,6 +8,7 @@
  * @copyright http://tonylevid.com/
  * @license http://www.tframework.com/license/
  * @package base
+ * @property-read TeaDbCriteriaBuilder $criteria Proper TeaDbCriteriaBuilder subclass instance.
  */
 class TeaModel extends TeaCommon {
 
@@ -67,6 +68,16 @@ class TeaModel extends TeaCommon {
         $this->db = $this->getDbQuery();
         $this->sqlBuilder = $this->getDbSqlBuilder();
         $this->schema = $this->getDbSchema();
+    }
+
+    public function __get($name) {
+        if ($name === 'criteria') {
+            return Tea::getDbCriteriaBuilder();
+        } else {
+            $trace = debug_backtrace();
+            trigger_error("Undefined property via __get(): {$name} in {$trace[0]['file']} on line {$trace[0]['line']}");
+            return null;
+        }
     }
     
     /**
@@ -175,30 +186,19 @@ class TeaModel extends TeaCommon {
     }
     
     /**
-     * Find a single column value with the specified criteria.
-     * @param string $colName Column name.
+     * Find a single record column(s) value with the specified criteria.
+     * @param string $colName Column name(s).
      * @param mixed $criteria TeaDbCriteriaBuilder instance or criteria array.
-     * @return mixed Return column value on success, null on failure.
+     * @return mixed Return a single column value or multiple columns values array.
      */
     public function findColumn($colName, $criteria = null) {
         $sql = $this->sqlBuilder->select($this->tableName(), $colName, $criteria);
         $rst = $this->db->query($sql)->fetchRow();
         if (is_array($rst) && is_string($colName) && isset($rst[$colName])) {
             return $rst[$colName];
+        } else {
+            return $rst;
         }
-        return null;
-    }
-    
-    /**
-     * Find a single record with the specified column names and criteria.
-     * @param array $colNames Column names.
-     * @param mixed $criteria TeaDbCriteriaBuilder instance or criteria array.
-     * @return array
-     */
-    public function findColumns($colNames, $criteria = null) {
-        $sql = $this->sqlBuilder->select($this->tableName(), $colNames, $criteria);
-        $rst = $this->db->query($sql)->fetchRow();
-        return $rst;
     }
     
     /**

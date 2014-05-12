@@ -75,6 +75,8 @@ class TeaBase {
         self::getRouter()->route();
         defined('APP_END_TIME') or define('APP_END_TIME', microtime(true));
         defined('APP_END_MEM') or define('APP_END_MEM', memory_get_usage());
+        defined('APP_USED_TIME') or define('APP_USED_TIME', APP_END_TIME - APP_BEGIN_TIME);
+        defined('APP_USED_MEM') or define('APP_USED_MEM', APP_END_MEM - APP_BEGIN_MEM);
     }
     
     /**

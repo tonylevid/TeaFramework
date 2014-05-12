@@ -3,13 +3,10 @@
 class MainController extends TeaController {
 
     public function index($name) {
-        $data = $this->getModel('{{test.test->A}}')->findAll();
-        var_dump($this->getModel('{{test.test->A}}')->getLastSql());
-        $data = $this->loadModel('test')->all();
-        var_dump($this->loadModel('test')->getLastSql());
-        $this->loadModel('test')->increaseByPk(1, 'hits', 1);
+        $data = $this->loadModel('test')->one();
+        print_r($this->getModel('{{test.test->A}}')->getLastSql());
         $this->loadModel('test')->increase(1, 'hits', array('where' => array(
-            'id:between' => array(2, 100)
+            'id:between' => array(1, 100)
         )));
         $this->assign(array(
             'data' => $data,

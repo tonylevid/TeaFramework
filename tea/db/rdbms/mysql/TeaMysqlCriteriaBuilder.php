@@ -285,15 +285,21 @@ class TeaMysqlCriteriaBuilder extends TeaDbCriteriaBuilder {
      * @return $this
      */
     public function join($vals = array()) {
+        $sqlBuilder = Tea::getDbSqlBuilder();
         $joinSqls = array();
         foreach ($vals as $key => $cond) {
             $parts = array_map('trim', explode($this->opDelimiter, $key));
             !array_key_exists($parts[0], $this->joinTypeMap) && array_unshift($parts, 'inner');
             $joinType = array_shift($parts);
             $tblName = array_pop($parts);
-            $tblAlias = Tea::getDbSqlBuilder()->getTableAlias($tblName);
+            $tblAlias = $sqlBuilder->getTableAlias($tblName);
             $asSql = !empty($tblAlias) ? " AS `{$tblAlias}`" : '';
-            $joinSqls[] = $this->joinTypeMap[$joinType] . " " . Tea::getDbSqlBuilder()->quoteTable($tblName) . $asSql . " ON " . $this->getCondValsSql($cond);
+            $colSqls = array();
+            foreach ($cond as $colA => $colB) {
+                $colSqls[] = $sqlBuilder->quoteColumn($colA) . ' = ' . $sqlBuilder->quoteColumn($colB);
+            }
+            $colSql = implode(' AND ', $colSqls);
+            $joinSqls[] = $this->joinTypeMap[$joinType] . " " . $sqlBuilder->quoteTable($tblName) . $asSql . " ON " . $colSql;
         }
         $this->criteriaArr[__FUNCTION__] = $vals;
         $this->criteriaSqls[__FUNCTION__] = implode(' ', $joinSqls);

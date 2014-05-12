@@ -299,15 +299,20 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
         !is_array($vals) && ($vals = array($vals));
         $exprSqls = array();
         foreach ($vals as $expr) {
+            $exprAlias = $this->getTableAlias($expr);
             if ($expr === '*' || $expr instanceof TeaDbExpr) {
                 $exprSqls[] = $expr;
+            } else if (!empty($exprAlias)) {
+                $exprSqls[] = $this->quoteColumn($expr) . " AS `{$exprAlias}`";
             } else {
                 $exprSqls[] = $this->quoteColumn($expr);
             }
         }
         $exprSql = implode(', ', $exprSqls);
-        $tblAlias = Tea::getDbSqlBuilder()->getTableAlias($tblName);
-        $asSql = !empty($tblAlias) && isset($criteria['join']) ? " AS `{$tblAlias}` " : '';
+        $tblAlias = $this->getTableAlias($tblName);
+        $criteriaArrHasJoin = is_array($criteria) && isset($criteria['join']);
+        $criteriaObjHasJoin = $criteria instanceof TeaMysqlCriteriaBuilder && isset($criteria->criteriaArr['join']);
+        $asSql = !empty($tblAlias) && ($criteriaArrHasJoin || $criteriaObjHasJoin) ? " AS " . $this->normalQuote($tblAlias) : '';
         return "SELECT {$exprSql} FROM " . $this->quoteTable($tblName) . $asSql . $this->getCriteriaSql($criteria, __FUNCTION__);
     }
 
@@ -324,25 +329,34 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
      * )
      * </pre>
      * @param mixed $criteria TeaMysqlCriteriaBuilder instance or criteria array.
+     * For multiple-table syntax, 'orderBy' and 'limit' cannot be used.
      * @return string Generated sql string.
      */
     public function update($tblName, $vals, $criteria = null) {
         $colVals = array();
         foreach ($vals as $colName => $val) {
-            $colVals[] = $this->quoteColumn($colName) . "=" . Tea::getDbQuery()->escape($val);
+            $colVals[] = $this->quoteColumn($colName) . " = " . Tea::getDbQuery()->escape($val);
         }
         $colValsSql = implode(', ', $colVals);
-        return "UPDATE " . $this->quoteTable($tblName) . " SET " . $colValsSql . $this->getCriteriaSql($criteria, __FUNCTION__);
+        $tblAlias = $this->getTableAlias($tblName);
+        $asSql = !empty($tblAlias) ? " AS " . $this->normalQuote($tblAlias) : '';
+        return "UPDATE " . $this->quoteTable($tblName) . $asSql . " SET " . $colValsSql . $this->getCriteriaSql($criteria, __FUNCTION__);
     }
 
     /**
      * Delete data.
      * @param string $tblName Table name.
      * @param mixed $criteria TeaMysqlCriteriaBuilder instance or criteria array.
+     * For multiple-table syntax, 'orderBy' and 'limit' cannot be used.
      * @return string Generated sql string.
      */
     public function delete($tblName, $criteria = null) {
-        return "DELETE FROM " . $this->quoteTable($tblName) . $this->getCriteriaSql($criteria, __FUNCTION__);
+        $tblAlias = $this->getTableAlias($tblName);
+        $criteriaSql = $this->getCriteriaSql($criteria, __FUNCTION__);
+        if (!empty($tblAlias)) {
+            return "DELETE FROM {$tblAlias} USING " . $this->quoteTable($tblName) . " AS " . $this->normalQuote($tblAlias) . $criteriaSql;
+        }
+        return "DELETE FROM " . $this->quoteTable($tblName) . $criteriaSql;
     }
 
     /**
@@ -423,6 +437,7 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
      * @return string Quoted column name.
      */
     public function quoteColumn($colName) {
+        $colName = $this->getTableName($colName);
         if (strpos($colName, '.') === false) {
             return $this->normalQuote($colName);
         }
