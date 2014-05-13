@@ -13,7 +13,7 @@ require dirname(__FILE__) . DIRECTORY_SEPARATOR . 'helper' . DIRECTORY_SEPARATOR
  */
 defined('APP_BEGIN_TIME') or define('APP_BEGIN_TIME', microtime(true));
 defined('APP_BEGIN_MEM') or define('APP_BEGIN_MEM', memory_get_usage());
-defined('APP_PATH') or define('APP_PATH', dirname($_SERVER['SCRIPT_FILENAME']) . '/');
+defined('APP_PATH') or define('APP_PATH', str_replace('/', DIRECTORY_SEPARATOR, dirname($_SERVER['SCRIPT_FILENAME'])));
 defined('TEA_PATH') or define('TEA_PATH', dirname(__FILE__));
 
 class TeaBase {
@@ -69,10 +69,9 @@ class TeaBase {
      * Run the application.
      * @param array $config User's config array.
      */
-    public static function run($config = array()) {
-        self::$config = ArrayHelper::mergeArray($config, self::getTeaBaseConfig());
-        self::init();
-        self::getRouter()->route();
+    public static function run($config = array(), $routeArgs = array()) {
+        self::init($config);
+        self::getRouter()->route($routeArgs);
         defined('APP_END_TIME') or define('APP_END_TIME', microtime(true));
         defined('APP_END_MEM') or define('APP_END_MEM', memory_get_usage());
         defined('APP_USED_TIME') or define('APP_USED_TIME', APP_END_TIME - APP_BEGIN_TIME);
@@ -81,8 +80,10 @@ class TeaBase {
     
     /**
      * Tea initialization.
+     * @param array $config User's config array.
      */
-    public static function init() {
+    public static function init($config = array()) {
+        self::$config = ArrayHelper::mergeArray($config, self::getTeaBaseConfig());
         self::setModuleMap();
         self::setAutoImport();
     }
@@ -136,7 +137,7 @@ class TeaBase {
                     $className = basename($file, '.php');
                     if (isset(self::$importMap[$className])) {
                         $importedFile = self::$importMap[$className];
-                        throw new TeaException("Class '{$className}' has been imported, check if you have redeclared it. File '{$importedFile}'.");
+                        throw new TeaException("Cannot redeclare class '{$className}' in '{$importedFile}'.");
                     } else {
                         self::$importMap[$className] = $file;
                     }
@@ -161,11 +162,9 @@ class TeaBase {
     }
 
     public static function load($name, $args = array()) {
-        $nameParts = explode('.', $name);
-        $className = array_pop($nameParts);
+        $className = self::getLoadNameClassName($name);
         if (!array_key_exists($className, self::$importMap)) {
-            $first = array_shift($nameParts);
-            if (array_key_exists($first, self::getConfig('TeaBase.pathAliasMap'))) {
+            if (self::isLoadNameAbsolute($name)) {
                 $loadName = $name;
             } else {
                 $router = self::getRouter();
@@ -176,6 +175,21 @@ class TeaBase {
         }
         $rfc = new ReflectionClass($className);
         return $rfc->newInstanceArgs($args);
+    }
+
+    private static function isLoadNameAbsolute($name) {
+        $nameParts = explode('.', $name);
+        $first = array_shift($nameParts);
+        if (array_key_exists($first, self::getConfig('TeaBase.pathAliasMap'))) {
+            return true;
+        }
+        return false;
+    }
+
+    private static function getLoadNameClassName($name) {
+        $nameParts = explode('.', $name);
+        $className = array_pop($nameParts);
+        return $className;
     }
 
     public static function loadHelper($name, $args = array()) {
@@ -189,7 +203,12 @@ class TeaBase {
     }
 
     public static function loadModel($name, $args = array()) {
-        $name = ucfirst($name);
+        if (self::isLoadNameAbsolute($name)) {
+            $nameParts = explode('.', $name);
+            $nameParts[count($nameParts) - 1] = ucfirst($nameParts[count($nameParts) - 1]);
+            array_splice($nameParts, -1, 0, 'model');
+            return self::load(implode('.', $nameParts) . 'Model');
+        }
         return self::load("model.{$name}Model", $args);
     }
 

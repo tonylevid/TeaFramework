@@ -8,7 +8,7 @@
  * @copyright http://tonylevid.com/
  * @license http://www.tframework.com/license/
  * @package base
- * @property-read TeaDbCriteriaBuilder $criteria Proper TeaDbCriteriaBuilder subclass instance.
+ * @property-read TeaDbCriteriaBuilder $criteria Proper TeaDbCriteriaBuilder subclass new instance.
  */
 class TeaModel extends TeaCommon {
 
@@ -70,9 +70,15 @@ class TeaModel extends TeaCommon {
         $this->schema = $this->getDbSchema();
     }
 
+    /**
+     * Magic method __get.
+     * This method is for getting proper TeaDbCriteriaBuilder subclass new instance.
+     * @param string $name Property name.
+     * @return mixed
+     */
     public function __get($name) {
         if ($name === 'criteria') {
-            return Tea::getDbCriteriaBuilder();
+            return $this->getDbCriteriaBuilder();
         } else {
             $trace = debug_backtrace();
             trigger_error("Undefined property via __get(): {$name} in {$trace[0]['file']} on line {$trace[0]['line']}");
@@ -99,6 +105,12 @@ class TeaModel extends TeaCommon {
         return $this->sqlBuilder->getTableName($this->tableName());
     }
 
+    /**
+     * Get table alias name.
+     * If $tblName is '{{table_name->A}}', This will return 'A'.
+     * @param string $tblName Table name.
+     * @return string Table alias name.
+     */
     public function getTableAlias() {
         return $this->sqlBuilder->getTableAlias($this->tableName());
     }
@@ -157,21 +169,84 @@ class TeaModel extends TeaCommon {
     /**
      * Find a single record with the specified criteria.
      * @param mixed $criteria TeaDbCriteriaBuilder instance or criteria array.
+     * @param mixed $colName Select exprs, string or array. If empty, it will be '*'.
      * @return array
      */
-    public function find($criteria = null) {
-        $sql = $this->sqlBuilder->select($this->tableName(), null, $criteria);
+    public function find($criteria = null, $colName = null) {
+        $sql = $this->sqlBuilder->select($this->tableName(), $criteria, $colName);
         $rst = $this->db->query($sql)->fetchRow();
         return $rst;
+    }
+
+    /**
+     * Find a single record by sql.
+     * @param string $sql Sql statement.
+     * @param array $params An array of values with as many elements as there are bound parameters in the sql being executed.
+     * @return array
+     */
+    public function findBySql($sql, $params = array()) {
+        $rst = $this->db->query($sql, $params)->fetchRow();
+        return $rst;
+    }
+
+    /**
+     * Find a single record with the condition array of criteria where.
+     * @param array $condition Condition array of criteria where.
+     * @param mixed $colName Select exprs, string or array. If empty, it will be '*'.
+     * @return array
+     */
+    public function findByCondition($condition = null, $colName = null) {
+        $criteria = !empty($condition) ? array('where' => $condition) : null;
+        return $this->find($criteria, $colName);
     }
     
     /**
      * Find a single record with the specified primary key value.
      * @param mixed $pkVal Primary key value or array values for multiple primary keys.
+     * @param mixed $colName Select exprs, string or array. If empty, it will be '*'.
      * @return array
      */
-    public function findByPk($pkVal) {
-        return $this->find($this->getPkCriteria($pkVal));
+    public function findByPk($pkVal, $colName = null) {
+        return $this->find($this->getPkCriteria($pkVal), $colName);
+    }
+    
+    /**
+     * Find a single record column value or multiple columns values array with the specified criteria.
+     * @param mixed $criteria TeaDbCriteriaBuilder instance or criteria array.
+     * @param mixed $colName Select exprs, string or array. If empty, it will be '*'.
+     * @return mixed Return a single column value or multiple columns values array.
+     */
+    public function findColumn($criteria = null, $colName = null) {
+        $sql = $this->sqlBuilder->select($this->tableName(), $criteria, $colName);
+        $rst = $this->db->query($sql)->fetchRow();
+        if (is_array($rst) && is_string($colName) && isset($rst[$colName])) {
+            return $rst[$colName];
+        } else {
+            return $rst;
+        }
+    }
+
+    /**
+     * Find a single record column value or multiple columns values array with the condition array of criteria where.
+     * @param array $condition Condition array of criteria where.
+     * @param mixed $colName Select exprs, string or array. If empty, it will be '*'.
+     * @return mixed Return a single column value or multiple columns values array.
+     */
+    public function findColumnByCondition($condition = null, $colName = null) {
+        $criteria = !empty($condition) ? array('where' => $condition) : null;
+        return $this->findColumn($criteria, $colName);
+    }
+    
+    /**
+     * Find all records with the specified criteria.
+     * @param mixed $criteria TeaDbCriteriaBuilder instance or criteria array.
+     * @param mixed $colName Select exprs, string or array. If empty, it will be '*'.
+     * @return array
+     */
+    public function findAll($criteria = null, $colName = null) {
+        $sql = $this->sqlBuilder->select($this->tableName(), $criteria, $colName);
+        $rst = $this->db->query($sql)->fetchRows();
+        return $rst;
     }
 
     /**
@@ -180,36 +255,20 @@ class TeaModel extends TeaCommon {
      * @param array $params An array of values with as many elements as there are bound parameters in the sql being executed.
      * @return array
      */
-    public function findBySql($sql, $params = array()) {
+    public function findAllBySql($sql, $params = array()) {
         $rst = $this->db->query($sql, $params)->fetchRows();
         return $rst;
     }
-    
+
     /**
-     * Find a single record column(s) value with the specified criteria.
-     * @param string $colName Column name(s).
-     * @param mixed $criteria TeaDbCriteriaBuilder instance or criteria array.
-     * @return mixed Return a single column value or multiple columns values array.
-     */
-    public function findColumn($colName, $criteria = null) {
-        $sql = $this->sqlBuilder->select($this->tableName(), $colName, $criteria);
-        $rst = $this->db->query($sql)->fetchRow();
-        if (is_array($rst) && is_string($colName) && isset($rst[$colName])) {
-            return $rst[$colName];
-        } else {
-            return $rst;
-        }
-    }
-    
-    /**
-     * Find all records with the specified criteria.
-     * @param mixed $criteria TeaDbCriteriaBuilder instance or criteria array.
+     * Find all records with the condition array of criteria where.
+     * @param array $condition Condition array of criteria where.
+     * @param mixed $colName Select exprs, string or array. If empty, it will be '*'.
      * @return array
      */
-    public function findAll($criteria = null) {
-        $sql = $this->sqlBuilder->select($this->tableName(), null, $criteria);
-        $rst = $this->db->query($sql)->fetchRows();
-        return $rst;
+    public function findAllByCondition($condition = null, $colName = null) {
+        $criteria = !empty($condition) ? array('where' => $condition) : null;
+        return $this->findAll($criteria, $colName);
     }
     
     /**
@@ -234,6 +293,25 @@ class TeaModel extends TeaCommon {
         }
         return false;
     }
+
+    /**
+     * Update record(s) with the condition array of criteria where.
+     * @param array $vals An array indicates update data.
+     * <pre>
+     * It will be an array like this:
+     * array(
+     *     'colName1' => colVal1
+     *     'colName2' => colVal2,
+     *     ...
+     * )
+     * </pre>
+     * @param array $condition Condition array of criteria where. If empty, it will only update one record for safety.
+     * @return bool
+     */
+    public function updateByCondition($vals, $condition) {
+        $criteria = array('where' => $condition);
+        return $this->update($vals, $criteria);
+    }
     
     /**
      * Update a single record with the specified primary key value.
@@ -253,6 +331,13 @@ class TeaModel extends TeaCommon {
         return $this->update($vals, $this->getPkCriteria($pkVal));
     }
 
+    /**
+     * Increase a single record column value with the specified criteria.
+     * @param int $val Value of increment.
+     * @param string $colName Column name of the increment field.
+     * @param mixed $criteria TeaDbCriteriaBuilder instance or criteria array.
+     * @return bool
+     */
     public function increase($val, $colName, $criteria) {
         $expr = $this->sqlBuilder->quoteColumn($colName) . ' + ' . $this->db->escape($val);
         $vals = array(
@@ -261,6 +346,25 @@ class TeaModel extends TeaCommon {
         return $this->update($vals, $criteria);
     }
 
+    /**
+     * Increase a single record column value with the condition array of criteria where.
+     * @param int $val Value of increment.
+     * @param string $colName Column name of the increment field.
+     * @param array $condition Condition array of criteria where.
+     * @return bool
+     */
+    public function increaseByCondition($val, $colName, $condition) {
+        $criteria = array('where' => $condition);
+        return $this->increase($val, $colName, $criteria);
+    }
+
+    /**
+     * Increase a single record column value with the specified primary key value.
+     * @param int $val Value of increment.
+     * @param string $colName Column name of the increment field.
+     * @param mixed $pkVal Primary key value or array values for multiple primary keys.
+     * @return bool
+     */
     public function increaseByPk($val, $colName, $pkVal) {
         $expr = $this->sqlBuilder->quoteColumn($colName) . ' + ' . $this->db->escape($val);
         $vals = array(
@@ -281,6 +385,16 @@ class TeaModel extends TeaCommon {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Delete record(s) with the condition array of criteria where.
+     * @param array $condition Condition array of criteria where. If empty, it will only delete one record for safety.
+     * @return bool 
+     */
+    public function deleteByCondition($condition) {
+        $criteria = array('where' => $condition);
+        return $this->delete($criteria);
     }
     
     /**

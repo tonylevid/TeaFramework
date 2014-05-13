@@ -271,7 +271,7 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
     public function insert($tblName, $vals, $criteria = null) {
         $sql = 'INSERT INTO ' . $this->quoteTable($tblName);
         if (is_array($vals)) {
-            if (Tea::loadHelper('array')->isMulti($vals)) {
+            if (ArrayHelper::isMulti($vals)) {
                 $colNames = null;
                 $cols = array_keys($vals[0]);
                 if ($cols === array_filter($cols, 'is_string')) {
@@ -290,20 +290,20 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
     /**
      * Select data.
      * @param string $tblName Table name.
-     * @param mixed $vals Select exprs, string or array. If empty, it will be '*'.
      * @param mixed $criteria TeaMysqlCriteriaBuilder instance or criteria array.
+     * @param mixed $exprs Select exprs, string or array. If empty, it will be '*'.
      * @return string Generated sql string.
      */
-    public function select($tblName, $vals = null, $criteria = null) {
-        empty($vals) && ($vals = '*');
-        !is_array($vals) && ($vals = array($vals));
+    public function select($tblName, $criteria = null, $exprs = null) {
+        empty($exprs) && ($exprs = '*');
+        !is_array($exprs) && ($exprs = array($exprs));
         $exprSqls = array();
-        foreach ($vals as $expr) {
+        foreach ($exprs as $expr) {
             $exprAlias = $this->getTableAlias($expr);
             if ($expr === '*' || $expr instanceof TeaDbExpr) {
                 $exprSqls[] = $expr;
             } else if (!empty($exprAlias)) {
-                $exprSqls[] = $this->quoteColumn($expr) . " AS `{$exprAlias}`";
+                $exprSqls[] = $this->quoteColumn($expr) . " AS " . $this->normalQuote($exprAlias);
             } else {
                 $exprSqls[] = $this->quoteColumn($expr);
             }

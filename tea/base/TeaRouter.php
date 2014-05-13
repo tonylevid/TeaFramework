@@ -27,13 +27,20 @@ class TeaRouter {
 
     private $_actionParams = array();
 
+    /**
+     * Arguments of method TeaRouter::route().
+     * @var array
+     */
+    private $_routeArgs = array();
+
     public function __construct() {
         Tea::setClassConfig(__CLASS__);
-        $this->setRouteInfo();
-        $this->importController();
     }
 
-    public function route() {
+    public function route($routeArgs = array()) {
+        $this->_routeArgs = $routeArgs;
+        $this->setRouteInfo();
+        $this->importController();
         if (!class_exists($this->getControllerName())) {
             throw new TeaException("Controller '{$this->getControllerName()}' does not exist.");
         }
@@ -87,8 +94,11 @@ class TeaRouter {
      * Set module name, controller name, action name and action params.
      */
     protected function setRouteInfo() {
+        if (!empty($this->_routeArgs)) {
+            $this->setRoutePathinfo(implode('/', $this->_routeArgs));
+            return null;
+        }
         $request = new TeaRequest();
-        $routeInfo = array();
         switch (self::$config['routeMode']) {
             case 'path':
                 $this->setRoutePathinfo($request->getPathinfo());
