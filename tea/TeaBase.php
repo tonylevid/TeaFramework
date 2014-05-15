@@ -87,32 +87,6 @@ class TeaBase {
         self::setModuleMap();
         self::setAutoImport();
     }
-    
-    /**
-     * Set module map.
-     */
-    protected static function setModuleMap() {
-        $modulePaths = glob(self::aliasToPath('module.*'), GLOB_ONLYDIR);
-        if (is_array($modulePaths) && !empty($modulePaths)) {
-            foreach ($modulePaths as $modulePath) {
-                $moduleName = basename($modulePath);
-                self::$moduleMap[$moduleName] = $modulePath;
-            }
-        }
-    }
-    
-    /**
-     * Set auto import.
-     */
-    protected static function setAutoImport() {
-        // import core classes and autoImport in main config.
-        $defaultLoads = self::getConfig('TeaBase.autoImport');
-        if (is_array($defaultLoads) && !empty($defaultLoads)) {
-            foreach ($defaultLoads as $alias) {
-                self::import($alias);
-            }
-        }
-    }
 
     /**
      * Import a class or directory.
@@ -161,8 +135,15 @@ class TeaBase {
         return false;
     }
 
+    /**
+     * Load class and get the instance.
+     * @param string $name Dot notation alias. You can use relative dot notation path.
+     * @param array $args Class's constructor parameters, defaults to array().
+     * @return object Class instance.
+     */
     public static function load($name, $args = array()) {
-        $className = self::getLoadNameClassName($name);
+        $nameParts = explode('.', $name);
+        $className = array_pop($nameParts);
         if (!array_key_exists($className, self::$importMap)) {
             if (self::isLoadNameAbsolute($name)) {
                 $loadName = $name;
@@ -177,41 +158,63 @@ class TeaBase {
         return $rfc->newInstanceArgs($args);
     }
 
-    private static function isLoadNameAbsolute($name) {
-        $nameParts = explode('.', $name);
-        $first = array_shift($nameParts);
-        if (array_key_exists($first, self::getConfig('TeaBase.pathAliasMap'))) {
-            return true;
-        }
-        return false;
-    }
-
-    private static function getLoadNameClassName($name) {
-        $nameParts = explode('.', $name);
-        $className = array_pop($nameParts);
-        return $className;
-    }
-
+    /**
+     * Load helper and get the instance.
+     * @param string $name Dot notation alias. For example: 'array' or 'protected.helper.array'.
+     * @param array $args Helper's constructor parameters, defaults to array().
+     * @return object Helper instance.
+     */
     public static function loadHelper($name, $args = array()) {
-        $name = ucfirst($name);
+        if (self::isLoadNameAbsolute($name)) {
+            $nameParts = explode('.', $name);
+            $lastKey = count($nameParts) - 1;
+            $nameParts[$lastKey] = ucfirst($nameParts[$lastKey]);
+            array_splice($nameParts, -1, 0, 'helper');
+            return self::load(implode('.', $nameParts) . 'Helper');
+        }
         return self::load("helper.{$name}Helper", $args);
     }
 
+    /**
+     * Load library and get the instance.
+     * @param string $name Dot notation alias. For example: 'pager' or 'protected.lib.pager'.
+     * @param array $args Library's constructor parameters, defaults to array().
+     * @return object Library instance.
+     */
     public static function loadLib($name, $args = array()) {
-        $name = ucfirst($name);
+        if (self::isLoadNameAbsolute($name)) {
+            $nameParts = explode('.', $name);
+            $lastKey = count($nameParts) - 1;
+            $nameParts[$lastKey] = ucfirst($nameParts[$lastKey]);
+            array_splice($nameParts, -1, 0, 'lib');
+            return self::load(implode('.', $nameParts));
+        }
         return self::load("lib.{$name}", $args);
     }
 
+    /**
+     * Load model and get the instance.
+     * @param string $name Dot notation alias. For example: 'test' or 'protected.model.test'.
+     * @param array $args Model's constructor parameters, defaults to array().
+     * @return object Model instance.
+     */
     public static function loadModel($name, $args = array()) {
         if (self::isLoadNameAbsolute($name)) {
             $nameParts = explode('.', $name);
-            $nameParts[count($nameParts) - 1] = ucfirst($nameParts[count($nameParts) - 1]);
+            $lastKey = count($nameParts) - 1;
+            $nameParts[$lastKey] = ucfirst($nameParts[$lastKey]);
             array_splice($nameParts, -1, 0, 'model');
             return self::load(implode('.', $nameParts) . 'Model');
         }
         return self::load("model.{$name}Model", $args);
     }
 
+    /**
+     * Get table model instance.
+     * Tea::getModel() do not need to create model class file.
+     * @param string $tableName Table name. This is used for TeaTempModel::tableName().
+     * @return TeaTempModel
+     */
     public static function getModel($tableName) {
         return new TeaTempModel($tableName);
     }
@@ -358,7 +361,37 @@ class TeaBase {
         }
         self::setConfig($className, $className::$$configParam);
     }
+    
+    /**
+     * Set module map.
+     */
+    protected static function setModuleMap() {
+        $modulePaths = glob(self::aliasToPath('module.*'), GLOB_ONLYDIR);
+        if (is_array($modulePaths) && !empty($modulePaths)) {
+            foreach ($modulePaths as $modulePath) {
+                $moduleName = basename($modulePath);
+                self::$moduleMap[$moduleName] = $modulePath;
+            }
+        }
+    }
+    
+    /**
+     * Set auto import.
+     */
+    protected static function setAutoImport() {
+        // import core classes and autoImport in main config.
+        $defaultLoads = self::getConfig('TeaBase.autoImport');
+        if (is_array($defaultLoads) && !empty($defaultLoads)) {
+            foreach ($defaultLoads as $alias) {
+                self::import($alias);
+            }
+        }
+    }
 
+    /**
+     * Get TeaBase default config.
+     * @return array
+     */
     protected static function getTeaBaseConfig() {
         return array(
             'TeaBase' => array(
@@ -384,6 +417,20 @@ class TeaBase {
                 )
             )
         );
+    }
+
+    /**
+     * Check whether the name for load methods is absolute.
+     * @param string $name The name for load methods.
+     * @return bool
+     */
+    private static function isLoadNameAbsolute($name) {
+        $nameParts = explode('.', $name);
+        $first = array_shift($nameParts);
+        if (array_key_exists($first, self::getConfig('TeaBase.pathAliasMap'))) {
+            return true;
+        }
+        return false;
     }
 
 }

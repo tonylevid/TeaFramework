@@ -3,16 +3,18 @@
 class MainController extends TeaController {
 
     public function index($name) {
+        var_dump($this->getRouter()->getModuleName());
         var_dump($this->getRouter()->getUrlControllerName());
         var_dump($this->getRouter()->getControllerName());
+        var_dump($this->getRouter()->getActionName());
         $data = $this->loadModel('test')->all();
-        print_r($this->loadModel('module.foo.foo')->all());
-        print_r($this->getModel('{{test.test->A}}')->getLastSql());
-        $this->loadModel('test')->increase(-1, 'hits', array('where' => array(
-            'id:between' => array(1, 100)
-        )));
+        $sqlAll = $this->loadModel('test')->getLastSql();
+        $this->loadModel('test')->incByCondition(array('id:between' => array(1, 100)), 'hits');
+        $sqlInc = $this->loadModel('test')->getLastSql();
         $this->assign(array(
             'data' => $data,
+            'sqlAll' => $sqlAll,
+            'sqlInc' => $sqlInc,
             'name' => $name
         ));
         $this->render();

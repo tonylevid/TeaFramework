@@ -273,6 +273,7 @@ class TeaModel extends TeaCommon {
     
     /**
      * Update record(s) with the specified criteria.
+     * @param mixed $criteria TeaDbCriteriaBuilder instance or criteria array. If empty, it will only update one record for safety.
      * @param array $vals An array indicates update data.
      * <pre>
      * It will be an array like this:
@@ -282,10 +283,9 @@ class TeaModel extends TeaCommon {
      *     ...
      * )
      * </pre>
-     * @param mixed $criteria TeaDbCriteriaBuilder instance or criteria array. If empty, it will only update one record for safety.
      * @return bool
      */
-    public function update($vals, $criteria) {
+    public function update($criteria, $vals) {
         empty($criteria) && ($criteria['limit'] = array(1));
         $sql = $this->sqlBuilder->update($this->tableName(), $vals, $criteria);
         if ($this->db->query($sql)->getRowCount() > 0) {
@@ -296,6 +296,7 @@ class TeaModel extends TeaCommon {
 
     /**
      * Update record(s) with the condition array of criteria where.
+     * @param array $condition Condition array of criteria where. If empty, it will only update one record for safety.
      * @param array $vals An array indicates update data.
      * <pre>
      * It will be an array like this:
@@ -305,16 +306,16 @@ class TeaModel extends TeaCommon {
      *     ...
      * )
      * </pre>
-     * @param array $condition Condition array of criteria where. If empty, it will only update one record for safety.
      * @return bool
      */
-    public function updateByCondition($vals, $condition) {
+    public function updateByCondition($condition, $vals) {
         $criteria = array('where' => $condition);
-        return $this->update($vals, $criteria);
+        return $this->update($criteria, $vals);
     }
     
     /**
      * Update a single record with the specified primary key value.
+     * @param mixed $pkVal Primary key value or array values for multiple primary keys.
      * @param array $vals An array indicates update data.
      * <pre>
      * It will be an array like this:
@@ -324,53 +325,48 @@ class TeaModel extends TeaCommon {
      *     ...
      * )
      * </pre>
-     * @param mixed $pkVal Primary key value or array values for multiple primary keys.
      * @return bool
      */
-    public function updateByPk($vals, $pkVal) {
-        return $this->update($vals, $this->getPkCriteria($pkVal));
+    public function updateByPk($pkVal, $vals) {
+        return $this->update($this->getPkCriteria($pkVal), $vals);
     }
 
     /**
      * Increase a single record column value with the specified criteria.
-     * @param int $val Value of increment.
-     * @param string $colName Column name of the increment field.
      * @param mixed $criteria TeaDbCriteriaBuilder instance or criteria array.
+     * @param string $colName Column name of the increment field.
+     * @param int $val Value of increment, defaults to 1.
      * @return bool
      */
-    public function increase($val, $colName, $criteria) {
+    public function inc($criteria, $colName, $val = 1) {
         $expr = $this->sqlBuilder->quoteColumn($colName) . ' + ' . $this->db->escape($val);
         $vals = array(
             $colName => new TeaDbExpr($expr)
         );
-        return $this->update($vals, $criteria);
+        return $this->update($criteria, $vals);
     }
 
     /**
      * Increase a single record column value with the condition array of criteria where.
-     * @param int $val Value of increment.
-     * @param string $colName Column name of the increment field.
      * @param array $condition Condition array of criteria where.
+     * @param string $colName Column name of the increment field.
+     * @param int $val Value of increment, defaults to 1.
      * @return bool
      */
-    public function increaseByCondition($val, $colName, $condition) {
+    public function incByCondition($condition, $colName, $val = 1) {
         $criteria = array('where' => $condition);
-        return $this->increase($val, $colName, $criteria);
+        return $this->inc($criteria, $colName, $val);
     }
 
     /**
      * Increase a single record column value with the specified primary key value.
-     * @param int $val Value of increment.
-     * @param string $colName Column name of the increment field.
      * @param mixed $pkVal Primary key value or array values for multiple primary keys.
+     * @param string $colName Column name of the increment field.
+     * @param int $val Value of increment, defaults to 1.
      * @return bool
      */
-    public function increaseByPk($val, $colName, $pkVal) {
-        $expr = $this->sqlBuilder->quoteColumn($colName) . ' + ' . $this->db->escape($val);
-        $vals = array(
-            $colName => new TeaDbExpr($expr)
-        );
-        return $this->update($vals, $this->getPkCriteria($pkVal));
+    public function incByPk($pkVal, $colName, $val = 1) {
+        return $this->inc($this->getPkCriteria($pkVal), $colName, $val);
     }
     
     /**

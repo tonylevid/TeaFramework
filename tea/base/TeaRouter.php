@@ -12,6 +12,7 @@
 class TeaRouter {
 
     public static $config = array(
+        'caseInsensitive' => true,
         'routeMode' => 'path',  // 'path' or 'get'
         'routeModeGetName' => 'r',  // only available when route mode is 'get'
         'urlSuffix' => ''
