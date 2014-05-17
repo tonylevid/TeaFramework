@@ -52,6 +52,12 @@ class TeaModel extends TeaCommon {
      * @var TeaDbQuery
      */
     public $db;
+
+    /**
+     * Table column names.
+     * @var array
+     */
+    private $_colNames = array();
     
     /**
      * Primary key column names.
@@ -79,10 +85,18 @@ class TeaModel extends TeaCommon {
     public function __get($name) {
         if ($name === 'criteria') {
             return $this->getDbCriteriaBuilder();
+        } else if ($this->isTableColumn($name)) {
+            return $this->{$name};
         } else {
             $trace = debug_backtrace();
             trigger_error("Undefined property via __get(): {$name} in {$trace[0]['file']} on line {$trace[0]['line']}");
             return null;
+        }
+    }
+
+    public function __set($name, $value) {
+        if ($this->isTableColumn($name)) {
+            $this->{$name} = $value;
         }
     }
     
@@ -426,12 +440,32 @@ class TeaModel extends TeaCommon {
     public function getLastSql() {
         return $this->db->getLastSql();
     }
+
+    /**
+     * Get table column names.
+     * @return array Table column names.
+     */
+    public function getColumnNames() {
+        if (is_array($this->_colNames) && !empty($this->_colNames)) {
+            return $this->_colNames;
+        }
+        return $this->_colNames = array_keys($this->schema->getTableColumns($this->tableName()));
+    }
+
+    /**
+     * Check whether the name is a column of the table.
+     * @param string $name Name to be checked.
+     * @return bool
+     */
+    public function isTableColumn($name) {
+        return in_array($name, $this->getColumnNames()) ? true : false;
+    }
     
     /**
      * Get 'PRIMARY' index column names.
      * @return array 'PRIMARY' index column names.
      */
-    protected function getPkColumnNames() {
+    public function getPkColumnNames() {
         if (is_array($this->_pkColNames) && !empty($this->_pkColNames)) {
             return $this->_pkColNames;
         }
@@ -443,7 +477,7 @@ class TeaModel extends TeaCommon {
      * @param mixed $pkVal Primary key value or array values for multiple primary keys.
      * @return array Criteria array.
      */
-    protected function getPkCriteria($pkVal) {
+    public function getPkCriteria($pkVal) {
         $criteria = array();
         $pkColNames = $this->getPkColumnNames();
         if (is_array($pkVal)) {

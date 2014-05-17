@@ -11,6 +11,7 @@ class MainController extends TeaController {
         $sqlAll = $this->loadModel('test')->getLastSql();
         $this->loadModel('test')->incByCondition(array('id:between' => array(1, 100)), 'hits');
         $sqlInc = $this->loadModel('test')->getLastSql();
+        var_dump($this->loadModel('test')->getColumnNames());
         $this->assign(array(
             'data' => $data,
             'sqlAll' => $sqlAll,
