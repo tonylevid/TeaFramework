@@ -547,7 +547,7 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
         $allowCriteria = array_key_exists($method, $this->allowCriteriaMap) ? $this->allowCriteriaMap[$method] : array();
         if ($criteria instanceof TeaMysqlCriteriaBuilder) {
             return " " . $criteria->build($allowCriteria);
-        } else if (is_array($criteria)) {
+        } else if (is_array($criteria) && !empty($criteria)) {
             return " " . Tea::getDbCriteriaBuilder()->parseCriteriaArr($criteria)->build($allowCriteria);
         } else {
             return '';
