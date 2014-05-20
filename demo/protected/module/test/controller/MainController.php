@@ -9,7 +9,7 @@ class MainController extends TeaController {
         var_dump($this->getRouter()->getActionName());
         $data = $this->loadModel('test')->all();
         $sqlAll = $this->loadModel('test')->getLastSql();
-        $this->loadModel('test')->incByCondition(array('id:between' => array(1, 100)), 'hits');
+        $this->loadModel('test')->incByCondition(array('id:between' => array(1, 100)), 'hits', 1, false);
         $sqlInc = $this->loadModel('test')->getLastSql();
         $this->assign(array(
             'data' => $data,

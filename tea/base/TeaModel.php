@@ -8,7 +8,6 @@
  * @copyright http://tonylevid.com/
  * @license http://www.tframework.com/license/
  * @package base
- * @property-read TeaDbCriteria $criteria Proper TeaDbCriteria subclass new instance.
  */
 class TeaModel extends TeaCommon {
 
@@ -40,46 +39,12 @@ class TeaModel extends TeaCommon {
      * @var array
      */
     private $_pkColNames = array();
-    
-    /**
-     * Saved temporary column values.
-     * @var array
-     */    
-    private $_tmpColVals = array();
 
     /**
      * Constructor, set properties for instances.
      */
     public function __construct() {
         $this->setClassConfig(__CLASS__);
-    }
-
-    /**
-     * Magic method __get.
-     * This method is for getting column value.
-     * @param string $name Column value.
-     * @return mixed Column value.
-     */
-    public function __get($name) {
-        if ($this->isTableColumn($name)) {
-            return isset($this->_tmpColVals[$name]) ? $this->_tmpColVals[$name] : false;
-        } else {
-            $trace = debug_backtrace();
-            trigger_error("Undefined property via __get(): {$name} in {$trace[0]['file']} on line {$trace[0]['line']}");
-            return null;
-        }
-    }
-
-    /**
-     * Magic method __set.
-     * This method is for setting column value.
-     * @param string $name Column name.
-     * @param mixed $value Column value.
-     */
-    public function __set($name, $value) {
-        if ($this->isTableColumn($name)) {
-            $this->_tmpColVals[$name] = $value;
-        }
     }
     
     /**
@@ -154,9 +119,6 @@ class TeaModel extends TeaCommon {
      * @return bool
      */
     public function insert($vals = array(), $duplicateUpdate = array()) {
-        if (empty($vals) && !empty($this->_tmpColVals)) {
-            $vals = $this->_tmpColVals;
-        }
         $criteria = is_array($duplicateUpdate) && !empty($duplicateUpdate) ? array('duplicateUpdate' => $duplicateUpdate) : null;
         $sql = $this->getDbSqlBuilder()->insert($this->tableName(), $vals, $criteria);
         if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
@@ -194,7 +156,6 @@ class TeaModel extends TeaCommon {
     public function find($criteria = array(), $colName = null) {
         $sql = $this->getDbSqlBuilder()->select($this->tableName(), $criteria, $colName);
         $rst = $this->getDbQuery()->query($sql)->fetchRow();
-        $this->setTmpColVals($rst);
         return $rst;
     }
 
@@ -206,7 +167,6 @@ class TeaModel extends TeaCommon {
      */
     public function findBySql($sql, $params = array()) {
         $rst = $this->getDbQuery()->query($sql, $params)->fetchRow();
-        $this->setTmpColVals($rst);
         return $rst;
     }
 
@@ -240,7 +200,6 @@ class TeaModel extends TeaCommon {
     public function findColumn($criteria = array(), $colName = null) {
         $sql = $this->getDbSqlBuilder()->select($this->tableName(), $criteria, $colName);
         $rst = $this->getDbQuery()->query($sql)->fetchRow();
-        $this->setTmpColVals($rst);
         if (is_array($rst) && is_string($colName) && isset($rst[$colName])) {
             return $rst[$colName];
         } else {
@@ -257,7 +216,6 @@ class TeaModel extends TeaCommon {
      */
     public function findColumnBySql($sql, $params = array(), $colName = null) {
         $rst = $this->getDbQuery()->query($sql, $params)->fetchRow();
-        $this->setTmpColVals($rst);
         if (is_array($rst) && is_string($colName) && isset($rst[$colName])) {
             return $rst[$colName];
         } else if (is_array($rst) && is_array($colName)) {
@@ -334,24 +292,10 @@ class TeaModel extends TeaCommon {
      * @return bool
      */
     public function update($criteria = array(), $vals = array(), $safe = true) {
-        if (empty($vals) && !empty($this->_tmpColVals)) {
-            $vals = $this->_tmpColVals;
-        }
         $safe && ($criteria['limit'] = array(1));
         $sql = $this->getDbSqlBuilder()->update($this->tableName(), $vals, $criteria);
         if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
             return true;
-        }
-        return false;
-    }
-
-    /**
-     * Insert or update a row with active record mode. If the row exists, it will perform update.
-     * @return bool
-     */
-    public function save() {
-        if (!empty($this->_tmpColVals)) {
-            return $this->insert($this->_tmpColVals, $this->_tmpColVals);
         }
         return false;
     }
@@ -544,18 +488,6 @@ class TeaModel extends TeaCommon {
             $criteria = array('where' => array($pkColNames[0] => $pkVal));
         }
         return $criteria;
-    }
-
-    /**
-     * Set $this->_tmpColVals value.
-     * @param array $rst A single record result.
-     */
-    private function setTmpColVals($rst) {
-        if (is_array($rst) && !empty($rst)) {
-            foreach ($rst as $col => $val) {
-                $this->{$col} = $val;
-            }
-        }
     }
     
 }
