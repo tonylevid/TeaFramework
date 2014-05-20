@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TeaMysqlCriteriaBuilder class file
+ * TeaMysqlCriteria class file
  *
  * @author tonylevid <tonylevid@gmail.com>
  * @link http://www.tframework.com/
@@ -9,7 +9,7 @@
  * @license http://www.tframework.com/license/
  * @package db.mysql
  */
-class TeaMysqlCriteriaBuilder extends TeaDbCriteriaBuilder {
+class TeaMysqlCriteria extends TeaDbCriteria {
 
     /**
      * Stored raw criteria array.

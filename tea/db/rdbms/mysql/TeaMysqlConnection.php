@@ -18,10 +18,10 @@ class TeaMysqlConnection extends TeaDbConnection {
     protected $_sqlBuilder;
 
     /**
-     * TeaMysqlCriteriaBuilder new instance.
-     * @var TeaMysqlCriteriaBuilder
+     * TeaMysqlCriteria new instance.
+     * @var TeaMysqlCriteria
      */
-    protected $_criteriaBuilder;
+    protected $_criteria;
 
     /**
      * TeaMysqlSchema instance.
@@ -46,12 +46,12 @@ class TeaMysqlConnection extends TeaDbConnection {
     }
 
     /**
-     * Get TeaMysqlCriteriaBuilder instance.
-     * @return TeaMysqlCriteriaBuilder TeaMysqlCriteriaBuilder instance.
+     * Get TeaMysqlCriteria instance.
+     * @return TeaMysqlCriteria TeaMysqlCriteria instance.
      */
-    public function getCriteriaBuilder() {
-        $this->_criteriaBuilder = new TeaMysqlCriteriaBuilder();
-        return $this->_criteriaBuilder;
+    public function getCriteria() {
+        $this->_criteria = new TeaMysqlCriteria();
+        return $this->_criteria;
     }
 
     /**

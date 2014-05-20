@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TeaDbCriteriaBuilder class file
+ * TeaDbCriteria class file
  *
  * @author tonylevid <tonylevid@gmail.com>
  * @link http://www.tframework.com/
@@ -9,6 +9,6 @@
  * @license http://www.tframework.com/license/
  * @package db
  */
-class TeaDbCriteriaBuilder {
+class TeaDbCriteria {
     
 }

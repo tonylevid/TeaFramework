@@ -8,7 +8,7 @@
  * @copyright http://tonylevid.com/
  * @license http://www.tframework.com/license/
  * @package base
- * @property-read TeaDbCriteriaBuilder $criteria Proper TeaDbCriteriaBuilder subclass new instance.
+ * @property-read TeaDbCriteria $criteria Proper TeaDbCriteria subclass new instance.
  */
 class TeaModel extends TeaCommon {
 
@@ -98,7 +98,7 @@ class TeaModel extends TeaCommon {
      * @return string Real table name
      */
     public function getTableName() {
-        return $this->getSqlBuilder()->getTableName($this->tableName());
+        return $this->getDbSqlBuilder()->getTableName($this->tableName());
     }
 
     /**
@@ -108,7 +108,7 @@ class TeaModel extends TeaCommon {
      * @return string Table alias name.
      */
     public function getTableAlias() {
-        return $this->getSqlBuilder()->getTableAlias($this->tableName());
+        return $this->getDbSqlBuilder()->getTableAlias($this->tableName());
     }
     
     /**
@@ -158,8 +158,8 @@ class TeaModel extends TeaCommon {
             $vals = $this->_tmpColVals;
         }
         $criteria = is_array($duplicateUpdate) && !empty($duplicateUpdate) ? array('duplicateUpdate' => $duplicateUpdate) : null;
-        $sql = $this->getSqlBuilder()->insert($this->tableName(), $vals, $criteria);
-        if ($this->getDb()->query($sql)->getRowCount() > 0) {
+        $sql = $this->getDbSqlBuilder()->insert($this->tableName(), $vals, $criteria);
+        if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
             return true;
         }
         return false;
@@ -167,11 +167,11 @@ class TeaModel extends TeaCommon {
 
     /**
      * Check whether a row exists with the specified criteria.
-     * @param mixed $criteria TeaDbCriteriaBuilder instance or criteria array.
+     * @param mixed $criteria TeaDbCriteria instance or criteria array.
      * @return bool
      */
     public function exists($criteria = array()) {
-        $sql = $this->getSqlBuilder()->exists($this->tableName(), $criteria, 'exists');
+        $sql = $this->getDbSqlBuilder()->exists($this->tableName(), $criteria, 'exists');
         $existsVal = $this->findColumnBySql($sql, array(), 'exists');
         return intval($existsVal) === 1 ? true : false;
     }
@@ -187,13 +187,13 @@ class TeaModel extends TeaCommon {
     
     /**
      * Find a single record with the specified criteria.
-     * @param mixed $criteria TeaDbCriteriaBuilder instance or criteria array.
+     * @param mixed $criteria TeaDbCriteria instance or criteria array.
      * @param mixed $colName Select exprs, string or array. If empty, it will be '*'.
      * @return array
      */
     public function find($criteria = array(), $colName = null) {
-        $sql = $this->getSqlBuilder()->select($this->tableName(), $criteria, $colName);
-        $rst = $this->getDb()->query($sql)->fetchRow();
+        $sql = $this->getDbSqlBuilder()->select($this->tableName(), $criteria, $colName);
+        $rst = $this->getDbQuery()->query($sql)->fetchRow();
         $this->setTmpColVals($rst);
         return $rst;
     }
@@ -205,7 +205,7 @@ class TeaModel extends TeaCommon {
      * @return array
      */
     public function findBySql($sql, $params = array()) {
-        $rst = $this->getDb()->query($sql, $params)->fetchRow();
+        $rst = $this->getDbQuery()->query($sql, $params)->fetchRow();
         $this->setTmpColVals($rst);
         return $rst;
     }
@@ -233,13 +233,13 @@ class TeaModel extends TeaCommon {
     
     /**
      * Find a single record column value or multiple columns values array with the specified criteria.
-     * @param mixed $criteria TeaDbCriteriaBuilder instance or criteria array.
+     * @param mixed $criteria TeaDbCriteria instance or criteria array.
      * @param mixed $colName Select exprs, string or array. If empty, it will be '*'.
      * @return mixed Return a single column value or multiple columns values array.
      */
     public function findColumn($criteria = array(), $colName = null) {
-        $sql = $this->getSqlBuilder()->select($this->tableName(), $criteria, $colName);
-        $rst = $this->getDb()->query($sql)->fetchRow();
+        $sql = $this->getDbSqlBuilder()->select($this->tableName(), $criteria, $colName);
+        $rst = $this->getDbQuery()->query($sql)->fetchRow();
         $this->setTmpColVals($rst);
         if (is_array($rst) && is_string($colName) && isset($rst[$colName])) {
             return $rst[$colName];
@@ -256,7 +256,7 @@ class TeaModel extends TeaCommon {
      * @return mixed Return a single column value or multiple columns values array.
      */
     public function findColumnBySql($sql, $params = array(), $colName = null) {
-        $rst = $this->getDb()->query($sql, $params)->fetchRow();
+        $rst = $this->getDbQuery()->query($sql, $params)->fetchRow();
         $this->setTmpColVals($rst);
         if (is_array($rst) && is_string($colName) && isset($rst[$colName])) {
             return $rst[$colName];
@@ -286,13 +286,13 @@ class TeaModel extends TeaCommon {
     
     /**
      * Find all records with the specified criteria.
-     * @param mixed $criteria TeaDbCriteriaBuilder instance or criteria array.
+     * @param mixed $criteria TeaDbCriteria instance or criteria array.
      * @param mixed $colName Select exprs, string or array. If empty, it will be '*'.
      * @return array
      */
     public function findAll($criteria = array(), $colName = null) {
-        $sql = $this->getSqlBuilder()->select($this->tableName(), $criteria, $colName);
-        $rst = $this->getDb()->query($sql)->fetchRows();
+        $sql = $this->getDbSqlBuilder()->select($this->tableName(), $criteria, $colName);
+        $rst = $this->getDbQuery()->query($sql)->fetchRows();
         return $rst;
     }
 
@@ -303,7 +303,7 @@ class TeaModel extends TeaCommon {
      * @return array
      */
     public function findAllBySql($sql, $params = array()) {
-        $rst = $this->getDb()->query($sql, $params)->fetchRows();
+        $rst = $this->getDbQuery()->query($sql, $params)->fetchRows();
         return $rst;
     }
 
@@ -320,7 +320,7 @@ class TeaModel extends TeaCommon {
     
     /**
      * Update record(s) with the specified criteria.
-     * @param mixed $criteria TeaDbCriteriaBuilder instance or criteria array.
+     * @param mixed $criteria TeaDbCriteria instance or criteria array.
      * @param array $vals An array indicates update data.
      * <pre>
      * It will be an array like this:
@@ -338,8 +338,8 @@ class TeaModel extends TeaCommon {
             $vals = $this->_tmpColVals;
         }
         $safe && ($criteria['limit'] = array(1));
-        $sql = $this->getSqlBuilder()->update($this->tableName(), $vals, $criteria);
-        if ($this->getDb()->query($sql)->getRowCount() > 0) {
+        $sql = $this->getDbSqlBuilder()->update($this->tableName(), $vals, $criteria);
+        if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
             return true;
         }
         return false;
@@ -396,14 +396,14 @@ class TeaModel extends TeaCommon {
 
     /**
      * Increase record(s) column value with the specified criteria.
-     * @param mixed $criteria TeaDbCriteriaBuilder instance or criteria array.
+     * @param mixed $criteria TeaDbCriteria instance or criteria array.
      * @param string $colName Column name of the increment field.
      * @param int $val Value of increment, defaults to 1.
      * @param bool $safe Safe update or not. If false, it will update all.
      * @return bool
      */
     public function inc($criteria, $colName, $val = 1, $safe = true) {
-        $expr = $this->getSqlBuilder()->quoteColumn($colName) . ' + ' . $this->getDb()->escape($val);
+        $expr = $this->getDbSqlBuilder()->quoteColumn($colName) . ' + ' . $this->getDbQuery()->escape($val);
         $vals = array(
             $colName => new TeaDbExpr($expr)
         );
@@ -436,14 +436,14 @@ class TeaModel extends TeaCommon {
     
     /**
      * Delete record(s) with the specified criteria.
-     * @param mixed $criteria TeaDbCriteriaBuilder instance or criteria array.
+     * @param mixed $criteria TeaDbCriteria instance or criteria array.
      * @param bool $safe Safe update or not. If false, it will update all.
      * @return bool 
      */
     public function delete($criteria = array(), $safe = true) {
         $safe && ($criteria['limit'] = array(1));
-        $sql = $this->getSqlBuilder()->delete($this->tableName(), $criteria);
-        if ($this->getDb()->query($sql)->getRowCount() > 0) {
+        $sql = $this->getDbSqlBuilder()->delete($this->tableName(), $criteria);
+        if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
             return true;
         }
         return false;
@@ -474,7 +474,7 @@ class TeaModel extends TeaCommon {
      * @return int
      */
     public function getRowCount() {
-        return $this->getDb()->getRowCount();
+        return $this->getDbQuery()->getRowCount();
     }
     
     /**
@@ -483,7 +483,7 @@ class TeaModel extends TeaCommon {
      * @return int Last insert id.
      */
     public function getLastInsertId() {
-        return $this->getDb()->getLastInsertId();
+        return $this->getDbQuery()->getLastInsertId();
     }
 
     /**
@@ -491,7 +491,7 @@ class TeaModel extends TeaCommon {
      * @return string Sql statement.
      */
     public function getLastSql() {
-        return $this->getDb()->getLastSql();
+        return $this->getDbQuery()->getLastSql();
     }
 
     /**
@@ -502,7 +502,7 @@ class TeaModel extends TeaCommon {
         if (is_array($this->_colNames) && !empty($this->_colNames)) {
             return $this->_colNames;
         }
-        return $this->_colNames = array_keys($this->getSchema()->getTableColumns($this->tableName()));
+        return $this->_colNames = array_keys($this->getDbSchema()->getTableColumns($this->tableName()));
     }
 
     /**
@@ -522,7 +522,7 @@ class TeaModel extends TeaCommon {
         if (is_array($this->_pkColNames) && !empty($this->_pkColNames)) {
             return $this->_pkColNames;
         }
-        return $this->_pkColNames = $this->getSchema()->getPkColumnNames($this->tableName());
+        return $this->_pkColNames = $this->getDbSchema()->getPkColumnNames($this->tableName());
     }
     
     /**

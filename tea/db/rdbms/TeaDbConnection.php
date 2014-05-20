@@ -206,10 +206,10 @@ abstract class TeaDbConnection {
     abstract public function getSqlBuilder();
     
     /**
-     * Get proper TeaDbCriteriaBuilder subclass instance.
-     * @return object Proper TeaDbCriteriaBuilder subclass instance.
+     * Get proper TeaDbCriteria subclass instance.
+     * @return object Proper TeaDbCriteria subclass instance.
      */
-    abstract public function getCriteriaBuilder();
+    abstract public function getCriteria();
 
     /**
      * Get proper TeaDbSchema subclass instance.

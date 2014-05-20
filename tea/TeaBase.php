@@ -284,11 +284,11 @@ class TeaBase {
     }
     
     /**
-     * Get proper TeaDbCriteriaBuilder subclass instance if autoConnect is true.
-     * @return TeaDbCriteriaBuilder Proper TeaDbCriteriaBuilder subclass instance.
+     * Get proper TeaDbCriteria subclass instance if autoConnect is true.
+     * @return TeaDbCriteria Proper TeaDbCriteria subclass instance.
      */
-    public static function getDbCriteriaBuilder() {
-        return self::getDbConnection()->getCriteriaBuilder();
+    public static function getDbCriteria() {
+        return self::getDbConnection()->getCriteria();
     }
 
     /**
