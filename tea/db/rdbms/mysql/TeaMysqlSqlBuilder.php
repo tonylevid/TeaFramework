@@ -317,6 +317,18 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
     }
 
     /**
+     * Select exists.
+     * @param string $tblName Table name.
+     * @param mixed $criteria TeaMysqlCriteriaBuilder instance or criteria array.
+     * @param string $alias Exists result column alias.
+     * @return string Generated sql string.
+     */
+    public function exists($tblName, $criteria = null, $alias = 'exists') {
+        $selectSql = $this->select($tblName, $criteria);
+        return "SELECT EXISTS({$selectSql}) AS " . $this->quoteColumn($alias);
+    }
+
+    /**
      * Update data.
      * @param string $tblName Table name.
      * @param array $vals An array indicates update data.

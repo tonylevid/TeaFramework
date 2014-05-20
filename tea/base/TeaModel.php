@@ -81,46 +81,6 @@ class TeaModel extends TeaCommon {
             $this->_tmpColVals[$name] = $value;
         }
     }
-
-    /**
-     * Alias method of Tea::getDbConnection().
-     * @return TeaDbConnection
-     */
-    public function getConnection() {
-        return $this->getDbConnection();
-    }
-
-    /**
-     * Alias method of Tea::getDbSqlBuilder().
-     * @return TeaDbSqlBuilder
-     */
-    public function getSqlBuilder() {
-        return $this->getDbSqlBuilder();
-    }
-
-    /**
-     * Alias method of Tea::getDbSchema().
-     * @return TeaDbSchema
-     */
-    public function getSchema() {
-        return $this->getDbSchema();
-    }
-
-    /**
-     * Alias method of Tea::getDbQuery().
-     * @return TeaDbQuery
-     */
-    public function getDb() {
-        return $this->getDbQuery();
-    }
-
-    /**
-     * Alias method of Tea::getDbCriteriaBuilder().
-     * @return TeaDbCriteriaBuilder
-     */
-    public function getCriteria() {
-        return $this->getDbCriteriaBuilder();
-    }
     
     /**
      * Hook method.
@@ -204,6 +164,26 @@ class TeaModel extends TeaCommon {
         }
         return false;
     }
+
+    /**
+     * Check whether a row exists with the specified criteria.
+     * @param mixed $criteria TeaDbCriteriaBuilder instance or criteria array.
+     * @return bool
+     */
+    public function exists($criteria = array()) {
+        $sql = $this->getSqlBuilder()->exists($this->tableName(), $criteria, 'exists');
+        $existsVal = $this->findColumnBySql($sql, array(), 'exists');
+        return intval($existsVal) === 1 ? true : false;
+    }
+
+    /**
+     * Check whether a row exists with the specified primary key value.
+     * @param mixed $pkVal Primary key value or array values for multiple primary keys.
+     * @return bool
+     */
+    public function existsByPk($pkVal) {
+        return $this->exists($this->getPkCriteria($pkVal));
+    }
     
     /**
      * Find a single record with the specified criteria.
@@ -263,6 +243,31 @@ class TeaModel extends TeaCommon {
         $this->setTmpColVals($rst);
         if (is_array($rst) && is_string($colName) && isset($rst[$colName])) {
             return $rst[$colName];
+        } else {
+            return $rst;
+        }
+    }
+
+    /**
+     * Find a single record column value or multiple columns values array by sql.
+     * @param string $sql Sql statement.
+     * @param array $params An array of values with as many elements as there are bound parameters in the sql being executed.
+     * @param mixed $colName String or array, indicates fetching column name(s).
+     * @return mixed Return a single column value or multiple columns values array.
+     */
+    public function findColumnBySql($sql, $params = array(), $colName = null) {
+        $rst = $this->getDb()->query($sql, $params)->fetchRow();
+        $this->setTmpColVals($rst);
+        if (is_array($rst) && is_string($colName) && isset($rst[$colName])) {
+            return $rst[$colName];
+        } else if (is_array($rst) && is_array($colName)) {
+            $newRst = array();
+            foreach ($colName as $col) {
+                if (isset($rst[$col])) {
+                    $newRst[$col] = $rst[$col];
+                }
+            }
+            return $newRst;
         } else {
             return $rst;
         }
@@ -334,15 +339,21 @@ class TeaModel extends TeaCommon {
         }
         $safe && ($criteria['limit'] = array(1));
         $sql = $this->getSqlBuilder()->update($this->tableName(), $vals, $criteria);
-        var_dump($sql);
         if ($this->getDb()->query($sql)->getRowCount() > 0) {
             return true;
         }
         return false;
     }
 
+    /**
+     * Insert or update a row with active record mode. If the row exists, it will perform update.
+     * @return bool
+     */
     public function save() {
-        
+        if (!empty($this->_tmpColVals)) {
+            return $this->insert($this->_tmpColVals, $this->_tmpColVals);
+        }
+        return false;
     }
 
     /**

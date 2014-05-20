@@ -135,7 +135,7 @@ class TeaMysqlCriteriaBuilder extends TeaDbCriteriaBuilder {
     public function duplicateUpdate($vals = array()) {
         $updateVals = array();
         foreach ($vals as $colName => $colVal) {
-            $updateVals[] = Tea::getDbSqlBuilder()->quoteColumn($colName) . '=' . Tea::getDbQuery()->escape($colVal);
+            $updateVals[] = Tea::getDbSqlBuilder()->quoteColumn($colName) . ' = ' . Tea::getDbQuery()->escape($colVal);
         }
         $sql = "ON DUPLICATE KEY UPDATE " . implode(', ', $updateVals);
         $this->criteriaArr[__FUNCTION__] = $vals;
