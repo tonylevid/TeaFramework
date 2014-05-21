@@ -18,6 +18,8 @@ class TeaRouter {
         'urlSuffix' => ''
     );
 
+    private $_controller;
+
     private $_moduleName;
 
     private $_urlControllerName;
@@ -52,13 +54,19 @@ class TeaRouter {
         if (!$rfc->hasMethod($this->getActionName())) {
             throw new TeaException("Action '{$this->getActionName()}' does not exist.");
         }
-        $instance = $rfc->newInstance();
+        $this->_controller = $rfc->newInstance();
         $method = $rfc->getMethod($this->getActionName());
-        if (method_exists($instance, $this->getActionName()) && $method->isPublic() && !$method->isStatic()) {
-            $method->invokeArgs($instance, $this->getActionParams());
+        if (method_exists($this->_controller, $this->getActionName()) && $method->isPublic() && !$method->isStatic()) {
+            $rfc->getMethod('beforeAction')->invoke($this->_controller);
+            $method->invokeArgs($this->_controller, $this->getActionParams());
+            $rfc->getMethod('afterAction')->invoke($this->_controller);
         } else {
             throw new TeaException("Action '{$this->getActionName()}' could not be accessed.");
         }
+    }
+
+    public function getController() {
+        return $this->_controller;
     }
 
     public function getModuleName() {

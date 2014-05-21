@@ -27,6 +27,20 @@ class TeaController extends TeaCommon {
     }
 
     /**
+     * Hook method, invoking before action.
+     */
+    public function beforeAction() {
+
+    }
+
+    /**
+     * Hook method, invoking after action.
+     */
+    public function afterAction() {
+
+    }
+
+    /**
      * Assign value or values array for template.
      * If number of arguments is one and the argument is an array: 
      * $this->assign(array(

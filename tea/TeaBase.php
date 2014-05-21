@@ -172,6 +172,7 @@ class TeaBase {
             array_splice($nameParts, -1, 0, 'helper');
             return self::load(implode('.', $nameParts) . 'Helper');
         }
+        $name = ucfirst($name);
         return self::load("helper.{$name}Helper", $args);
     }
 
@@ -189,6 +190,7 @@ class TeaBase {
             array_splice($nameParts, -1, 0, 'lib');
             return self::load(implode('.', $nameParts));
         }
+        $name = ucfirst($name);
         return self::load("lib.{$name}", $args);
     }
 
@@ -206,6 +208,7 @@ class TeaBase {
             array_splice($nameParts, -1, 0, 'model');
             return self::load(implode('.', $nameParts) . 'Model');
         }
+        $name = ucfirst($name);
         return self::load("model.{$name}Model", $args);
     }
 

@@ -46,6 +46,32 @@ class TeaModel extends TeaCommon {
     public function __construct() {
         $this->setClassConfig(__CLASS__);
     }
+
+    /**
+     * Magic method __get.
+     * This method is for getting column value.
+     * @param string $name Column value.
+     * @return mixed Column value.
+     */
+    public function __get($name) {
+        if (isset($this->{$name})) {
+            return $this->{$name};
+        } else {
+            $trace = debug_backtrace();
+            trigger_error("Undefined property via __get(): {$name} in {$trace[0]['file']} on line {$trace[0]['line']}");
+            return null;
+        }
+    }
+
+    /**
+     * Magic method __set.
+     * This method is for setting column value.
+     * @param string $name Column name.
+     * @param mixed $value Column value.
+     */
+    public function __set($name, $value) {
+        $this->{$name} = $value;
+    }
     
     /**
      * Hook method.
@@ -53,8 +79,8 @@ class TeaModel extends TeaCommon {
      * @return string Table name.
      */
     public function tableName() {
-        $className = get_class($this);
-        return StringHelper::camelToUnderscore(preg_replace('/(.+)Model/', '$1', $className));
+        $modelName = get_class($this);
+        return StringHelper::camelToUnderscore(preg_replace('/(.+)Model/', '$1', $modelName));
     }
 
     /**
@@ -119,12 +145,24 @@ class TeaModel extends TeaCommon {
      * @return bool
      */
     public function insert($vals = array(), $duplicateUpdate = array()) {
+        if (empty($vals)) {
+            $vals = $duplicateUpdate = $this->getSetRecord();
+        }
         $criteria = is_array($duplicateUpdate) && !empty($duplicateUpdate) ? array('duplicateUpdate' => $duplicateUpdate) : null;
         $sql = $this->getDbSqlBuilder()->insert($this->tableName(), $vals, $criteria);
         if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Save record(s). If record exists, it will perform update, else perform insert.
+     * @param mixed $vals Value indicates the inserted data. See TeaModel::insert().
+     * @return bool
+     */
+    public function save($vals = array()) {
+        return $this->insert($vals, $vals);
     }
 
     /**
@@ -155,7 +193,12 @@ class TeaModel extends TeaCommon {
      */
     public function find($criteria = array(), $colName = null) {
         $sql = $this->getDbSqlBuilder()->select($this->tableName(), $criteria, $colName);
-        $rst = $this->getDbQuery()->query($sql)->fetchRow();
+        $modelName = get_class($this);
+        if ($modelName === 'TeaTempModel') {
+            $rst = $this->getDbQuery()->query($sql)->fetchObj($modelName, array($this->tableName()));
+        } else {
+            $rst = $this->getDbQuery()->query($sql)->fetchObj($modelName);
+        }
         return $rst;
     }
 
@@ -166,7 +209,12 @@ class TeaModel extends TeaCommon {
      * @return array
      */
     public function findBySql($sql, $params = array()) {
-        $rst = $this->getDbQuery()->query($sql, $params)->fetchRow();
+        $modelName = get_class($this);
+        if ($modelName === 'TeaTempModel') {
+            $rst = $this->getDbQuery()->query($sql, $params)->fetchObj($modelName, array($this->tableName()));
+        } else {
+            $rst = $this->getDbQuery()->query($sql, $params)->fetchObj($modelName);
+        }
         return $rst;
     }
 
@@ -250,7 +298,12 @@ class TeaModel extends TeaCommon {
      */
     public function findAll($criteria = array(), $colName = null) {
         $sql = $this->getDbSqlBuilder()->select($this->tableName(), $criteria, $colName);
-        $rst = $this->getDbQuery()->query($sql)->fetchRows();
+        $modelName = get_class($this);
+        if ($modelName === 'TeaTempModel') {
+            $rst = $this->getDbQuery()->query($sql)->fetchObjs($modelName, array($this->tableName()));
+        } else {
+            $rst = $this->getDbQuery()->query($sql)->fetchObjs($modelName);
+        }     
         return $rst;
     }
 
@@ -261,7 +314,12 @@ class TeaModel extends TeaCommon {
      * @return array
      */
     public function findAllBySql($sql, $params = array()) {
-        $rst = $this->getDbQuery()->query($sql, $params)->fetchRows();
+        $modelName = get_class($this);
+        if ($modelName === 'TeaTempModel') {
+            $rst = $this->getDbQuery()->query($sql, $params)->fetchObjs($modelName, array($this->tableName()));
+        } else {
+            $rst = $this->getDbQuery()->query($sql, $params)->fetchObjs($modelName);
+        }
         return $rst;
     }
 
@@ -292,6 +350,9 @@ class TeaModel extends TeaCommon {
      * @return bool
      */
     public function update($criteria = array(), $vals = array(), $safe = true) {
+        if (empty($vals)) {
+            $vals = $this->getSetRecord();
+        }
         $safe && ($criteria['limit'] = array(1));
         $sql = $this->getDbSqlBuilder()->update($this->tableName(), $vals, $criteria);
         if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
@@ -488,6 +549,17 @@ class TeaModel extends TeaCommon {
             $criteria = array('where' => array($pkColNames[0] => $pkVal));
         }
         return $criteria;
+    }
+
+    public function getSetRecord() {
+        $properties = get_object_vars($this);
+        $record = array();
+        foreach ($properties as $property => $value) {
+            if ($this->isTableColumn($property)) {
+                $record[$property] = $value;
+            }
+        }
+        return $record;
     }
     
 }
