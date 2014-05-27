@@ -57,9 +57,9 @@ class TeaRouter {
         $this->_controller = $rfc->newInstance();
         $method = $rfc->getMethod($this->getActionName());
         if (method_exists($this->_controller, $this->getActionName()) && $method->isPublic() && !$method->isStatic()) {
-            $rfc->getMethod('beforeAction')->invoke($this->_controller);
+            $rfc->getMethod('beforeAction')->invoke($this->_controller, $this->getActionName());
             $method->invokeArgs($this->_controller, $this->getActionParams());
-            $rfc->getMethod('afterAction')->invoke($this->_controller);
+            $rfc->getMethod('afterAction')->invoke($this->_controller, $this->getActionName());
         } else {
             throw new TeaException("Action '{$this->getActionName()}' could not be accessed.");
         }

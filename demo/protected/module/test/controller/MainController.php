@@ -2,6 +2,10 @@
 
 class MainController extends TeaController {
 
+    public function beforeAction($name) {
+        var_dump("Action name: {$name}");
+    }
+
     public function index($name) {
         var_dump($this->getRouter()->getModuleName());
         var_dump($this->getRouter()->getUrlControllerName());

@@ -150,39 +150,12 @@ class TeaModel extends TeaCommon {
         }
         $criteria = is_array($duplicateUpdate) && !empty($duplicateUpdate) ? array('duplicateUpdate' => $duplicateUpdate) : null;
         $sql = $this->getDbSqlBuilder()->insert($this->tableName(), $vals, $criteria);
+        $this->beforeSave();
         if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
+            $this->afterSave();
             return true;
         }
         return false;
-    }
-
-    /**
-     * Save record(s). If record exists, it will perform update, else perform insert.
-     * @param mixed $vals Value indicates the inserted data. See TeaModel::insert().
-     * @return bool
-     */
-    public function save($vals = array()) {
-        return $this->insert($vals, $vals);
-    }
-
-    /**
-     * Check whether a row exists with the specified criteria.
-     * @param mixed $criteria TeaDbCriteria instance or criteria array.
-     * @return bool
-     */
-    public function exists($criteria = array()) {
-        $sql = $this->getDbSqlBuilder()->exists($this->tableName(), $criteria, 'exists');
-        $existsVal = $this->findColumnBySql($sql, array(), 'exists');
-        return intval($existsVal) === 1 ? true : false;
-    }
-
-    /**
-     * Check whether a row exists with the specified primary key value.
-     * @param mixed $pkVal Primary key value or array values for multiple primary keys.
-     * @return bool
-     */
-    public function existsByPk($pkVal) {
-        return $this->exists($this->getPkCriteria($pkVal));
     }
     
     /**
@@ -192,6 +165,7 @@ class TeaModel extends TeaCommon {
      * @return array
      */
     public function find($criteria = array(), $colName = null) {
+        $this->beforeFind();
         $sql = $this->getDbSqlBuilder()->select($this->tableName(), $criteria, $colName);
         $modelName = get_class($this);
         if ($modelName === 'TeaTempModel') {
@@ -199,6 +173,7 @@ class TeaModel extends TeaCommon {
         } else {
             $rst = $this->getDbQuery()->query($sql)->fetchObj($modelName);
         }
+        $this->afterFind();
         return $rst;
     }
 
@@ -209,12 +184,14 @@ class TeaModel extends TeaCommon {
      * @return array
      */
     public function findBySql($sql, $params = array()) {
+        $this->beforeFind();
         $modelName = get_class($this);
         if ($modelName === 'TeaTempModel') {
             $rst = $this->getDbQuery()->query($sql, $params)->fetchObj($modelName, array($this->tableName()));
         } else {
             $rst = $this->getDbQuery()->query($sql, $params)->fetchObj($modelName);
         }
+        $this->afterFind();
         return $rst;
     }
 
@@ -246,8 +223,10 @@ class TeaModel extends TeaCommon {
      * @return mixed Return a single column value or multiple columns values array.
      */
     public function findColumn($criteria = array(), $colName = null) {
+        $this->beforeFind();
         $sql = $this->getDbSqlBuilder()->select($this->tableName(), $criteria, $colName);
         $rst = $this->getDbQuery()->query($sql)->fetchRow();
+        $this->afterFind();
         if (is_array($rst) && is_string($colName) && isset($rst[$colName])) {
             return $rst[$colName];
         } else {
@@ -263,7 +242,9 @@ class TeaModel extends TeaCommon {
      * @return mixed Return a single column value or multiple columns values array.
      */
     public function findColumnBySql($sql, $params = array(), $colName = null) {
+        $this->beforeFind();
         $rst = $this->getDbQuery()->query($sql, $params)->fetchRow();
+        $this->afterFind();
         if (is_array($rst) && is_string($colName) && isset($rst[$colName])) {
             return $rst[$colName];
         } else if (is_array($rst) && is_array($colName)) {
@@ -297,13 +278,15 @@ class TeaModel extends TeaCommon {
      * @return array
      */
     public function findAll($criteria = array(), $colName = null) {
+        $this->beforeFind();
         $sql = $this->getDbSqlBuilder()->select($this->tableName(), $criteria, $colName);
         $modelName = get_class($this);
         if ($modelName === 'TeaTempModel') {
             $rst = $this->getDbQuery()->query($sql)->fetchObjs($modelName, array($this->tableName()));
         } else {
             $rst = $this->getDbQuery()->query($sql)->fetchObjs($modelName);
-        }     
+        }
+        $this->afterFind();
         return $rst;
     }
 
@@ -314,12 +297,14 @@ class TeaModel extends TeaCommon {
      * @return array
      */
     public function findAllBySql($sql, $params = array()) {
+        $this->beforeFind();
         $modelName = get_class($this);
         if ($modelName === 'TeaTempModel') {
             $rst = $this->getDbQuery()->query($sql, $params)->fetchObjs($modelName, array($this->tableName()));
         } else {
             $rst = $this->getDbQuery()->query($sql, $params)->fetchObjs($modelName);
         }
+        $this->afterFind();
         return $rst;
     }
 
@@ -332,6 +317,34 @@ class TeaModel extends TeaCommon {
     public function findAllByCondition($condition = array(), $colName = null) {
         $criteria = !empty($condition) ? array('where' => $condition) : null;
         return $this->findAll($criteria, $colName);
+    }
+
+    /**
+     * Check whether a row exists with the specified criteria.
+     * @param mixed $criteria TeaDbCriteria instance or criteria array.
+     * @return bool
+     */
+    public function exists($criteria = array()) {
+        $sql = $this->getDbSqlBuilder()->exists($this->tableName(), $criteria, 'exists');
+        $existsVal = $this->findColumnBySql($sql, array(), 'exists');
+        return intval($existsVal) === 1 ? true : false;
+    }
+
+    /**
+     * Check whether a row exists with the specified primary key value.
+     * @param mixed $pkVal Primary key value or array values for multiple primary keys.
+     * @return bool
+     */
+    public function existsByPk($pkVal) {
+        return $this->exists($this->getPkCriteria($pkVal));
+    }
+
+    public function beforeFind() {
+
+    }
+
+    public function afterFind() {
+        
     }
     
     /**
@@ -355,7 +368,9 @@ class TeaModel extends TeaCommon {
         }
         $safe && ($criteria['limit'] = array(1));
         $sql = $this->getDbSqlBuilder()->update($this->tableName(), $vals, $criteria);
+        $this->beforeSave();
         if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
+            $this->afterSave();
             return true;
         }
         return false;
@@ -438,6 +453,23 @@ class TeaModel extends TeaCommon {
     public function incByPk($pkVal, $colName, $val = 1) {
         return $this->inc($this->getPkCriteria($pkVal), $colName, $val);
     }
+
+    /**
+     * Save record(s). If record exists, it will perform update, else perform insert.
+     * @param mixed $vals Value indicates the inserted data. See TeaModel::insert().
+     * @return bool
+     */
+    public function save($vals = array()) {
+        return $this->insert($vals, $vals);
+    }
+
+    public function beforeSave() {
+
+    }
+
+    public function afterSave() {
+
+    }
     
     /**
      * Delete record(s) with the specified criteria.
@@ -448,7 +480,9 @@ class TeaModel extends TeaCommon {
     public function delete($criteria = array(), $safe = true) {
         $safe && ($criteria['limit'] = array(1));
         $sql = $this->getDbSqlBuilder()->delete($this->tableName(), $criteria);
+        $this->beforeDelete();
         if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
+            $this->afterDelete();
             return true;
         }
         return false;
@@ -472,6 +506,14 @@ class TeaModel extends TeaCommon {
      */
     public function deleteByPk($pkVal) {
         return $this->delete($this->getPkCriteria($pkVal));
+    }
+
+    public function beforeDelete() {
+
+    }
+
+    public function afterDelete() {
+
     }
     
     /**

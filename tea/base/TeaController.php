@@ -28,15 +28,17 @@ class TeaController extends TeaCommon {
 
     /**
      * Hook method, invoking before action.
+     * @param string $name Action name.
      */
-    public function beforeAction() {
+    public function beforeAction($name) {
 
     }
 
     /**
      * Hook method, invoking after action.
+     * @param string $name Action name.
      */
-    public function afterAction() {
+    public function afterAction($name) {
 
     }
 
