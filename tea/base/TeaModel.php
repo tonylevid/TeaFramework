@@ -40,6 +40,12 @@ class TeaModel extends TeaCommon {
      */
     private $_pkColNames = array();
 
+    private $_findData;
+
+    private $_saveId;
+
+    private $_saveData;
+
     /**
      * Constructor, set properties for instances.
      */
@@ -150,9 +156,10 @@ class TeaModel extends TeaCommon {
         }
         $criteria = is_array($duplicateUpdate) && !empty($duplicateUpdate) ? array('duplicateUpdate' => $duplicateUpdate) : null;
         $sql = $this->getDbSqlBuilder()->insert($this->tableName(), $vals, $criteria);
-        $this->beforeSave();
+        $this->onBeforeSave();
         if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
-            $this->afterSave();
+            $this->_saveId = $this->getLastInsertId();
+            $this->onAfterSave();
             return true;
         }
         return false;
@@ -165,16 +172,16 @@ class TeaModel extends TeaCommon {
      * @return array
      */
     public function find($criteria = array(), $colName = null) {
-        $this->beforeFind();
+        $this->onBeforeFind();
         $sql = $this->getDbSqlBuilder()->select($this->tableName(), $criteria, $colName);
         $modelName = get_class($this);
         if ($modelName === 'TeaTempModel') {
-            $rst = $this->getDbQuery()->query($sql)->fetchObj($modelName, array($this->tableName()));
+            $this->_findData = $this->getDbQuery()->query($sql)->fetchObj($modelName, array($this->tableName()));
         } else {
-            $rst = $this->getDbQuery()->query($sql)->fetchObj($modelName);
+            $this->_findData = $this->getDbQuery()->query($sql)->fetchObj($modelName);
         }
-        $this->afterFind();
-        return $rst;
+        $this->onAfterFind();
+        return $this->_findData;
     }
 
     /**
@@ -184,15 +191,15 @@ class TeaModel extends TeaCommon {
      * @return array
      */
     public function findBySql($sql, $params = array()) {
-        $this->beforeFind();
+        $this->onBeforeFind();
         $modelName = get_class($this);
         if ($modelName === 'TeaTempModel') {
-            $rst = $this->getDbQuery()->query($sql, $params)->fetchObj($modelName, array($this->tableName()));
+            $this->_findData = $this->getDbQuery()->query($sql, $params)->fetchObj($modelName, array($this->tableName()));
         } else {
-            $rst = $this->getDbQuery()->query($sql, $params)->fetchObj($modelName);
+            $this->_findData = $this->getDbQuery()->query($sql, $params)->fetchObj($modelName);
         }
-        $this->afterFind();
-        return $rst;
+        $this->onAfterFind();
+        return $this->_findData;
     }
 
     /**
@@ -223,15 +230,16 @@ class TeaModel extends TeaCommon {
      * @return mixed Return a single column value or multiple columns values array.
      */
     public function findColumn($criteria = array(), $colName = null) {
-        $this->beforeFind();
+        $this->onBeforeFind();
         $sql = $this->getDbSqlBuilder()->select($this->tableName(), $criteria, $colName);
         $rst = $this->getDbQuery()->query($sql)->fetchRow();
-        $this->afterFind();
         if (is_array($rst) && is_string($colName) && isset($rst[$colName])) {
-            return $rst[$colName];
+            $this->_findData = $rst[$colName];
         } else {
-            return $rst;
+            $this->_findData = $rst;
         }
+        $this->onAfterFind();
+        return $this->_findData;
     }
 
     /**
@@ -242,11 +250,10 @@ class TeaModel extends TeaCommon {
      * @return mixed Return a single column value or multiple columns values array.
      */
     public function findColumnBySql($sql, $params = array(), $colName = null) {
-        $this->beforeFind();
+        $this->onBeforeFind();
         $rst = $this->getDbQuery()->query($sql, $params)->fetchRow();
-        $this->afterFind();
         if (is_array($rst) && is_string($colName) && isset($rst[$colName])) {
-            return $rst[$colName];
+            $this->_findData = $rst[$colName];
         } else if (is_array($rst) && is_array($colName)) {
             $newRst = array();
             foreach ($colName as $col) {
@@ -254,10 +261,12 @@ class TeaModel extends TeaCommon {
                     $newRst[$col] = $rst[$col];
                 }
             }
-            return $newRst;
+            $this->_findData = $newRst;
         } else {
-            return $rst;
+            $this->_findData = $rst;
         }
+        $this->onAfterFind();
+        return $this->_findData;
     }
 
     /**
@@ -278,16 +287,16 @@ class TeaModel extends TeaCommon {
      * @return array
      */
     public function findAll($criteria = array(), $colName = null) {
-        $this->beforeFind();
+        $this->onBeforeFind();
         $sql = $this->getDbSqlBuilder()->select($this->tableName(), $criteria, $colName);
         $modelName = get_class($this);
         if ($modelName === 'TeaTempModel') {
-            $rst = $this->getDbQuery()->query($sql)->fetchObjs($modelName, array($this->tableName()));
+            $this->_findData = $this->getDbQuery()->query($sql)->fetchObjs($modelName, array($this->tableName()));
         } else {
-            $rst = $this->getDbQuery()->query($sql)->fetchObjs($modelName);
+            $this->_findData = $this->getDbQuery()->query($sql)->fetchObjs($modelName);
         }
-        $this->afterFind();
-        return $rst;
+        $this->onAfterFind();
+        return $this->_findData;
     }
 
     /**
@@ -297,15 +306,15 @@ class TeaModel extends TeaCommon {
      * @return array
      */
     public function findAllBySql($sql, $params = array()) {
-        $this->beforeFind();
+        $this->onBeforeFind();
         $modelName = get_class($this);
         if ($modelName === 'TeaTempModel') {
-            $rst = $this->getDbQuery()->query($sql, $params)->fetchObjs($modelName, array($this->tableName()));
+            $this->_findData = $this->getDbQuery()->query($sql, $params)->fetchObjs($modelName, array($this->tableName()));
         } else {
-            $rst = $this->getDbQuery()->query($sql, $params)->fetchObjs($modelName);
+            $this->_findData = $this->getDbQuery()->query($sql, $params)->fetchObjs($modelName);
         }
-        $this->afterFind();
-        return $rst;
+        $this->onAfterFind();
+        return $this->_findData;
     }
 
     /**
@@ -339,12 +348,16 @@ class TeaModel extends TeaCommon {
         return $this->exists($this->getPkCriteria($pkVal));
     }
 
-    public function beforeFind() {
-
+    public function onBeforeFind() {
+        if (method_exists($this, 'beforeFind')) {
+            $this->beforeFind();
+        }
     }
 
-    public function afterFind() {
-        
+    public function onAfterFind() {
+        if (method_exists($this, 'afterFind')) {
+            $this->afterFind($this->_findData);
+        }
     }
     
     /**
@@ -368,9 +381,9 @@ class TeaModel extends TeaCommon {
         }
         $safe && ($criteria['limit'] = array(1));
         $sql = $this->getDbSqlBuilder()->update($this->tableName(), $vals, $criteria);
-        $this->beforeSave();
+        $this->onBeforeSave();
         if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
-            $this->afterSave();
+            $this->onAfterSave();
             return true;
         }
         return false;
@@ -463,12 +476,18 @@ class TeaModel extends TeaCommon {
         return $this->insert($vals, $vals);
     }
 
-    public function beforeSave() {
-
+    public function onBeforeSave() {
+        if (method_exists($this, 'beforeSave')) {
+            $this->beforeSave();
+        }
     }
 
-    public function afterSave() {
-
+    public function onAfterSave() {
+        if (method_exists($this, 'afterSave')) {
+            var_dump($this->getLastInsertId());
+            //$this->_saveData = $this->findByPk($this->getLastInsertId());
+            //$this->afterSave($this->_saveData);
+        }
     }
     
     /**
@@ -480,9 +499,9 @@ class TeaModel extends TeaCommon {
     public function delete($criteria = array(), $safe = true) {
         $safe && ($criteria['limit'] = array(1));
         $sql = $this->getDbSqlBuilder()->delete($this->tableName(), $criteria);
-        $this->beforeDelete();
+        $this->onBeforeDelete();
         if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
-            $this->afterDelete();
+            $this->onAfterDelete();
             return true;
         }
         return false;
@@ -508,11 +527,11 @@ class TeaModel extends TeaCommon {
         return $this->delete($this->getPkCriteria($pkVal));
     }
 
-    public function beforeDelete() {
+    public function onBeforeDelete() {
 
     }
 
-    public function afterDelete() {
+    public function onAfterDelete() {
 
     }
     

@@ -22,4 +22,8 @@ class TestModel extends TeaModel {
         ));
     }
 
+    public function afterSave() {
+        
+    }
+
 }
