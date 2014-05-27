@@ -42,8 +42,6 @@ class TeaModel extends TeaCommon {
 
     private $_findData;
 
-    private $_saveId;
-
     private $_saveData;
 
     /**
@@ -158,7 +156,6 @@ class TeaModel extends TeaCommon {
         $sql = $this->getDbSqlBuilder()->insert($this->tableName(), $vals, $criteria);
         $this->onBeforeSave();
         if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
-            $this->_saveId = $this->getLastInsertId();
             $this->onAfterSave();
             return true;
         }
@@ -486,9 +483,7 @@ class TeaModel extends TeaCommon {
 
     public function onAfterSave() {
         if (method_exists($this, 'afterSave')) {
-            var_dump($this->getLastInsertId());
-            //$this->_saveData = $this->findByPk($this->getLastInsertId());
-            //$this->afterSave($this->_saveData);
+            $this->afterSave();
         }
     }
     
