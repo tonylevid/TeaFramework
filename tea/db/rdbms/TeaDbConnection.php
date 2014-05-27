@@ -112,12 +112,16 @@ abstract class TeaDbConnection {
      */
     public function setConnInfo() {
         foreach ($this->connInfo as $key => $val) {
-            in_array($key, $this->_connInfoKeys) && ($this->$key = $val);
+            if (in_array($key, $this->_connInfoKeys)) {
+                $this->$key = $val;
+            }
         }
         if (preg_match('/charset=(\w+)/', $this->dsn, $matches)) {
             $this->charset = $matches[1];
         } else {
-            !empty($this->charset) && ($this->dsn = rtrim($this->dsn, ';') . ";charset={$this->charset};");
+            if (!empty($this->charset)) {
+                $this->dsn = rtrim($this->dsn, ';') . ";charset={$this->charset};";
+            }
         }
         $this->dbname = preg_match('/dbname=(\w+)/', $this->dsn, $matches) ? $matches[1] : null;
         $this->driverType = preg_match('/^(\w+):/', $this->dsn, $matches) ? $matches[1] : null;
@@ -129,8 +133,12 @@ abstract class TeaDbConnection {
      */
     public function connOptions() {
         $connOptions = array();
-        isset($this->persistent) && ($connOptions[PDO::ATTR_PERSISTENT] = $this->persistent);
-        isset($this->emulatePrepare) && ($connOptions[PDO::ATTR_EMULATE_PREPARES] = $this->emulatePrepare); // if emulate, numbers return as string.
+        if (isset($this->persistent)) {
+            $connOptions[PDO::ATTR_PERSISTENT] = $this->persistent;
+        }
+        if (isset($this->emulatePrepare)) {
+            $connOptions[PDO::ATTR_EMULATE_PREPARES] = $this->emulatePrepare; // if emulate, numbers return as string.
+        }
         $connOptions[PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
         return $connOptions;
     }

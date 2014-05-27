@@ -242,8 +242,12 @@ class TeaBase {
         if (empty($connInfo) && isset(self::$_connection)) {
             return self::$_connection;
         }
-        empty($connInfo) && ($connInfo = self::getConfig('TeaModel.defaultConnection'));
-        is_string($connInfo) && ($connInfo = self::getConfig("TeaModel.connections.{$connInfo}"));
+        if (empty($connInfo)) {
+            $connInfo = self::getConfig('TeaModel.defaultConnection');
+        }
+        if (is_string($connInfo)) {
+            $connInfo = self::getConfig("TeaModel.connections.{$connInfo}");
+        }
         $dsn = $driverType = $autoConnect = null;
         if (is_array($connInfo)) {
             $dsn = isset($connInfo['dsn']) ? $connInfo['dsn'] : null;

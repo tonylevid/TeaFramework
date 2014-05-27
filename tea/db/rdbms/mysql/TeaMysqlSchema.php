@@ -169,7 +169,9 @@ class TeaMysqlSchema extends TeaDbSchema {
         $colsInfo = $this->getTableIndex($tblName, 'PRIMARY');
         $colNames = array();
         foreach ($colsInfo as $info) {
-            isset($info['Column_name']) && ($colNames[] = $info['Column_name']);
+            if (isset($info['Column_name'])) {
+                $colNames[] = $info['Column_name'];
+            }
         }
         return $colNames;
     }

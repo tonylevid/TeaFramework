@@ -57,7 +57,9 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
             $createDefinition[] = "\t" . $tblDef;
         }
         $sql = "CREATE TABLE " . $this->quoteTable($tblName) . " (\n" . implode(",\n", $createDefinition) . "\n";
-        !empty($tableOption) && ($sql .= ' ' . $tableOption);
+        if (!empty($tableOption)) {
+            $sql .= ' ' . $tableOption;
+        }
         return $sql;
     }
 
@@ -295,8 +297,12 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
      * @return string Generated sql string.
      */
     public function select($tblName, $criteria = null, $exprs = null) {
-        empty($exprs) && ($exprs = '*');
-        !is_array($exprs) && ($exprs = array($exprs));
+        if (empty($exprs)) {
+            $exprs = '*';
+        }
+        if (!is_array($exprs)) {
+            $exprs = array($exprs);
+        }
         $exprSqls = array();
         foreach ($exprs as $expr) {
             $exprAlias = $this->getTableAlias($expr);
@@ -455,7 +461,9 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
         }
         $parts = explode('.', $colName);
         foreach ($parts as &$part) {
-            $part !== '*' && ($part = $this->normalQuote($part));
+            if ($part !== '*') {
+                $part = $this->normalQuote($part);
+            }
         }
         unset($part);
         return implode('.', $parts);
@@ -500,7 +508,9 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
     protected function insertOne($tblName, $val, $criteria = null) {
         $colNames = $colVals = array();
         foreach ($val as $colName => $colVal) {
-            is_string($colName) && ($colNames[] = $this->quoteColumn($colName));
+            if (is_string($colName)) {
+                $colNames[] = $this->quoteColumn($colName);
+            }
             $colVals[] = Tea::getDbQuery()->escape($colVal);
         }
         $colNamesSql = implode(', ', $colNames);

@@ -379,7 +379,9 @@ class TeaModel extends TeaCommon {
         if (empty($vals)) {
             $vals = $this->getSetRecord();
         }
-        $safe && ($criteria['limit'] = array(1));
+        if ($safe) {
+            $criteria['limit'] = array(1);
+        }
         $sql = $this->getDbSqlBuilder()->update($this->tableName(), $vals, $criteria);
         $this->onBeforeSave();
         if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
@@ -497,7 +499,9 @@ class TeaModel extends TeaCommon {
      * @return bool 
      */
     public function delete($criteria = array(), $safe = true) {
-        $safe && ($criteria['limit'] = array(1));
+        if ($safe) {
+            $criteria['limit'] = array(1);
+        }
         $sql = $this->getDbSqlBuilder()->delete($this->tableName(), $criteria);
         $this->onBeforeDelete();
         if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {

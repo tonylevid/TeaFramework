@@ -156,7 +156,9 @@ class TeaMysqlQuery extends TeaDbQuery {
         $this->_sql = $this->_statement->queryString;
         if (!empty($params)) {
             foreach ($params as $key => $val) {
-                is_int($key) && ($key += 1);
+                if (is_int($key)) {
+                    $key += 1;
+                }
                 $this->bindValue($key, $val);
             }
         }
@@ -250,7 +252,9 @@ class TeaMysqlQuery extends TeaDbQuery {
      * @return object Return an object result of the row in the result set.
      */
     public function fetchObj($className = null, $constructorArgs = array()) {
-        empty($className) && ($className = 'stdClass');
+        if (empty($className)) {
+            $className = 'stdClass';
+        }
         $obj = $this->_statement->fetchObject($className, $constructorArgs);
         return $obj instanceof $className ? $obj : new $obj($constructorArgs);
     }
@@ -262,7 +266,9 @@ class TeaMysqlQuery extends TeaDbQuery {
      * @return array Return an array of object results containing all rows.
      */
     public function fetchObjs($className = null, $constructorArgs = array()) {
-        empty($className) && ($className = 'stdClass');
+        if (empty($className)) {
+            $className = 'stdClass';
+        }
         $objs = $this->fetchAll(self::FETCH_CLASS, $className, $constructorArgs);
         return is_array($objs) ? $objs : array();
     }
@@ -308,7 +314,9 @@ class TeaMysqlQuery extends TeaDbQuery {
      * @return string Escaped string.
      */
     public function escape($val) {
-        is_numeric($val) && ($val += 0);
+        if (is_numeric($val)) {
+            $val += 0;
+        }
         if ($val === null) {
             return 'NULL';
         } else if (is_bool($val)) {

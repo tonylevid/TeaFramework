@@ -366,7 +366,9 @@ class TeaMysqlCriteria extends TeaDbCriteria {
      * @return string Generated sql of the parsed values.
      */
     private function parseCondVals($vals) {
-        in_array($vals[0], array('and', 'or')) && ($vals = array_slice($vals, 1)); // remove first element 'and' or 'or' of the flattened value.
+        if (in_array($vals[0], array('and', 'or'))) {
+            $vals = array_slice($vals, 1)); // remove first element 'and' or 'or' of the flattened value.
+        }
         foreach ($vals as &$val) {
             if (is_array($val)) {
                 $val = call_user_func_array(array($this, 'parseCondVal'), $val);
