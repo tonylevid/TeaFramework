@@ -15,4 +15,8 @@ class StringHelper {
         return strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $str));
     }
 
+    public static function underscoreToCamel($str) {
+        return lcfirst(implode('', array_map('ucfirst', explode('_', $str))));
+    }
+
 }
