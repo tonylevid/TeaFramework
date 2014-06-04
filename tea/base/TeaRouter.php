@@ -11,6 +11,10 @@
  */
 class TeaRouter {
 
+    /**
+     * Class config.
+     * @var array
+     */
     public static $config = array(
         'caseInsensitive' => true,
         'routeMode' => 'path',  // 'path' or 'get'
@@ -18,16 +22,40 @@ class TeaRouter {
         'urlSuffix' => ''
     );
 
+    /**
+     * Current controller instance.
+     * @var object
+     */
     private $_controller;
 
+    /**
+     * Current module name.
+     * @var string
+     */
     private $_moduleName;
 
+    /**
+     * Current url controller name.
+     * @var string
+     */
     private $_urlControllerName;
 
+    /**
+     * Current controller class name.
+     * @var string
+     */
     private $_controllerName;
 
+    /**
+     * Current action name.
+     * @var string
+     */
     private $_actionName;
 
+    /**
+     * Action parameters.
+     * @var array
+     */
     private $_actionParams = array();
 
     /**
@@ -36,10 +64,18 @@ class TeaRouter {
      */
     private $_routeArgs = array();
 
+    /**
+     * Constructor, set class config.
+     */
     public function __construct() {
         Tea::setClassConfig(__CLASS__);
     }
 
+    /**
+     * Route and run.
+     * @param array $routeArgs Used for setting route information.
+     * @throws TeaException
+     */
     public function route($routeArgs = array()) {
         $this->_routeArgs = $routeArgs;
         $this->setRouteInfo();
@@ -57,38 +93,65 @@ class TeaRouter {
         $this->_controller = $rfc->newInstance();
         $method = $rfc->getMethod($this->getActionName());
         if (method_exists($this->_controller, $this->getActionName()) && $method->isPublic() && !$method->isStatic()) {
-            $rfc->getMethod('beforeAction')->invoke($this->_controller, $this->getActionName());
+            $rfc->getMethod('onBeforeAction')->invoke($this->_controller, $this->getActionName());
             $method->invokeArgs($this->_controller, $this->getActionParams());
-            $rfc->getMethod('afterAction')->invoke($this->_controller, $this->getActionName());
+            $rfc->getMethod('onAfterAction')->invoke($this->_controller, $this->getActionName());
         } else {
             throw new TeaException("Action '{$this->getActionName()}' could not be accessed.");
         }
     }
 
+    /**
+     * Get current controller instance.
+     * @return object
+     */
     public function getController() {
         return $this->_controller;
     }
 
+    /**
+     * Get current module name.
+     * @return string
+     */
     public function getModuleName() {
         return $this->_moduleName;
     }
 
+    /**
+     * Get current url controller name.
+     * @return string
+     */
     public function getUrlControllerName() {
         return $this->_urlControllerName;
     }
 
+    /**
+     * Get current controller name.
+     * @return string
+     */
     public function getControllerName() {
         return $this->_controllerName;
     }
 
+    /**
+     * Get current action name.
+     * @return string
+     */
     public function getActionName() {
         return $this->_actionName;
     }
 
+    /**
+     * Get current action parameters.
+     * @return array
+     */
     public function getActionParams() {
         return $this->_actionParams;
     }
 
+    /**
+     * Import proper controller.
+     */
     protected function importController() {
         $moduleName = $this->getModuleName();
         $controllerName = $this->getControllerName();
@@ -121,6 +184,10 @@ class TeaRouter {
         }
     }
 
+    /**
+     * Set route pathinfo information.
+     * @param string $pathinfo Url pathinfo string.
+     */
     private function setRoutePathinfo($pathinfo) {
         $trimedPathinfo = preg_replace('/' . preg_quote(self::$config['urlSuffix']) . '$/', '', ltrim($pathinfo, '/'));
         $pathSegments = !empty($trimedPathinfo) ? explode('/', $trimedPathinfo) : array();

@@ -11,6 +11,10 @@
  */
 class TeaModel extends TeaCommon {
 
+    /**
+     * Class config.
+     * @var array
+     */
     public static $config = array(
         'defaultConnection' => 'default',
         'connections' => array(
@@ -41,7 +45,7 @@ class TeaModel extends TeaCommon {
     private $_pkColNames = array();
 
     /**
-     * Constructor, set properties for instances.
+     * Constructor, set class config.
      */
     public function __construct() {
         $this->setClassConfig(__CLASS__);
@@ -341,12 +345,18 @@ class TeaModel extends TeaCommon {
         return $this->exists($this->getPkCriteria($pkVal));
     }
 
+    /**
+     * Hook method, invoking before find.
+     */
     public function onBeforeFind() {
         if (method_exists($this, 'beforeFind')) {
             $this->beforeFind();
         }
     }
 
+    /**
+     * Hook method, invoking after find.
+     */
     public function onAfterFind() {
         if (method_exists($this, 'afterFind')) {
             $this->afterFind();
@@ -471,12 +481,18 @@ class TeaModel extends TeaCommon {
         return $this->insert($vals, $vals);
     }
 
+    /**
+     * Hook method, invoking before save.
+     */
     public function onBeforeSave() {
         if (method_exists($this, 'beforeSave')) {
             $this->beforeSave();
         }
     }
 
+    /**
+     * Hook method, invoking after save.
+     */
     public function onAfterSave() {
         if (method_exists($this, 'afterSave')) {
             $this->afterSave();
@@ -522,10 +538,16 @@ class TeaModel extends TeaCommon {
         return $this->delete($this->getPkCriteria($pkVal));
     }
 
+    /**
+     * Hook method, invoking before delete.
+     */
     public function onBeforeDelete() {
 
     }
 
+    /**
+     * Hook method, invoking after delete.
+     */
     public function onAfterDelete() {
 
     }
@@ -607,6 +629,10 @@ class TeaModel extends TeaCommon {
         return $criteria;
     }
 
+    /**
+     * Get set record.
+     * @return array
+     */
     public function getSetRecord() {
         $properties = get_object_vars($this);
         $record = array();

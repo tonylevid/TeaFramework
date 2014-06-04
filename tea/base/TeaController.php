@@ -11,6 +11,10 @@
  */
 class TeaController extends TeaCommon {
 
+    /**
+     * Class config.
+     * @var array
+     */
     public static $config = array(
         'defaultController' => 'Main',
         'defaultAction' => 'index'
@@ -22,6 +26,9 @@ class TeaController extends TeaCommon {
      */
     private $_assignedVals = array();
 
+    /**
+     * Constructor, set class config.
+     */
     public function __construct() {
         $this->setClassConfig(__CLASS__);
     }
@@ -30,16 +37,20 @@ class TeaController extends TeaCommon {
      * Hook method, invoking before action.
      * @param string $name Action name.
      */
-    public function beforeAction($name) {
-
+    public function onBeforeAction($name) {
+        if (method_exists($this, 'beforeAction')) {
+            $this->beforeAction($name);
+        }
     }
 
     /**
      * Hook method, invoking after action.
      * @param string $name Action name.
      */
-    public function afterAction($name) {
-
+    public function onAfterAction($name) {
+        if (method_exists($this, 'afterAction')) {
+            $this->afterAction($name);
+        }
     }
 
     /**

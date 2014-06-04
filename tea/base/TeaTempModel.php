@@ -12,13 +12,23 @@
  */
 class TeaTempModel extends TeaModel {
 
+    /**
+     * Table name.
+     * @var string
+     */
     private $_tableName;
 
+    /**
+     * Constructor.
+     */
     public function __construct($tableName) {
         parent::__construct();
         $this->_tableName = $tableName;
     }
 
+    /**
+     * @return string Table name.
+     */
     public function tableName() {
         return $this->_tableName;
     }
