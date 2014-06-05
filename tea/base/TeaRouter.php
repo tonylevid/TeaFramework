@@ -186,7 +186,7 @@ class TeaRouter {
 
     /**
      * Set route pathinfo information.
-     * @param string $pathinfo Url pathinfo string.
+     * @param string $pathinfo pathinfo style string.
      */
     private function setRoutePathinfo($pathinfo) {
         $trimedPathinfo = preg_replace('/' . preg_quote(self::$config['urlSuffix']) . '$/', '', ltrim($pathinfo, '/'));
