@@ -189,7 +189,8 @@ class TeaRouter {
      * @param string $pathinfo pathinfo style string.
      */
     private function setRoutePathinfo($pathinfo) {
-        $trimedPathinfo = preg_replace('/' . preg_quote(self::$config['urlSuffix']) . '$/', '', ltrim($pathinfo, '/'));
+        $trimedPathinfo = preg_replace('/' . preg_quote(self::$config['urlSuffix']) . '$/', '', $pathinfo);
+        $trimedPathinfo = ltrim(rtrim($trimedPathinfo, '/'), '/');
         $pathSegments = !empty($trimedPathinfo) ? explode('/', $trimedPathinfo) : array();
         if (isset($pathSegments[0]) && array_key_exists($pathSegments[0], Tea::$moduleMap)) {
             $this->_moduleName = $pathSegments[0];
