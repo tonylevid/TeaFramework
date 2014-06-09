@@ -17,7 +17,7 @@ class TeaRouter {
      */
     public static $config = array(
         'caseInsensitive' => true,
-        'routeMode' => 'path',  // 'path' or 'get'
+        'routeMode' => 'auto',  // 'path', 'get' or 'auto'
         'routeModeGetName' => 'r',  // only available when route mode is 'get'
         'urlSuffix' => ''
     );
@@ -172,6 +172,14 @@ class TeaRouter {
         }
         $request = new TeaRequest();
         switch (self::$config['routeMode']) {
+            case 'auto':
+                $getRoutePath = $request->getQuery(self::$config['routeModeGetName']);
+                if (!empty($getRoutePath)) {
+                    $this->setRoutePathinfo($request->getQuery(self::$config['routeModeGetName']));
+                } else {
+                    $this->setRoutePathinfo($request->getPathinfo());
+                }
+                break;
             case 'path':
                 $this->setRoutePathinfo($request->getPathinfo());
                 break;
