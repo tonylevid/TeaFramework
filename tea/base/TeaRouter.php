@@ -47,6 +47,12 @@ class TeaRouter {
     private $_controllerName;
 
     /**
+     * Current url action name.
+     * @var string
+     */
+    private $_urlActionName;
+
+    /**
      * Current action name.
      * @var string
      */
@@ -79,7 +85,6 @@ class TeaRouter {
     public function route($routeArgs = array()) {
         $this->_routeArgs = $routeArgs;
         $this->setRouteInfo();
-        $this->importController();
         if (!class_exists($this->getControllerName())) {
             throw new TeaException("Controller '{$this->getControllerName()}' does not exist.");
         }
@@ -134,6 +139,14 @@ class TeaRouter {
     }
 
     /**
+     * Get current url action name.
+     * @return string
+     */
+    public function getUrlActionName() {
+        return $this->_urlActionName;
+    }
+
+    /**
      * Get current action name.
      * @return string
      */
@@ -147,19 +160,6 @@ class TeaRouter {
      */
     public function getActionParams() {
         return $this->_actionParams;
-    }
-
-    /**
-     * Import proper controller.
-     */
-    protected function importController() {
-        $moduleName = $this->getModuleName();
-        $controllerName = $this->getControllerName();
-        if (empty($moduleName)) {
-            Tea::import("protected.controller.{$controllerName}");
-        } else {
-            Tea::import("module.{$moduleName}.controller.{$controllerName}");
-        }
     }
 
     /**
@@ -200,18 +200,120 @@ class TeaRouter {
         $trimedPathinfo = preg_replace('/' . preg_quote(self::$config['urlSuffix']) . '$/', '', $pathinfo);
         $trimedPathinfo = ltrim(rtrim($trimedPathinfo, '/'), '/');
         $pathSegments = !empty($trimedPathinfo) ? explode('/', $trimedPathinfo) : array();
-        if (isset($pathSegments[0]) && array_key_exists($pathSegments[0], Tea::$moduleMap)) {
-            $this->_moduleName = $pathSegments[0];
-            $this->_urlControllerName = isset($pathSegments[1]) ? $pathSegments[1] : TeaController::$config['defaultController'];
-            $this->_controllerName = $this->_urlControllerName . 'Controller';
-            $this->_actionName = isset($pathSegments[2]) ? $pathSegments[2] : TeaController::$config['defaultAction'];
-            $this->_actionParams = array_diff($pathSegments, array($this->_moduleName, $this->_urlControllerName, $this->_actionName));
-        } else {
-            $this->_urlControllerName = isset($pathSegments[0]) ? $pathSegments[0] : TeaController::$config['defaultController'];
-            $this->_controllerName = $this->_urlControllerName . 'Controller';
-            $this->_actionName = isset($pathSegments[1]) ? $pathSegments[1] : TeaController::$config['defaultAction'];
-            $this->_actionParams = array_diff($pathSegments, array($this->_urlControllerName, $this->_actionName));
+        if (isset($pathSegments[0]) && $this->isModule($pathSegments[0])) {
+            $this->_moduleName = $this->getModuleNameBySegment($pathSegments[0]);
+            array_shift($pathSegments);
         }
+        $this->_urlControllerName = isset($pathSegments[0]) ? $pathSegments[0] : TeaController::$config['defaultController'];
+        $this->_controllerName = $this->getControllerNameBySegment($this->_urlControllerName);
+        // after having determined module and controller, then import proper controller.
+        $this->importController();
+        // set action name and action parameters.
+        $this->_urlActionName = isset($pathSegments[1]) ? $pathSegments[1] : TeaController::$config['defaultAction'];
+        $this->_actionName = $this->getActionNameBySegment($this->_controllerName, $this->_urlActionName);
+        $this->_actionParams = array_diff($pathSegments, array($this->_urlControllerName, $this->_urlActionName));
+    }
+
+    /**
+     * Import proper controller.
+     */
+    private function importController() {
+        $moduleName = $this->getModuleName();
+        $controllerName = $this->getControllerName();
+        if (empty($moduleName)) {
+            Tea::import("protected.controller.{$controllerName}");
+        } else {
+            Tea::import("module.{$moduleName}.controller.{$controllerName}");
+        }
+    }
+
+    /**
+     * Check whether segment is a module.
+     * @param string $segment Segment string.
+     * @return bool
+     */
+    private function isModule($segment) {
+        $moduleMap = Tea::$moduleMap;
+        if (self::$config['caseInsensitive']) {
+            $segment = strtolower($segment);
+            $moduleMap = $this->getLcModuleMap();
+        }
+        if (array_key_exists($segment, $moduleMap)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Get lowercased module map.
+     * @param bool $isNameMap Whether return module name array map.
+     * @param bool $moduleToLower If it is true, it will return moduleName => lowercasedModuleName array map, else return lowercasedModuleName => moduleName array map.
+     * @return array
+     */
+    private function getLcModuleMap($isNameMap = false, $moduleToLower = false) {
+        $lcModuleMap = array();
+        foreach (Tea::$moduleMap as $name => $path) {
+            if ($isNameMap) {
+                if ($moduleToLower) {
+                    $lcModuleMap[$name] = strtolower($name);
+                } else {
+                    $lcModuleMap[strtolower($name)] = $name;
+                }
+            } else {
+                $lcModuleMap[strtolower($name)] = $path;
+            }
+        }
+        return $lcModuleMap;
+    }
+
+    /**
+     * Get module name by module segment.
+     * @param string $segment Segment string.
+     * @return string
+     */
+    private function getModuleNameBySegment($segment) {
+        $moduleName = $segment;
+        if (self::$config['caseInsensitive']) {
+            $lcModuleNameMap = $this->getLcModuleMap(true);
+            if (isset($lcModuleNameMap[strtolower($segment)])) {
+                $moduleName = $lcModuleNameMap[strtolower($segment)];
+            }
+        }
+        return $moduleName;
+    }
+
+    /**
+     * Get controller name by controller segment.
+     * @param string $segment Segment string.
+     * @return string
+     */
+    private function getControllerNameBySegment($segment) {
+        $controllerName = $segment;
+        if (self::$config['caseInsensitive']) {
+            $controllerName = ucfirst(strtolower($segment)) . 'Controller';
+        }
+        return $controllerName;
+    }
+
+    /**
+     * Get action name by action segment.
+     * @param mixed $controllerName Controller name or controller instance.
+     * @param string $segment Segment string.
+     * @return string
+     */
+    private function getActionNameBySegment($controllerName, $segment) {
+        $actionName = $segment;
+        $methods = get_class_methods($controllerName);
+        if (self::$config['caseInsensitive']) {
+            $lcMethodNameMap = array();
+            foreach ($methods as $method) {
+                $lcMethodNameMap[strtolower($method)] = $method;
+            }
+            if (isset($lcMethodNameMap[strtolower($segment)])) {
+                $actionName = $lcMethodNameMap[strtolower($segment)];
+            }
+        }
+        return $actionName;
     }
 
 }

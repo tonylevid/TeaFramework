@@ -11,7 +11,7 @@ class MainController extends TeaController {
         var_dump($this->getRouter()->getUrlControllerName());
         var_dump($this->getRouter()->getControllerName());
         var_dump($this->getRouter()->getActionName());
-        $m = $this->getModel('test');
+        $m = $this->loadModel('test');
         $m->id = 1;
         $m->name = 'tony and cherry';
         $m->hits = 200;
