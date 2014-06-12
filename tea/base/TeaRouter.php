@@ -92,7 +92,7 @@ class TeaRouter extends TeaCommon {
      */
     public function route($routeArgs = array()) {
         $this->_routeArgs = $routeArgs;
-        $this->setRouteInfo();
+        $this->setRoute();
         if (!class_exists($this->getControllerName())) {
             throw new TeaException("Controller '{$this->getControllerName()}' does not exist.");
         }
@@ -181,9 +181,10 @@ class TeaRouter extends TeaCommon {
     /**
      * Set module name, controller name, action name and action params.
      */
-    protected function setRouteInfo() {
+    protected function setRoute() {
         if (!empty($this->_routeArgs)) {
-            $this->setRoutePathinfo(implode('/', $this->_routeArgs));
+            $routeArgsPathinfo = implode('/', $this->_routeArgs);
+            $this->setRouteInfo($routeArgsPathinfo);
             return null;
         }
         $request = $this->loadLib('TeaRequest');
@@ -192,25 +193,29 @@ class TeaRouter extends TeaCommon {
         switch (self::$config['routeMode']) {
             case 'auto':
                 if (!empty($queryPathinfo)) {
-                    $this->setRoutePathinfo($queryPathinfo);
-                    $this->setRouteRules($queryPathinfo);
+                    $this->setRouteInfo($queryPathinfo);
                 } else {
-                    $this->setRoutePathinfo($pathinfo);
-                    $this->setRouteRules($pathinfo);
+                    $this->setRouteInfo($pathinfo);
                 }
                 break;
             case 'path':
-                $this->setRoutePathinfo($pathinfo);
-                $this->setRouteRules($pathinfo);
+                $this->setRouteInfo($pathinfo);
                 break;
             case 'get':
-                $this->setRoutePathinfo($queryPathinfo);
-                $this->setRouteRules($queryPathinfo);
+                $this->setRouteInfo($queryPathinfo);
                 break;
             default:
                 throw new TeaException('Unable to determine route mode {' . self::$config['routeMode'] . '}.');
                 break;
         }
+    }
+
+    /**
+     * Set route pathinfo and rules.
+     */
+    private function setRouteInfo($pathinfo) {
+        $this->setRoutePathinfo($pathinfo);
+        $this->setRouteRules($pathinfo);
     }
 
     /**

@@ -77,6 +77,20 @@ class TeaBase {
         defined('APP_USED_TIME') or define('APP_USED_TIME', APP_END_TIME - APP_BEGIN_TIME);
         defined('APP_USED_MEM') or define('APP_USED_MEM', APP_END_MEM - APP_BEGIN_MEM);
     }
+
+    /**
+     * Run the console application.
+     * @param array $config User's config array.
+     */
+    public static function runConsole($config = array()) {
+        global $argv;
+        $routeArgs = array();
+        if (isset($argv) && is_array($argv)) {
+            array_shift($argv);
+            $routeArgs = $argv;
+        }
+        self::run($config, $routeArgs);
+    }
     
     /**
      * Tea initialization.

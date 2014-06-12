@@ -5,8 +5,7 @@ $boot = dirname(__FILE__) . '/../tea/Tea.php';
 $config = require dirname(__FILE__) . '/protected/config/main.php';
 require_once($boot);
 
-$argv = isset($argv) && is_array($argv) ? array_shift($argv) : array();
-Tea::run($config, $argv); // url and console mode
+Tea::runConsole($config);
 
 echo '<p /> Running Time: ';
 echo APP_USED_TIME . ' sec';
