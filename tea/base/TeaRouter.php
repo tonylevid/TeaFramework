@@ -9,7 +9,7 @@
  * @license http://www.tframework.com/license/
  * @package base
  */
-class TeaRouter {
+class TeaRouter extends TeaCommon {
 
     /**
      * Class config.
@@ -19,7 +19,9 @@ class TeaRouter {
         'caseInsensitive' => true,
         'routeMode' => 'auto',  // 'path', 'get' or 'auto'
         'routeModeGetName' => 'r',  // only available when route mode is 'get'
-        'urlSuffix' => ''
+        'urlSuffix' => '',
+        'openRouteRules' => false,
+        'routeRules' => array() // regexp => route array
     );
 
     /**
@@ -27,6 +29,12 @@ class TeaRouter {
      * @var object
      */
     private $_controller;
+
+    /**
+     * Current url module name.
+     * @var string
+     */
+    private $_urlModuleName;
 
     /**
      * Current module name.
@@ -115,6 +123,14 @@ class TeaRouter {
     }
 
     /**
+     * Get current url module name.
+     * @return string
+     */
+    public function getUrlModuleName() {
+        return $this->_urlModuleName;
+    }
+
+    /**
      * Get current module name.
      * @return string
      */
@@ -170,21 +186,26 @@ class TeaRouter {
             $this->setRoutePathinfo(implode('/', $this->_routeArgs));
             return null;
         }
-        $request = new TeaRequest();
+        $request = $this->loadLib('TeaRequest');
+        $queryPathinfo = $request->getQuery(self::$config['routeModeGetName']);
+        $pathinfo = $request->getPathinfo();
         switch (self::$config['routeMode']) {
             case 'auto':
-                $getRoutePath = $request->getQuery(self::$config['routeModeGetName']);
-                if (!empty($getRoutePath)) {
-                    $this->setRoutePathinfo($request->getQuery(self::$config['routeModeGetName']));
+                if (!empty($queryPathinfo)) {
+                    $this->setRoutePathinfo($queryPathinfo);
+                    $this->setRouteRules($queryPathinfo);
                 } else {
-                    $this->setRoutePathinfo($request->getPathinfo());
+                    $this->setRoutePathinfo($pathinfo);
+                    $this->setRouteRules($pathinfo);
                 }
                 break;
             case 'path':
-                $this->setRoutePathinfo($request->getPathinfo());
+                $this->setRoutePathinfo($pathinfo);
+                $this->setRouteRules($pathinfo);
                 break;
             case 'get':
-                $this->setRoutePathinfo($request->getQuery(self::$config['routeModeGetName']));
+                $this->setRoutePathinfo($queryPathinfo);
+                $this->setRouteRules($queryPathinfo);
                 break;
             default:
                 throw new TeaException('Unable to determine route mode {' . self::$config['routeMode'] . '}.');
@@ -201,6 +222,7 @@ class TeaRouter {
         $trimedPathinfo = ltrim(rtrim($trimedPathinfo, '/'), '/');
         $pathSegments = !empty($trimedPathinfo) ? explode('/', $trimedPathinfo) : array();
         if (isset($pathSegments[0]) && $this->isModule($pathSegments[0])) {
+            $this->_urlModuleName = $pathSegments[0];
             $this->_moduleName = $this->getModuleNameBySegment($pathSegments[0]);
             array_shift($pathSegments);
         }
@@ -212,6 +234,24 @@ class TeaRouter {
         $this->_urlActionName = isset($pathSegments[1]) ? $pathSegments[1] : TeaController::$config['defaultAction'];
         $this->_actionName = $this->getActionNameBySegment($this->_controllerName, $this->_urlActionName);
         $this->_actionParams = array_diff($pathSegments, array($this->_urlControllerName, $this->_urlActionName));
+    }
+
+    /**
+     * Set route rules.
+     * This method must call after TeaRouter::setRoutePathinfo().
+     * @param string $pathinfo pathinfo style string.
+     */
+    private function setRouteRules($pathinfo) {
+        if (self::$config['openRouteRules']) {
+            $routeRules = self::$config['routeRules'];
+            foreach ($routeRules as $rule => $route) {
+                $route = rtrim(ltrim($route, '/'), '/');
+                if (!empty($route) && preg_match($rule, $pathinfo)) {
+                    $pathinfo = preg_replace($rule, $route, $pathinfo);
+                    $this->setRoutePathinfo($pathinfo);
+                }
+            }
+        }
     }
 
     /**
@@ -306,8 +346,10 @@ class TeaRouter {
         $methods = get_class_methods($controllerName);
         if (self::$config['caseInsensitive']) {
             $lcMethodNameMap = array();
-            foreach ($methods as $method) {
-                $lcMethodNameMap[strtolower($method)] = $method;
+            if (is_array($methods) && !empty($methods)) {
+                foreach ($methods as $method) {
+                    $lcMethodNameMap[strtolower($method)] = $method;
+                }
             }
             if (isset($lcMethodNameMap[strtolower($segment)])) {
                 $actionName = $lcMethodNameMap[strtolower($segment)];
