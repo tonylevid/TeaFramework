@@ -225,7 +225,7 @@ class TeaRouter extends TeaCommon {
     private function setRoutePathinfo($pathinfo) {
         $trimedPathinfo = preg_replace('/' . preg_quote(self::$config['urlSuffix']) . '$/', '', $pathinfo);
         $trimedPathinfo = ltrim(rtrim($trimedPathinfo, '/'), '/');
-        $pathSegments = !empty($trimedPathinfo) ? explode('/', $trimedPathinfo) : array();
+        $pathSegments = !empty($trimedPathinfo) ? array_filter(explode('/', $trimedPathinfo)) : array();
         if (isset($pathSegments[0]) && $this->isModule($pathSegments[0])) {
             $this->_urlModuleName = $pathSegments[0];
             $this->_moduleName = $this->getModuleNameBySegment($pathSegments[0]);
@@ -250,7 +250,6 @@ class TeaRouter extends TeaCommon {
         if (self::$config['openRouteRules']) {
             $routeRules = self::$config['routeRules'];
             foreach ($routeRules as $rule => $route) {
-                $route = rtrim(ltrim($route, '/'), '/');
                 if (!empty($route) && preg_match($rule, $pathinfo)) {
                     $pathinfo = preg_replace($rule, $route, $pathinfo);
                     $this->setRoutePathinfo($pathinfo);

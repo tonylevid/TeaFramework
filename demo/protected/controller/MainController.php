@@ -2,9 +2,11 @@
 
 class MainController extends TeaController {
 
-    public function index($name) {
-        $this->assign('name', $name);
-        $this->render();
+    public function index($name, $say) {
+        $this->render(null, array(
+            'name' => $name,
+            'say' => $say
+        ));
     }
 
 }
