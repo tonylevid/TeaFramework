@@ -378,10 +378,10 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
     }
 
     /**
-     * Get real table name. 
+     * Get real table name.
      * If $tblName is '{{table_name}}', and table prefix is 'tbl_'. This will return 'tbl_table_name'.
      * @param string $tblName Table name.
-     * @return string Real table name
+     * @return string Real table name.
      */
     public function getTableName($tblName) {
         $tblName = preg_replace('/^{{(.+)}}$/', '$1', $tblName);
@@ -397,6 +397,24 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
             if ($key === $lastKey) {
                 $part = Tea::getDbConnection()->tablePrefix . $part;
             }
+        }
+        unset($part);
+        return implode('.', $tblParts);
+    }
+
+    /**
+     * Get real column name.
+     * If $colName is 'A.id->a_id', this will return 'A.id'.
+     * @param string $colName Column name.
+     * @return string Real column name.
+     */
+    public function getColumnName($colName) {
+        $colName = preg_replace('/^{{(.+)}}$/', '$1', $colName);
+        if (strpos($colName, Tea::getDbConnection()->tableAliasMark) !== false) {
+            $aliasParts = explode(Tea::getDbConnection()->tableAliasMark, $colName);
+            $tblParts = explode('.', $aliasParts[0]);
+        } else {
+            $tblParts = explode('.', $colName);
         }
         return implode('.', $tblParts);
     }
@@ -455,7 +473,7 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
      * @return string Quoted column name.
      */
     public function quoteColumn($colName) {
-        $colName = $this->getTableName($colName);
+        $colName = $this->getColumnName($colName);
         if (strpos($colName, '.') === false) {
             return $this->normalQuote($colName);
         }

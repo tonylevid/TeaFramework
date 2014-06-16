@@ -15,7 +15,7 @@ return array(
                 'username' => 'root',
                 'password' => '',
                 'charset' => 'utf8', // if charset has been defined in dsn, this will be invalid.
-                'tablePrefix' => '',
+                'tablePrefix' => 'tb_',
                 'tableAliasMark' => '->',
                 'persistent' => true,
                 'emulatePrepare' => true,
