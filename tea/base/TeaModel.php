@@ -11,6 +11,11 @@
  */
 class TeaModel extends TeaCommon {
 
+    const BELONGS_TO = 1;
+    const HAS_ONE = 2;
+    const HAS_MANY = 3;
+    const MANY_MANY = 4;
+
     /**
      * Class config.
      * @var array
@@ -85,6 +90,15 @@ class TeaModel extends TeaCommon {
     public function tableName() {
         $modelName = get_class($this);
         return StringHelper::camelToUnderscore(preg_replace('/(.+)Model/', '$1', $modelName));
+    }
+
+    /**
+     * Hook method.
+     * Return relations for this model. Defaults to empty array.
+     * @return array Model relations.
+     */
+    public function relations() {
+        return array();
     }
 
     /**
