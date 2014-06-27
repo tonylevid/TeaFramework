@@ -657,5 +657,9 @@ class TeaModel extends TeaCommon {
         }
         return $record;
     }
+
+    private function getRelationsCriteria($criteria) {
+
+    }
     
 }
