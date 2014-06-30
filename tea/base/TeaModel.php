@@ -11,11 +11,6 @@
  */
 class TeaModel extends TeaCommon {
 
-    const BELONGS_TO = 1;
-    const HAS_ONE = 2;
-    const HAS_MANY = 3;
-    const MANY_MANY = 4;
-
     /**
      * Class config.
      * @var array
@@ -48,6 +43,8 @@ class TeaModel extends TeaCommon {
      * @var array
      */
     private $_pkColNames = array();
+
+    private $_addonCriteriaArr = array();
 
     /**
      * Constructor, set class config.
@@ -92,11 +89,10 @@ class TeaModel extends TeaCommon {
         return StringHelper::camelToUnderscore(preg_replace('/(.+)Model/', '$1', $modelName));
     }
 
-    /**
-     * Hook method.
-     * Return relations for this model. Defaults to empty array.
-     * @return array Model relations.
-     */
+    public function criterias() {
+        return array();
+    }
+
     public function relations() {
         return array();
     }
@@ -118,6 +114,26 @@ class TeaModel extends TeaCommon {
      */
     public function getTableAlias() {
         return $this->getDbSqlBuilder()->getTableAlias($this->tableName());
+    }
+
+    public function withCriteria($criteriaName) {
+        $criterias = $this->criterias();
+        if (array_key_exists($criteriaName, $criterias)) {
+            $addonCriteria = $criterias[$criteriaName];
+            if ($addonCriteria instanceof TeaDbCriteria) {
+                $this->_addonCriteriaArr = $addonCriteria->criteriaArr;
+            } else if (is_array($addonCriteria) && !empty($addonCriteria)) {
+                $this->_addonCriteriaArr = $addonCriteria;
+            } else {
+                $this->_addonCriteriaArr = array();
+            }
+        }
+        return $this;
+    }
+
+    public function withRelation($relationName) {
+        $relations = $this->relations();
+        return $this;
     }
     
     /**
@@ -167,7 +183,7 @@ class TeaModel extends TeaCommon {
             $vals = $duplicateUpdate = $this->getSetRecord();
         }
         $criteria = is_array($duplicateUpdate) && !empty($duplicateUpdate) ? array('duplicateUpdate' => $duplicateUpdate) : null;
-        $sql = $this->getDbSqlBuilder()->insert($this->tableName(), $vals, $criteria);
+        $sql = $this->getDbSqlBuilder()->insert($this->tableName(), $vals, $this->getAllCriteria($criteria));
         $this->onBeforeSave();
         if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
             $this->onAfterSave();
@@ -184,7 +200,7 @@ class TeaModel extends TeaCommon {
      */
     public function find($criteria = array(), $colName = null) {
         $this->onBeforeFind();
-        $sql = $this->getDbSqlBuilder()->select($this->tableName(), $criteria, $colName);
+        $sql = $this->getDbSqlBuilder()->select($this->tableName(), $this->getAllCriteria($criteria), $colName);
         $modelName = get_class($this);
         if ($modelName === 'TeaTempModel') {
             $data = $this->getDbQuery()->query($sql)->fetchObj($modelName, array($this->tableName()));
@@ -242,7 +258,7 @@ class TeaModel extends TeaCommon {
      */
     public function findColumn($criteria = array(), $colName = null) {
         $this->onBeforeFind();
-        $sql = $this->getDbSqlBuilder()->select($this->tableName(), $criteria, $colName);
+        $sql = $this->getDbSqlBuilder()->select($this->tableName(), $this->getAllCriteria($criteria), $colName);
         $rst = $this->getDbQuery()->query($sql)->fetchRow();
         if (is_array($rst) && is_string($colName) && isset($rst[$colName])) {
             $data = $rst[$colName];
@@ -299,7 +315,7 @@ class TeaModel extends TeaCommon {
      */
     public function findAll($criteria = array(), $colName = null) {
         $this->onBeforeFind();
-        $sql = $this->getDbSqlBuilder()->select($this->tableName(), $criteria, $colName);
+        $sql = $this->getDbSqlBuilder()->select($this->tableName(), $this->getAllCriteria($criteria), $colName);
         $modelName = get_class($this);
         if ($modelName === 'TeaTempModel') {
             $data = $this->getDbQuery()->query($sql)->fetchObjs($modelName, array($this->tableName()));
@@ -345,7 +361,7 @@ class TeaModel extends TeaCommon {
      * @return bool
      */
     public function exists($criteria = array()) {
-        $sql = $this->getDbSqlBuilder()->exists($this->tableName(), $criteria, 'exists');
+        $sql = $this->getDbSqlBuilder()->exists($this->tableName(), $this->getAllCriteria($criteria), 'exists');
         $existsVal = $this->findColumnBySql($sql, array(), 'exists');
         return intval($existsVal) === 1 ? true : false;
     }
@@ -399,7 +415,7 @@ class TeaModel extends TeaCommon {
         if ($safe) {
             $criteria['limit'] = array(1);
         }
-        $sql = $this->getDbSqlBuilder()->update($this->tableName(), $vals, $criteria);
+        $sql = $this->getDbSqlBuilder()->update($this->tableName(), $vals, $this->getAllCriteria($criteria));
         $this->onBeforeSave();
         if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
             $this->onAfterSave();
@@ -459,7 +475,7 @@ class TeaModel extends TeaCommon {
         $vals = array(
             $colName => new TeaDbExpr($expr)
         );
-        return $this->update($criteria, $vals, $safe);
+        return $this->update($this->getAllCriteria($criteria), $vals, $safe);
     }
 
     /**
@@ -523,7 +539,7 @@ class TeaModel extends TeaCommon {
         if ($safe) {
             $criteria['limit'] = array(1);
         }
-        $sql = $this->getDbSqlBuilder()->delete($this->tableName(), $criteria);
+        $sql = $this->getDbSqlBuilder()->delete($this->tableName(), $this->getAllCriteria($criteria));
         $this->onBeforeDelete();
         if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
             $this->onAfterDelete();
@@ -658,8 +674,16 @@ class TeaModel extends TeaCommon {
         return $record;
     }
 
-    private function getRelationsCriteria($criteria) {
-
+    public function getAllCriteria($userCriteria) {
+        if ($userCriteria instanceof TeaDbCriteria) {
+            $userCriteriaArr = $userCriteria->criteriaArr;
+            $criteria = ArrayHelper::mergeArray($this->_addonCriteriaArr, $userCriteriaArr);
+        } else if (is_array($userCriteria) && !empty($userCriteria)) {
+            $criteria = ArrayHelper::mergeArray($this->_addonCriteriaArr, $userCriteria);
+        } else {
+            $criteria = $this->_addonCriteriaArr;
+        }
+        return $criteria;
     }
-    
+
 }
