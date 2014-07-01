@@ -455,12 +455,7 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
             return $this->normalQuote($tblName);
         }
         $parts = explode('.', $tblName);
-        $partsKeys = array_keys($parts);
-        $lastKey = array_pop($partsKeys);
         foreach ($parts as $key => &$part) {
-            if ($key === $lastKey) {
-                $part = Tea::getDbConnection()->tablePrefix . $part;
-            }
             $part = $this->normalQuote($part);
         }
         unset($part);
