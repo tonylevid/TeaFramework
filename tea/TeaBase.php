@@ -107,6 +107,7 @@ class TeaBase {
      * @param string $alias Dot notation alias.
      * @param bool $forceImport Whether to import immediately.
      * @return bool
+     * @throws TeaException
      */
     public static function import($alias, $forceImport = false) {
         $path = self::aliasToPath($alias);
@@ -251,6 +252,7 @@ class TeaBase {
      * Get proper TeaDbConnection subclass instance and connect if autoConnect is true.
      * @param mixed $connInfo String or array, defaults to string 'default'. If string, it should be the connection info group key in main config model node.
      * @return TeaDbConnection Proper TeaDbConnection subclass instance.
+     * @throws TeaDbException
      */
     public static function getDbConnection($connInfo = null) {
         if (empty($connInfo) && isset(self::$_connection)) {

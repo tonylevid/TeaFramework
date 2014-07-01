@@ -146,6 +146,7 @@ abstract class TeaDbConnection {
     /**
      * Connect to database.
      * @return bool
+     * @throws TeaDbException
      */
     public function connect() {
         $hasErr = false;
@@ -169,7 +170,7 @@ abstract class TeaDbConnection {
      * Fix the bug 'PDO::__construct(): {database} server has gone away'.
      */
     public function pdoConstructorErrHandler($errno, $errstr) {
-        // PDO::__construct(): {database} server has gone away warning may appear if database service restart but TQuery use the same pdo instance.
+        // PDO::__construct(): {database} server has gone away warning may appear if database service restart but TeaDbQuery use the same pdo instance.
         if (stripos($errstr, 'server has gone away') !== false) {
             $this->connect();
         } else {
@@ -202,9 +203,15 @@ abstract class TeaDbConnection {
     /**
      * Get inner connection instance.
      * @return PDO
+     * @throws TeaDbException If database connection has not established.
      */
     public function getConn() {
-        return $this->_conn;
+        if ($this->_conn instanceof PDO) {
+            return $this->_conn;
+        } else {
+            $connClass = get_class($this);
+            throw new TeaDbException("{$connClass} could not connect to {$this->driverType} database '{$this->dbname}'.");
+        }
     }
 
     /**

@@ -396,6 +396,7 @@ class TeaMysqlCriteria extends TeaDbCriteria {
      * @param string $op Operator.
      * @param mixed $val Value.
      * @return string Generate sql of the parsed value.
+     * @throws TeaDbException
      */
     private function parseCondVal($colNames, $op, $val) {
         $this->throwCondValException($op, $val);
@@ -475,6 +476,7 @@ class TeaMysqlCriteria extends TeaDbCriteria {
      * To throw exception when value type does not match the type expected.
      * @param string $op Operator.
      * @param mixed $val Value.
+     * @throws TeaDbException
      */
     private function throwCondValException($op, $val) {
         $opValIsArray = array('between', 'not-between', 'lrlike', 'not-lrlike', 'in', 'not-in');

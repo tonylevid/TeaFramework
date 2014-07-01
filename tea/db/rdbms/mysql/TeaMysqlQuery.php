@@ -63,6 +63,7 @@ class TeaMysqlQuery extends TeaDbQuery {
      * Execute an sql statement immediately.
      * @param string $sql Sql statement.
      * @return int The number of affected rows.
+     * @throws TeaDbException
      */
     public function exec($sql) {
         $this->_sql = $sql;
@@ -104,6 +105,7 @@ class TeaMysqlQuery extends TeaDbQuery {
      * @param string $sql Sql statement.
      * @param bool $scrollCursor Scroll cursor or not.
      * @return $this
+     * @throws TeaDbException
      */
     public function prepare($sql, $scrollCursor = false) {
         $option = $scrollCursor ? array(PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL) : array(PDO::ATTR_CURSOR => PDO::CURSOR_FWDONLY);
@@ -151,6 +153,7 @@ class TeaMysqlQuery extends TeaDbQuery {
      * Execute the prepared sql.
      * @param array $params An array of values with as many elements as there are bound parameters in the prepared sql being executed.
      * @return $this
+     * @throws TeaDbException
      */
     public function execPrepare($params = array()) {
         $this->_sql = $this->_statement->queryString;
@@ -249,14 +252,18 @@ class TeaMysqlQuery extends TeaDbQuery {
      * Fetch the next row object from the result set.
      * @param string @className The class name to fetch with. If empty, it will be the 'stdClass'.
      * @param array @constructorArgs The class constructor arguments.
-     * @return object Return an object result of the row in the result set.
+     * @return mixed Return an object result of the row in the result set on success, or false on failure.
      */
     public function fetchObj($className = null, $constructorArgs = array()) {
         if (empty($className)) {
             $className = 'stdClass';
         }
         $obj = $this->_statement->fetchObject($className, $constructorArgs);
-        return $obj instanceof $className ? $obj : new $obj($constructorArgs);
+        if ($obj === false) {
+            return false;
+        } else {
+            return $obj instanceof $className ? $obj : new $obj($constructorArgs);
+        }
     }
 
     /**
