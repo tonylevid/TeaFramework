@@ -278,6 +278,9 @@ class TeaMysqlCriteria extends TeaDbCriteria {
      * array(
      *     'foo' => array('foo.id' => 'tbl.id'),
      *     'left:bar->alias' => array('alias.name' => 'tbl.name'),
+     *     'left:bla->alias' => array('alias.name' => 'tbl.name', ':condition' => array(
+     *         'alias.id:gt' => 1 // For other conditions, you can use key ':condition' to declare.
+     *     ))
      *     ...
      * )
      * Join types: 'inner', 'left', 'right', 'cross', 'natural', defaults to 'inner'.
@@ -296,9 +299,15 @@ class TeaMysqlCriteria extends TeaDbCriteria {
             $asSql = !empty($tblAlias) ? " AS `{$tblAlias}`" : '';
             $colSqls = array();
             foreach ($cond as $colA => $colB) {
-                $colSqls[] = $sqlBuilder->quoteColumn($colA) . ' = ' . $sqlBuilder->quoteColumn($colB);
+                if ($colA !== ':condition') {
+                    $colSqls[] = $sqlBuilder->quoteColumn($colA) . ' = ' . $sqlBuilder->quoteColumn($colB);
+                }
             }
             $colSql = implode(' AND ', $colSqls);
+            if (isset($cond[':condition'])) {
+                $andSql = !empty($colSql) ? ' AND ' : '';
+                $colSql .= $andSql . $this->getCondValsSql($cond[':condition']);
+            }
             $joinSqls[] = $this->joinTypeMap[$joinType] . " " . $sqlBuilder->quoteTable($tblName) . $asSql . " ON " . $colSql;
         }
         $this->criteriaArr[__FUNCTION__] = $vals;
