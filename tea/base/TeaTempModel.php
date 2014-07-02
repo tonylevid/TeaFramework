@@ -2,7 +2,7 @@
 
 /**
  * TeaTempModel class file.
- * This class is used for Tea::getModel().
+ * This class is used for creating temporary model instance.
  * 
  * @author tonylevid <tonylevid@gmail.com>
  * @link http://www.tframework.com/

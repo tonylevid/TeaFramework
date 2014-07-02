@@ -154,7 +154,7 @@ class TeaBase {
      * Load class and get the instance.
      * @param string $name Dot notation alias. You can use relative dot notation path.
      * @param array $args Class's constructor parameters, defaults to array().
-     * @return object Class instance.
+     * @return mixed Return class instance on success, false on failure.
      */
     public static function load($name, $args = array()) {
         $nameParts = explode('.', $name);
@@ -169,15 +169,18 @@ class TeaBase {
             }
             self::import($loadName);
         }
-        $rfc = new ReflectionClass($className);
-        return $rfc->newInstanceArgs($args);
+        if (class_exists($className)) {
+            $rfc = new ReflectionClass($className);
+            return $rfc->newInstanceArgs($args);
+        }
+        return false;
     }
 
     /**
      * Load helper and get the instance.
      * @param string $name Dot notation alias. For example: 'array' or 'protected.helper.array'.
      * @param array $args Helper's constructor parameters, defaults to array().
-     * @return object Helper instance.
+     * @return mixed Return Helper instance on success, false on failure.
      */
     public static function loadHelper($name, $args = array()) {
         if (self::isLoadNameAbsolute($name)) {
@@ -195,7 +198,7 @@ class TeaBase {
      * Load library and get the instance.
      * @param string $name Dot notation alias. For example: 'pager' or 'protected.lib.pager'.
      * @param array $args Library's constructor parameters, defaults to array().
-     * @return object Library instance.
+     * @return mixed Return Library instance on success, false on failure.
      */
     public static function loadLib($name, $args = array()) {
         if (self::isLoadNameAbsolute($name)) {
@@ -211,9 +214,10 @@ class TeaBase {
 
     /**
      * Load model and get the instance.
+     * If could not load the model class, this will try to create a TeaTempModel instance.
      * @param string $name Dot notation alias. For example: 'test' or 'protected.model.test'.
      * @param array $args Model's constructor parameters, defaults to array().
-     * @return object Model instance.
+     * @return mixed Return Model instance on success, false on failure.
      */
     public static function loadModel($name, $args = array()) {
         if (self::isLoadNameAbsolute($name)) {
@@ -221,20 +225,15 @@ class TeaBase {
             $lastKey = count($nameParts) - 1;
             $nameParts[$lastKey] = ucfirst($nameParts[$lastKey]);
             array_splice($nameParts, -1, 0, 'model');
-            return self::load(implode('.', $nameParts) . 'Model');
+            $model = self::load(implode('.', $nameParts) . 'Model');
         }
-        $name = ucfirst($name);
-        return self::load("model.{$name}Model", $args);
-    }
-
-    /**
-     * Get table model instance.
-     * Tea::getModel() do not need to create model class file.
-     * @param string $tableName Table name. This is used for TeaTempModel::tableName().
-     * @return TeaTempModel
-     */
-    public static function getModel($tableName) {
-        return new TeaTempModel($tableName);
+        $ucName = ucfirst($name);
+        $model = self::load("model.{$ucName}Model", $args);
+        if ($model instanceof TeaModel) {
+            return $model;
+        } else {
+            return new TeaTempModel($name);
+        }
     }
     
     /**

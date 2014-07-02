@@ -11,6 +11,11 @@
  */
 class TeaModel extends TeaCommon {
 
+    const HAS_ONE = 1;
+    const BELONGS_TO = 2;
+    const HAS_MANY = 3;
+    const MANY_MANY = 4;
+
     /**
      * Class config.
      * @var array
@@ -104,6 +109,20 @@ class TeaModel extends TeaCommon {
     /**
      * Hook method.
      * Return common criterias map. Defaults to empty array.
+     * <pre>
+     * The array will be like this:
+     * array(
+     *     'criteriaOne' => array(
+     *         'join' => array('left:bar' => array('bar.pid' => 'foo.id')),
+     *         'where' => array('foo.id:lte' => 10)
+     *     ),
+     *     'criteriaTwo' => array(
+     *         'where' => array('blabla.id:between' => array(10, 100))
+     *     ),
+     *     'criteriaThree' => $this->getDbCriteria()->where(array('foo.id:lte' => 5))
+     *     ...
+     * )
+     * </pre>
      * @return array Criterias map.
      */
     public function criterias() {
@@ -113,6 +132,12 @@ class TeaModel extends TeaCommon {
     /**
      * Hook method.
      * Return list of related object declarations. Defaults to empty array.
+     * <pre>
+     * The array will be like this:
+     * array(
+     *     'relationOne' = array(self::HAS_ONE, 'modelName', 'foreignKey')
+     * )
+     * </pre>
      * @return array List of related object declarations.
      */
     public function relations() {
@@ -140,7 +165,7 @@ class TeaModel extends TeaCommon {
 
     /**
      * Query with a common criteria.
-     * @param string $criteriaName The criteria key in the returned array of method TeaModel::relations().
+     * @param string $criteriaName The criteria key in the returned array of method TeaModel::criterias().
      * @return $this
      */
     public function withCriteria($criteriaName) {
@@ -160,7 +185,7 @@ class TeaModel extends TeaCommon {
 
     /**
      * Query with a relation.
-     * @param string $relationName The relation key in the returned array of method TeaModel::criterias().
+     * @param string $relationName The relation key in the returned array of method TeaModel::relations().
      * @return $this
      */
     public function withRelation($relationName) {
