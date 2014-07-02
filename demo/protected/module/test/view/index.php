@@ -6,7 +6,6 @@
 </head>
 <body>
     <?php var_dump($sqlAll); ?>
-    <?php var_dump($sqlInc); ?>
     <?php var_dump($data); ?>
 </body>
 </html>

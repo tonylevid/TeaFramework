@@ -21,7 +21,7 @@ class TeaModel extends TeaCommon {
      * @var array
      */
     public static $config = array(
-        'arrayResult' => false,
+        'arrayResult' => true,
         'defaultConnection' => 'default',
         'connections' => array(
             'default' => array(
@@ -130,18 +130,72 @@ class TeaModel extends TeaCommon {
     }
 
     /**
+     * Query with a common criteria.
+     * @param string $criteriaName,... Unlimited criteria key in the returned array of method TeaModel::criterias().
+     * @return $this
+     */
+    public function withCriteria() {
+        $criterias = $this->criterias();
+        $criteriaNames = func_get_args();
+        foreach ($criteriaNames as $criteriaName) {
+            if (array_key_exists($criteriaName, $criterias)) {
+                $addonCriteria = $criterias[$criteriaName];
+                if ($addonCriteria instanceof TeaDbCriteria) {
+                    $this->_addonCriteriaArr = ArrayHelper::mergeArray($this->_addonCriteriaArr, $addonCriteria->criteriaArr);
+                } else if (is_array($addonCriteria) && !empty($addonCriteria)) {
+                    $this->_addonCriteriaArr = ArrayHelper::mergeArray($this->_addonCriteriaArr, $addonCriteria);
+                }
+            }
+        }
+        return $this;
+    }
+
+    /**
      * Hook method.
-     * Return list of related object declarations. Defaults to empty array.
+     * This is a handy method of TeaModel::criterias().
+     * Return common joins map. Defaults to empty array.
      * <pre>
      * The array will be like this:
      * array(
-     *     'relationOne' = array(self::HAS_ONE, 'modelName', 'foreignKey')
+     *     'joinOne' => array(
+     *         'left:bar' => array('bar.pid' => 'foo.id'),
+     *     ),
+     *     'joinTwo' => array(
+     *         'bla' => array('bla.pid' => 'foo.id'),
+     *     ),
+     *     'joinThree' => $this->getDbCriteria()->join(array('right:bla' => array('bla.pid' => 'foo.id')))
+     *     ...
      * )
      * </pre>
-     * @return array List of related object declarations.
+     * @return array Joins map.
      */
-    public function relations() {
+    public function joins() {
         return array();
+    }
+
+    /**
+     * Query with a common join.
+     * @param string $joinName,... Unlimited join key in the returned array of method TeaModel::joins().
+     * @return $this
+     */
+    public function withJoin() {
+        $joins = $this->joins();
+        $joinNames = func_get_args();
+        foreach ($joinNames as $joinName) {
+            if (array_key_exists($joinName, $joins)) {
+                $addonJoin = $joins[$joinName];
+                if ($addonJoin instanceof TeaDbCriteria) {
+                    $joinCriteria = array();
+                    if (isset($addonJoin->criteriaArr['join'])) {
+                        $joinCriteria = array('join' => $addonJoin->criteriaArr['join']);
+                    }
+                    $this->_addonCriteriaArr = ArrayHelper::mergeArray($this->_addonCriteriaArr, $joinCriteria);
+                } else if (is_array($addonJoin) && !empty($addonJoin)) {
+                    $this->_addonCriteriaArr = ArrayHelper::mergeArray($this->_addonCriteriaArr, array('join' => $addonJoin));
+                }
+            }
+        }
+        return $this;
     }
 
     /**
@@ -164,36 +218,11 @@ class TeaModel extends TeaCommon {
     }
 
     /**
-     * Query with a common criteria.
-     * @param string $criteriaName The criteria key in the returned array of method TeaModel::criterias().
+     * Switch fetch style to array or not.
+     * @param bool $status Fetch array or not.
      * @return $this
      */
-    public function withCriteria($criteriaName) {
-        $criterias = $this->criterias();
-        if (array_key_exists($criteriaName, $criterias)) {
-            $addonCriteria = $criterias[$criteriaName];
-            if ($addonCriteria instanceof TeaDbCriteria) {
-                $this->_addonCriteriaArr = $addonCriteria->criteriaArr;
-            } else if (is_array($addonCriteria) && !empty($addonCriteria)) {
-                $this->_addonCriteriaArr = $addonCriteria;
-            } else {
-                $this->_addonCriteriaArr = array();
-            }
-        }
-        return $this;
-    }
-
-    /**
-     * Query with a relation.
-     * @param string $relationName The relation key in the returned array of method TeaModel::relations().
-     * @return $this
-     */
-    public function withRelation($relationName) {
-        $relations = $this->relations();
-        return $this;
-    }
-
-    public function arrayResult($status = false) {
+    public function arrayResult($status) {
         $this->_arrayResult = $status ? true : false;
         return $this;
     }
@@ -245,7 +274,7 @@ class TeaModel extends TeaCommon {
             $vals = $duplicateUpdate = $this->getSetRecord();
         }
         $criteria = is_array($duplicateUpdate) && !empty($duplicateUpdate) ? array('duplicateUpdate' => $duplicateUpdate) : null;
-        $sql = $this->getDbSqlBuilder()->insert($this->tableName(), $vals, $this->getAllCriteria($criteria));
+        $sql = $this->getDbSqlBuilder()->insert($this->tableName(), $vals, $this->getProperCriteria($criteria));
         $this->onBeforeSave();
         if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
             $this->onAfterSave();
@@ -257,12 +286,12 @@ class TeaModel extends TeaCommon {
     /**
      * Find a single record with the specified criteria.
      * @param mixed $criteria TeaDbCriteria instance or criteria array.
-     * @param mixed $colName Select exprs, string or array. If empty, it will be '*'.
+     * @param mixed $exprs Select exprs, string or array. If empty, it will be '*'.
      * @return mixed
      */
-    public function find($criteria = array(), $colName = null) {
+    public function find($criteria = array(), $exprs = null) {
         $this->onBeforeFind();
-        $sql = $this->getDbSqlBuilder()->select($this->tableName(), $this->getAllCriteria($criteria), $colName);
+        $sql = $this->getDbSqlBuilder()->select($this->tableName(), $this->getProperCriteria($criteria), $exprs);
         $modelName = get_class($this);
         if ($this->_arrayResult) {
             $data = $this->getDbQuery()->query($sql)->fetchRow();
@@ -304,36 +333,36 @@ class TeaModel extends TeaCommon {
     /**
      * Find a single record with the condition array of criteria where.
      * @param array $condition Condition array of criteria where.
-     * @param mixed $colName Select exprs, string or array. If empty, it will be '*'.
+     * @param mixed $exprs Select exprs, string or array. If empty, it will be '*'.
      * @return mixed
      */
-    public function findByCondition($condition = array(), $colName = null) {
+    public function findByCondition($condition = array(), $exprs = null) {
         $criteria = !empty($condition) ? array('where' => $condition) : null;
-        return $this->find($criteria, $colName);
+        return $this->find($criteria, $exprs);
     }
     
     /**
      * Find a single record with the specified primary key value.
      * @param mixed $pkVal Primary key value or array values for multiple primary keys.
-     * @param mixed $colName Select exprs, string or array. If empty, it will be '*'.
+     * @param mixed $exprs Select exprs, string or array. If empty, it will be '*'.
      * @return mixed
      */
-    public function findByPk($pkVal, $colName = null) {
-        return $this->find($this->getPkCriteria($pkVal), $colName);
+    public function findByPk($pkVal, $exprs = null) {
+        return $this->find($this->getPkCriteria($pkVal), $exprs);
     }
 
     /**
      * Get column value by row result and column name.
      * @param mixed $rowRst One row result object or array generated find-like method.
-     * @param string $colName String indicates fetching column name.
+     * @param string $column String indicates fetching column name.
      * @return mixed
      */
-    public function getColumnValue($rowRst, $colName) {
+    public function getColumnValue($rowRst, $column) {
         $modelName = get_class($this);
-        if (is_array($rowRst) && is_string($colName) && isset($rowRst[$colName])) {
-            $data = $rowRst[$colName];
-        } else if ($rowRst instanceof $modelName && is_string($colName) && property_exists($rowRst, $colName)) {
-            $data = $rowRst->{$colName};
+        if (is_array($rowRst) && is_string($column) && isset($rowRst[$column])) {
+            $data = $rowRst[$column];
+        } else if ($rowRst instanceof $modelName && is_string($column) && property_exists($rowRst, $column)) {
+            $data = $rowRst->{$column};
         } else {
             $data = false;
         }
@@ -343,12 +372,12 @@ class TeaModel extends TeaCommon {
     /**
      * Find all records with the specified criteria.
      * @param mixed $criteria TeaDbCriteria instance or criteria array.
-     * @param mixed $colName Select exprs, string or array. If empty, it will be '*'.
+     * @param mixed $exprs Select exprs, string or array. If empty, it will be '*'.
      * @return array
      */
-    public function findAll($criteria = array(), $colName = null) {
+    public function findAll($criteria = array(), $exprs = null) {
         $this->onBeforeFind();
-        $sql = $this->getDbSqlBuilder()->select($this->tableName(), $this->getAllCriteria($criteria), $colName);
+        $sql = $this->getDbSqlBuilder()->select($this->tableName(), $this->getProperCriteria($criteria), $exprs);
         $modelName = get_class($this);
         if ($this->_arrayResult) {
             $data = $this->getDbQuery()->query($sql)->fetchRows();
@@ -390,12 +419,12 @@ class TeaModel extends TeaCommon {
     /**
      * Find all records with the condition array of criteria where.
      * @param array $condition Condition array of criteria where.
-     * @param mixed $colName Select exprs, string or array. If empty, it will be '*'.
+     * @param mixed $exprs Select exprs, string or array. If empty, it will be '*'.
      * @return array
      */
-    public function findAllByCondition($condition = array(), $colName = null) {
+    public function findAllByCondition($condition = array(), $exprs = null) {
         $criteria = !empty($condition) ? array('where' => $condition) : null;
-        return $this->findAll($criteria, $colName);
+        return $this->findAll($criteria, $exprs);
     }
 
     /**
@@ -404,7 +433,7 @@ class TeaModel extends TeaCommon {
      * @return bool
      */
     public function exists($criteria = array()) {
-        $sql = $this->getDbSqlBuilder()->exists($this->tableName(), $this->getAllCriteria($criteria), 'exists');
+        $sql = $this->getDbSqlBuilder()->exists($this->tableName(), $this->getProperCriteria($criteria), 'exists');
         $existsVal = $this->findColumnBySql($sql, array(), 'exists');
         return intval($existsVal) === 1 ? true : false;
     }
@@ -458,7 +487,7 @@ class TeaModel extends TeaCommon {
         if ($safe) {
             $criteria['limit'] = array(1);
         }
-        $sql = $this->getDbSqlBuilder()->update($this->tableName(), $vals, $this->getAllCriteria($criteria));
+        $sql = $this->getDbSqlBuilder()->update($this->tableName(), $vals, $this->getProperCriteria($criteria));
         $this->onBeforeSave();
         if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
             $this->onAfterSave();
@@ -518,7 +547,7 @@ class TeaModel extends TeaCommon {
         $vals = array(
             $colName => new TeaDbExpr($expr)
         );
-        return $this->update($this->getAllCriteria($criteria), $vals, $safe);
+        return $this->update($this->getProperCriteria($criteria), $vals, $safe);
     }
 
     /**
@@ -582,7 +611,7 @@ class TeaModel extends TeaCommon {
         if ($safe) {
             $criteria['limit'] = array(1);
         }
-        $sql = $this->getDbSqlBuilder()->delete($this->tableName(), $this->getAllCriteria($criteria));
+        $sql = $this->getDbSqlBuilder()->delete($this->tableName(), $this->getProperCriteria($criteria));
         $this->onBeforeDelete();
         if ($this->getDbQuery()->query($sql)->getRowCount() > 0) {
             $this->onAfterDelete();
@@ -718,7 +747,12 @@ class TeaModel extends TeaCommon {
         return $record;
     }
 
-    public function getAllCriteria($userCriteria) {
+    /**
+     * Return proper criteria merged TeaModel::$_addonCriteriaArr with $userCriteria.
+     * @param mixed $userCriteria User criteria to merge with.
+     * @return mixed Proper criteria.
+     */
+    public function getProperCriteria($userCriteria) {
         if ($userCriteria instanceof TeaDbCriteria) {
             $userCriteriaArr = $userCriteria->criteriaArr;
             $criteria = ArrayHelper::mergeArray($this->_addonCriteriaArr, $userCriteriaArr);

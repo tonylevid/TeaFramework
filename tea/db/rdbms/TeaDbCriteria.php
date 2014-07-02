@@ -11,4 +11,7 @@
  */
 class TeaDbCriteria {
     
+    const OP_DELIMITER = ':';
+    const COL_DELIMITER = ',';
+
 }

@@ -8,19 +8,25 @@ class TestModel extends TeaModel {
 
     public function criterias() {
         return array(
-            'test_detail' => array(
-                'join' => array('left:test_detail->TD' => array('TD.parent_id' => 'A.id')),
+            'test_detail_where' => array(
                 'where' => array('A.id:lte' => 5)
             )
         );
     }
 
-    public function relations() {
-
+    public function joins() {
+        return array(
+            'left_test_detail' => array(
+                'left:test_detail->TD' => array('TD.parent_id' => 'A.id')
+            ),
+            'inner_test_detail' => array(
+                'test_detail->TD' => array('TD.parent_id' => 'A.id')
+            )
+        );
     }
 
     public function all() {
-        $rst = $this->withCriteria('test_detail')->findByCondition(array('A.id:gt' => 0));
+        $rst = $this->withJoin('left_test_detail')->withCriteria('test_detail_where')->findAll();
         return $rst;
     }
 

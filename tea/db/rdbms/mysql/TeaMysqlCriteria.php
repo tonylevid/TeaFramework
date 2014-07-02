@@ -24,18 +24,6 @@ class TeaMysqlCriteria extends TeaDbCriteria {
     public $criteriaSqls = array();
 
     /**
-     * The operator delimiter in condition.
-     * @var string
-     */
-    public $opDelimiter = ':';
-
-    /**
-     * The columns delimiter in condition.
-     * @var string
-     */
-    public $colDelimiter = ',';
-
-    /**
      * Logic operators.
      * @var array
      */
@@ -233,10 +221,10 @@ class TeaMysqlCriteria extends TeaDbCriteria {
     public function orderBy($vals = array()) {
         $orderSqls = array();
         foreach ($vals as $v) {
-            $parts = array_map('trim', explode($this->opDelimiter, $v));
+            $parts = array_map('trim', explode(TeaDbCriteria::OP_DELIMITER, $v));
             !array_key_exists($parts[count($parts) - 1], $this->orderOps) && array_push($parts, 'asc');
             $opOrder = array_pop($parts);
-            $colNames = array_map('trim', explode($this->colDelimiter, implode($this->opDelimiter, $parts)));
+            $colNames = array_map('trim', explode(TeaDbCriteria::COL_DELIMITER, implode(TeaDbCriteria::OP_DELIMITER, $parts)));
             $partsSqls = array();
             foreach ($colNames as $colName) {
                 $partsSqls[] = Tea::getDbSqlBuilder()->quoteColumn($colName) . ' ' . $this->orderOps[$opOrder];
@@ -291,7 +279,7 @@ class TeaMysqlCriteria extends TeaDbCriteria {
         $sqlBuilder = Tea::getDbSqlBuilder();
         $joinSqls = array();
         foreach ($vals as $key => $cond) {
-            $parts = array_map('trim', explode($this->opDelimiter, $key));
+            $parts = array_map('trim', explode(TeaDbCriteria::OP_DELIMITER, $key));
             !array_key_exists($parts[0], $this->joinTypeMap) && array_unshift($parts, 'inner');
             $joinType = array_shift($parts);
             $tblName = array_pop($parts);
@@ -350,12 +338,12 @@ class TeaMysqlCriteria extends TeaDbCriteria {
                 $this->flattenCondVals($v, $this->_flattenedVals);
                 array_push($this->_flattenedVals, ')');
             } else {
-                $parts = array_map('trim', explode($this->opDelimiter, $key));
+                $parts = array_map('trim', explode(TeaDbCriteria::OP_DELIMITER, $key));
                 !array_key_exists($parts[0], $this->logicOps) && array_unshift($parts, 'and');
                 !array_key_exists($parts[count($parts) - 1], $this->commonOps) && array_push($parts, 'eq');
                 $opLogic = array_shift($parts);
                 $opCompare = array_pop($parts);
-                $colNames = array_map('trim', explode($this->colDelimiter, implode($this->opDelimiter, $parts)));
+                $colNames = array_map('trim', explode(TeaDbCriteria::COL_DELIMITER, implode(TeaDbCriteria::OP_DELIMITER, $parts)));
                 $last = end($this->_flattenedVals);
                 reset($this->_flattenedVals);
                 if ($last === '(') {
