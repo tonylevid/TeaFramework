@@ -9,7 +9,7 @@ class TestModel extends TeaModel {
     public function criterias() {
         return array(
             'test_detail_where' => array(
-                'where' => array('A.id:lte' => 5)
+                'where' => array('A.id:gte' => 5)
             )
         );
     }

@@ -297,6 +297,7 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
      * @return string Generated sql string.
      */
     public function select($tblName, $criteria = null, $exprs = null) {
+        $criteriaHasJoin = $this->criteriaHasJoin($criteria);
         if (empty($exprs)) {
             $exprs = '*';
         }
@@ -316,9 +317,7 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
         }
         $exprSql = implode(', ', $exprSqls);
         $tblAlias = $this->getTableAlias($tblName);
-        $criteriaArrHasJoin = is_array($criteria) && isset($criteria['join']);
-        $criteriaObjHasJoin = $criteria instanceof TeaMysqlCriteria && isset($criteria->criteriaArr['join']);
-        $asSql = !empty($tblAlias) && ($criteriaArrHasJoin || $criteriaObjHasJoin) ? " AS " . $this->normalQuote($tblAlias) : '';
+        $asSql = !empty($tblAlias) && $criteriaHasJoin ? " AS " . $this->normalQuote($tblAlias) : '';
         return "SELECT {$exprSql} FROM " . $this->quoteTable($tblName) . $asSql . $this->getCriteriaSql($criteria, __FUNCTION__);
     }
 
@@ -587,6 +586,17 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
         } else {
             return '';
         }
+    }
+
+    /**
+     * Check whether criteria has join.
+     * @param mixed $criteria TeaMysqlCriteria instance or criteria array.
+     * @return bool
+     */
+    private function criteriaHasJoin($criteria) {
+        $criteriaArrHasJoin = is_array($criteria) && isset($criteria['join']);
+        $criteriaObjHasJoin = $criteria instanceof TeaMysqlCriteria && isset($criteria->criteriaArr['join']);
+        return $criteriaArrHasJoin || $criteriaObjHasJoin;
     }
 
 }

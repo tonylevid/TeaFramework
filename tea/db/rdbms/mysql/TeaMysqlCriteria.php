@@ -388,8 +388,28 @@ class TeaMysqlCriteria extends TeaDbCriteria {
      */
     private function parseCondVal($colNames, $op, $val) {
         $this->throwCondValException($op, $val);
+        $parsedStrs = array();
+        foreach ($colNames as $colName) {
+            if (strpos($colName, '.') !== false && !isset($this->criteriaArr['join'])) {
+                $parts = explode('.', $colName);
+                $colName = array_pop($parts); // if criteria does not contain join, column name does not need alias.
+            }
+            $colStr = Tea::getDbSqlBuilder()->quoteColumn($colName);
+            $parsedStrs[] = $this->parseCondOp($colStr, $op, $val);
+        }
+        return implode(' AND ', $parsedStrs);
+    }
+
+    /**
+     * Parse an operator of one element of the flattened values of condition.
+     * @param string $colStr Column name.
+     * @param string $op Operator.
+     * @param mixed $val Value.
+     * @return string Generate sql of the parsed value.
+     * @throws TeaDbException
+     */
+    private function parseCondOp($colStr, $op, $val) {
         $parsedStr = '';
-        $colStr = Tea::getDbSqlBuilder()->quoteColumns($colNames);
         switch ($op) {
             case 'eq':
             case 'ne':
