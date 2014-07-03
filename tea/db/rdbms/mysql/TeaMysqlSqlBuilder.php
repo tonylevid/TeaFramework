@@ -432,6 +432,17 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
         }
     }
 
+    /**
+     * Check whether criteria has join.
+     * @param mixed $criteria TeaMysqlCriteria instance or criteria array.
+     * @return bool
+     */
+    public function criteriaHasJoin($criteria) {
+        $criteriaArrHasJoin = is_array($criteria) && isset($criteria['join']);
+        $criteriaObjHasJoin = $criteria instanceof TeaMysqlCriteria && isset($criteria->criteriaArr['join']);
+        return $criteriaArrHasJoin || $criteriaObjHasJoin;
+    }
+
     // Sql Quote Functions
 
     /**
@@ -586,17 +597,6 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
         } else {
             return '';
         }
-    }
-
-    /**
-     * Check whether criteria has join.
-     * @param mixed $criteria TeaMysqlCriteria instance or criteria array.
-     * @return bool
-     */
-    private function criteriaHasJoin($criteria) {
-        $criteriaArrHasJoin = is_array($criteria) && isset($criteria['join']);
-        $criteriaObjHasJoin = $criteria instanceof TeaMysqlCriteria && isset($criteria->criteriaArr['join']);
-        return $criteriaArrHasJoin || $criteriaObjHasJoin;
     }
 
 }

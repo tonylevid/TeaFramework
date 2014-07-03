@@ -282,6 +282,22 @@ class TeaModel extends TeaCommon {
         }
         return false;
     }
+
+    public function getProperExprs($criteria, $exprs) {
+        if ($criteria instanceof TeaDbCriteria && isset($criteria->criteriaArr['join'])) {
+            $criteriaJoin = $criteria->criteriaArr['join'];
+        } else if (is_array($criteria) && isset($criteria['join'])) {
+            $criteriaJoin = $criteria['join'];
+        } else {
+            $criteriaJoin = array();
+        }
+        if (empty($exprs) && !empty($criteriaJoin)) {
+            $tableName = array($this->tableName());
+
+            
+        }
+        return $exprs;
+    }
     
     /**
      * Find a single record with the specified criteria.
@@ -291,7 +307,8 @@ class TeaModel extends TeaCommon {
      */
     public function find($criteria = array(), $exprs = null) {
         $this->onBeforeFind();
-        $sql = $this->getDbSqlBuilder()->select($this->tableName(), $this->getProperCriteria($criteria), $exprs);
+        $properCriteria = $this->getProperCriteria($criteria);
+        $sql = $this->getDbSqlBuilder()->select($this->tableName(), $properCriteria, $this->getProperExprs($properCriteria, $exprs));
         $modelName = get_class($this);
         if ($this->_arrayResult) {
             $data = $this->getDbQuery()->query($sql)->fetchRow();
@@ -377,7 +394,8 @@ class TeaModel extends TeaCommon {
      */
     public function findAll($criteria = array(), $exprs = null) {
         $this->onBeforeFind();
-        $sql = $this->getDbSqlBuilder()->select($this->tableName(), $this->getProperCriteria($criteria), $exprs);
+        $properCriteria = $this->getProperCriteria($criteria);
+        $sql = $this->getDbSqlBuilder()->select($this->tableName(), $properCriteria, $this->getProperExprs($properCriteria, $exprs));
         $modelName = get_class($this);
         if ($this->_arrayResult) {
             $data = $this->getDbQuery()->query($sql)->fetchRows();
