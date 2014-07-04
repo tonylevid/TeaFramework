@@ -30,7 +30,8 @@ class TeaModel extends TeaCommon {
                 'password' => '123456',
                 'charset' => 'utf8', // if charset has been defined in dsn, this will be invalid.
                 'tablePrefix' => 'tb_',
-                'tableAliasMark' => '->',
+                'aliasMark' => '->',
+                'tableColumnLinkMark' => '-',
                 'persistent' => true,
                 'emulatePrepare' => true,
                 'autoConnect' => true,
@@ -209,8 +210,7 @@ class TeaModel extends TeaCommon {
 
     /**
      * Get table alias name.
-     * If $tblName is '{{table_name->A}}', This will return 'A'.
-     * @param string $tblName Table name.
+     * If Table name is '{{table_name->A}}', This will return 'A'.
      * @return string Table alias name.
      */
     public function getTableAlias() {
@@ -282,27 +282,12 @@ class TeaModel extends TeaCommon {
         }
         return false;
     }
-
-    public function getProperExprs($criteria, $exprs) {
-        if ($criteria instanceof TeaDbCriteria && isset($criteria->criteriaArr['join'])) {
-            $criteriaJoin = $criteria->criteriaArr['join'];
-        } else if (is_array($criteria) && isset($criteria['join'])) {
-            $criteriaJoin = $criteria['join'];
-        } else {
-            $criteriaJoin = array();
-        }
-        if (empty($exprs) && !empty($criteriaJoin)) {
-            $tableName = array($this->tableName());
-
-            
-        }
-        return $exprs;
-    }
     
     /**
      * Find a single record with the specified criteria.
      * @param mixed $criteria TeaDbCriteria instance or criteria array.
-     * @param mixed $exprs Select exprs, string or array. If empty, it will be '*'.
+     * @param mixed $exprs Select exprs, string or array. If empty and criteria does not contain 'join', it will be '*'.
+     * If empty and criteria contains 'join', it will be all columns with table prefix added.
      * @return mixed
      */
     public function find($criteria = array(), $exprs = null) {
@@ -350,7 +335,8 @@ class TeaModel extends TeaCommon {
     /**
      * Find a single record with the condition array of criteria where.
      * @param array $condition Condition array of criteria where.
-     * @param mixed $exprs Select exprs, string or array. If empty, it will be '*'.
+     * @param mixed $exprs Select exprs, string or array. If empty and criteria does not contain 'join', it will be '*'.
+     * If empty and criteria contains 'join', it will be all columns with table prefix added.
      * @return mixed
      */
     public function findByCondition($condition = array(), $exprs = null) {
@@ -361,7 +347,8 @@ class TeaModel extends TeaCommon {
     /**
      * Find a single record with the specified primary key value.
      * @param mixed $pkVal Primary key value or array values for multiple primary keys.
-     * @param mixed $exprs Select exprs, string or array. If empty, it will be '*'.
+     * @param mixed $exprs Select exprs, string or array. If empty and criteria does not contain 'join', it will be '*'.
+     * If empty and criteria contains 'join', it will be all columns with table prefix added.
      * @return mixed
      */
     public function findByPk($pkVal, $exprs = null) {
@@ -389,7 +376,8 @@ class TeaModel extends TeaCommon {
     /**
      * Find all records with the specified criteria.
      * @param mixed $criteria TeaDbCriteria instance or criteria array.
-     * @param mixed $exprs Select exprs, string or array. If empty, it will be '*'.
+     * @param mixed $exprs Select exprs, string or array. If empty and criteria does not contain 'join', it will be '*'.
+     * If empty and criteria contains 'join', it will be all columns with table prefix added.
      * @return array
      */
     public function findAll($criteria = array(), $exprs = null) {
@@ -437,7 +425,8 @@ class TeaModel extends TeaCommon {
     /**
      * Find all records with the condition array of criteria where.
      * @param array $condition Condition array of criteria where.
-     * @param mixed $exprs Select exprs, string or array. If empty, it will be '*'.
+     * @param mixed $exprs Select exprs, string or array. If empty and criteria does not contain 'join', it will be '*'.
+     * If empty and criteria contains 'join', it will be all columns with table prefix added.
      * @return array
      */
     public function findAllByCondition($condition = array(), $exprs = null) {
@@ -781,6 +770,46 @@ class TeaModel extends TeaCommon {
         }
         $this->_addonCriteriaArr = array(); // clear after merge
         return $criteria;
+    }
+
+    /**
+     * Get proper exprs for fetch methods.
+     * If exprs is empty and criteria contains 'join', it will return an array contains all columns with automatic prefix added.
+     * @param mixed $criteria TeaDbCriteria instance or criteria array.
+     * @param mixed $exprs Select exprs, string or array.
+     * @return mixed Proper exprs.
+     */
+    public function getProperExprs($criteria, $exprs) {
+        if ($criteria instanceof TeaDbCriteria && isset($criteria->criteriaArr['join'])) {
+            $criteriaJoin = $criteria->criteriaArr['join'];
+        } else if (is_array($criteria) && isset($criteria['join'])) {
+            $criteriaJoin = $criteria['join'];
+        } else {
+            $criteriaJoin = array();
+        }
+        if (empty($exprs) && !empty($criteriaJoin)) {
+            $tableNames = array($this->tableName() => $this->getColumnNames());
+            foreach ($criteriaJoin as $key => $cond) {
+                $parts = array_map('trim', explode(TeaDbCriteria::OP_DELIMITER, $key));
+                !array_key_exists($parts[0], TeaDbCriteria::$joinTypeMap) && array_unshift($parts, 'inner');
+                $joinType = array_shift($parts);
+                $joinTableName = array_pop($parts);
+                $joinTableColumns = array_keys($this->getDbSchema()->getTableColumns($joinTableName));
+                $tableNames[$joinTableName] = $joinTableColumns;
+            }
+            foreach ($tableNames as $tableName => $columns) {
+                $prefix = $this->getDbSqlBuilder()->getTableAlias($tableName);
+                if (empty($prefix)) {
+                    $prefix = $this->getDbSqlBuilder()->getTableName($tableName);
+                }
+                foreach ($columns as $col) {
+                    $prefixTable = !empty($prefix) ? $prefix . '.' : '';
+                    $prefixCol = !empty($prefix) ? $prefix . $this->getDbConnection()->tableColumnLinkMark : '';
+                    $exprs[] = $prefixTable . $col . $this->getDbConnection()->aliasMark . $prefixCol . $col;
+                }
+            }
+        }
+        return $exprs;
     }
 
 }

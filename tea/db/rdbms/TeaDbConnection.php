@@ -60,10 +60,16 @@ abstract class TeaDbConnection {
     public $tablePrefix;
 
     /**
-     * Database table alias mark.
+     * Database alias mark.
      * @var string
      */
-    public $tableAliasMark;
+    public $aliasMark;
+
+    /**
+     * Table column link mark. Used for TeaModel::getProperExprs().
+     * @var string
+     */
+    public $tableColumnLinkMark;
 
     /**
      * Persistent connection or not.
@@ -95,7 +101,7 @@ abstract class TeaDbConnection {
      */
     protected $_connInfoKeys = array(
         'dsn', 'username', 'password', 'charset', 'tablePrefix', 
-        'tableAliasMark', 'persistent', 'emulatePrepare'
+        'aliasMark', 'tableColumnLinkMark', 'persistent', 'emulatePrepare'
     );
 
     /**

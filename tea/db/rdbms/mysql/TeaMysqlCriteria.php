@@ -30,6 +30,42 @@ class TeaMysqlCriteria extends TeaDbCriteria {
     private $_flattenedVals = array();
 
     /**
+     * Current table name.
+     * @var string
+     */
+    private $_currentTblName = null;
+
+    /**
+     * Join table name.
+     * @var string
+     */
+    private $_joinTblName = null;
+
+    /**
+     * Set current table name.
+     * @param string $tblName Table name.
+     * @return $this
+     */
+    public function setCurrentTableName($tblName) {
+        $this->_currentTblName = $this->getTableOrAliasName($tblName);
+        return $this;
+    }
+
+    /**
+     * Get table name or alias name by provided $tblName.
+     * If $tblName has alias, it will return alias name, else return table name.
+     * @param string $tblName Table name.
+     * @return string
+     */
+    public function getTableOrAliasName($tblName) {
+        $aliasName = Tea::getDbSqlBuilder()->getTableAlias($tblName);
+        if (!empty($aliasName)) {
+            return $aliasName;
+        }
+        return Tea::getDbSqlBuilder()->getTableName($tblName);
+    }
+
+    /**
      * Parse criteria in array style.
      * @param array $criteriaArr Criteria in array style.
      * @return $this
@@ -158,12 +194,12 @@ class TeaMysqlCriteria extends TeaDbCriteria {
         $orderSqls = array();
         foreach ($vals as $v) {
             $parts = array_map('trim', explode(TeaDbCriteria::OP_DELIMITER, $v));
-            !array_key_exists($parts[count($parts) - 1], parent::$orderOps) && array_push($parts, 'asc');
+            !array_key_exists($parts[count($parts) - 1], TeaDbCriteria::$orderOps) && array_push($parts, 'asc');
             $opOrder = array_pop($parts);
             $colNames = array_map('trim', explode(TeaDbCriteria::COL_DELIMITER, implode(TeaDbCriteria::OP_DELIMITER, $parts)));
             $partsSqls = array();
             foreach ($colNames as $colName) {
-                $partsSqls[] = Tea::getDbSqlBuilder()->quoteColumn($colName) . ' ' . parent::$orderOps[$opOrder];
+                $partsSqls[] = Tea::getDbSqlBuilder()->quoteColumn($colName) . ' ' . TeaDbCriteria::$orderOps[$opOrder];
             }
             $orderSqls[] = implode(', ', $partsSqls);
         }
@@ -216,14 +252,17 @@ class TeaMysqlCriteria extends TeaDbCriteria {
         $joinSqls = array();
         foreach ($vals as $key => $cond) {
             $parts = array_map('trim', explode(TeaDbCriteria::OP_DELIMITER, $key));
-            !array_key_exists($parts[0], parent::$joinTypeMap) && array_unshift($parts, 'inner');
+            !array_key_exists($parts[0], TeaDbCriteria::$joinTypeMap) && array_unshift($parts, 'inner');
             $joinType = array_shift($parts);
             $tblName = array_pop($parts);
+            $this->_joinTblName = $this->getTableOrAliasName($tblName);
             $tblAlias = $sqlBuilder->getTableAlias($tblName);
             $asSql = !empty($tblAlias) ? " AS " . $sqlBuilder->normalQuote($tblAlias) : '';
             $colSqls = array();
             foreach ($cond as $colA => $colB) {
                 if ($colA !== ':condition') {
+                    $colA = str_replace(array('{{table}}', '{{joinTable}}'), array($this->_currentTblName, $this->_joinTblName), $colA);
+                    $colB = str_replace(array('{{table}}', '{{joinTable}}'), array($this->_currentTblName, $this->_joinTblName), $colB);
                     $colSqls[] = $sqlBuilder->quoteColumn($colA) . ' = ' . $sqlBuilder->quoteColumn($colB);
                 }
             }
@@ -232,7 +271,7 @@ class TeaMysqlCriteria extends TeaDbCriteria {
                 $andSql = !empty($colSql) ? ' AND ' : '';
                 $colSql .= $andSql . $this->getCondValsSql($cond[':condition']);
             }
-            $joinSqls[] = parent::$joinTypeMap[$joinType] . " " . $sqlBuilder->quoteTable($tblName) . $asSql . " ON " . $colSql;
+            $joinSqls[] = TeaDbCriteria::$joinTypeMap[$joinType] . " " . $sqlBuilder->quoteTable($tblName) . $asSql . " ON " . $colSql;
         }
         $this->criteriaArr[__FUNCTION__] = $vals;
         $this->criteriaSqls[__FUNCTION__] = implode(' ', $joinSqls);
@@ -249,6 +288,9 @@ class TeaMysqlCriteria extends TeaDbCriteria {
         foreach ($buildNames as $name) {
             array_key_exists($name, $this->criteriaSqls) && array_push($sqls, $this->criteriaSqls[$name]);
         }
+        // clear current table and join table after sql generated
+        $this->_currentTblName = null;
+        $this->_joinTblName = null;
         return implode(' ', $sqls);
     }
     
@@ -275,8 +317,8 @@ class TeaMysqlCriteria extends TeaDbCriteria {
                 array_push($this->_flattenedVals, ')');
             } else {
                 $parts = array_map('trim', explode(TeaDbCriteria::OP_DELIMITER, $key));
-                !array_key_exists($parts[0], parent::$logicOps) && array_unshift($parts, 'and');
-                !array_key_exists($parts[count($parts) - 1], parent::$commonOps) && array_push($parts, 'eq');
+                !array_key_exists($parts[0], TeaDbCriteria::$logicOps) && array_unshift($parts, 'and');
+                !array_key_exists($parts[count($parts) - 1], TeaDbCriteria::$commonOps) && array_push($parts, 'eq');
                 $opLogic = array_shift($parts);
                 $opCompare = array_pop($parts);
                 $colNames = array_map('trim', explode(TeaDbCriteria::COL_DELIMITER, implode(TeaDbCriteria::OP_DELIMITER, $parts)));
@@ -305,8 +347,8 @@ class TeaMysqlCriteria extends TeaDbCriteria {
         foreach ($vals as &$val) {
             if (is_array($val)) {
                 $val = call_user_func_array(array($this, 'parseCondVal'), $val);
-            } else if (is_string($val) && array_key_exists($val, parent::$logicOps)) {
-                $val = parent::$logicOps[$val];
+            } else if (is_string($val) && array_key_exists($val, TeaDbCriteria::$logicOps)) {
+                $val = TeaDbCriteria::$logicOps[$val];
             }
         }
         unset($val);
@@ -325,11 +367,13 @@ class TeaMysqlCriteria extends TeaDbCriteria {
     private function parseCondVal($colNames, $op, $val) {
         $this->throwCondValException($op, $val);
         $parsedStrs = array();
+
         foreach ($colNames as $colName) {
             if (strpos($colName, '.') !== false && !isset($this->criteriaArr['join'])) {
                 $parts = explode('.', $colName);
                 $colName = array_pop($parts); // if criteria does not contain join, column name does not need alias.
             }
+            $colName = str_replace(array('{{table}}', '{{joinTable}}'), array($this->_currentTblName, $this->_joinTblName), $colName);
             $colStr = Tea::getDbSqlBuilder()->quoteColumn($colName);
             $parsedStrs[] = $this->parseCondOp($colStr, $op, $val);
         }
@@ -359,7 +403,7 @@ class TeaMysqlCriteria extends TeaDbCriteria {
             case 'not-regexp':
             case 'iregexp':
             case 'not-iregexp':
-                $parsedStr = "{$colStr} " . parent::$commonOps[$op] . " " . Tea::getDbQuery()->escape($val);
+                $parsedStr = "{$colStr} " . TeaDbCriteria::$commonOps[$op] . " " . Tea::getDbQuery()->escape($val);
                 break;
             case 'between':
                 $val = array_map(array(Tea::getDbQuery(), 'escape'), $val);

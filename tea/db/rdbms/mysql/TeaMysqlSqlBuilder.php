@@ -318,7 +318,7 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
         $exprSql = implode(', ', $exprSqls);
         $tblAlias = $this->getTableAlias($tblName);
         $asSql = !empty($tblAlias) && $criteriaHasJoin ? " AS " . $this->normalQuote($tblAlias) : '';
-        return "SELECT {$exprSql} FROM " . $this->quoteTable($tblName) . $asSql . $this->getCriteriaSql($criteria, __FUNCTION__);
+        return "SELECT {$exprSql} FROM " . $this->quoteTable($tblName) . $asSql . $this->getCriteriaSql($tblName, $criteria, __FUNCTION__);
     }
 
     /**
@@ -357,7 +357,7 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
         $colValsSql = implode(', ', $colVals);
         $tblAlias = $this->getTableAlias($tblName);
         $asSql = !empty($tblAlias) ? " AS " . $this->normalQuote($tblAlias) : '';
-        return "UPDATE " . $this->quoteTable($tblName) . $asSql . " SET " . $colValsSql . $this->getCriteriaSql($criteria, __FUNCTION__);
+        return "UPDATE " . $this->quoteTable($tblName) . $asSql . " SET " . $colValsSql . $this->getCriteriaSql($tblName, $criteria, __FUNCTION__);
     }
 
     /**
@@ -369,7 +369,7 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
      */
     public function delete($tblName, $criteria = null) {
         $tblAlias = $this->getTableAlias($tblName);
-        $criteriaSql = $this->getCriteriaSql($criteria, __FUNCTION__);
+        $criteriaSql = $this->getCriteriaSql($tblName, $criteria, __FUNCTION__);
         if (!empty($tblAlias)) {
             return "DELETE FROM {$tblAlias} USING " . $this->quoteTable($tblName) . " AS " . $this->normalQuote($tblAlias) . $criteriaSql;
         }
@@ -384,8 +384,8 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
      */
     public function getTableName($tblName) {
         $tblName = preg_replace('/^{{(.+)}}$/', '$1', $tblName);
-        if (strpos($tblName, Tea::getDbConnection()->tableAliasMark) !== false) {
-            $aliasParts = explode(Tea::getDbConnection()->tableAliasMark, $tblName);
+        if (strpos($tblName, Tea::getDbConnection()->aliasMark) !== false) {
+            $aliasParts = explode(Tea::getDbConnection()->aliasMark, $tblName);
             $tblParts = explode('.', $aliasParts[0]);
         } else {
             $tblParts = explode('.', $tblName);
@@ -409,8 +409,8 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
      */
     public function getColumnName($colName) {
         $colName = preg_replace('/^{{(.+)}}$/', '$1', $colName);
-        if (strpos($colName, Tea::getDbConnection()->tableAliasMark) !== false) {
-            $aliasParts = explode(Tea::getDbConnection()->tableAliasMark, $colName);
+        if (strpos($colName, Tea::getDbConnection()->aliasMark) !== false) {
+            $aliasParts = explode(Tea::getDbConnection()->aliasMark, $colName);
             $tblParts = explode('.', $aliasParts[0]);
         } else {
             $tblParts = explode('.', $colName);
@@ -426,8 +426,8 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
      */
     public function getTableAlias($tblName) {
         $tblName = preg_replace('/^{{(.+)}}$/', '$1', $tblName);
-        if (strpos($tblName, Tea::getDbConnection()->tableAliasMark) !== false) {
-            $parts = explode(Tea::getDbConnection()->tableAliasMark, $tblName);
+        if (strpos($tblName, Tea::getDbConnection()->aliasMark) !== false) {
+            $parts = explode(Tea::getDbConnection()->aliasMark, $tblName);
             return $parts[1];
         }
     }
@@ -538,7 +538,7 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
         }
         $colNamesSql = implode(', ', $colNames);
         $colValsSql = implode(', ', $colVals);
-        return "INSERT INTO " . $this->quoteTable($tblName) . " ({$colNamesSql}) VALUES ({$colValsSql})" . $this->getCriteriaSql($criteria, __FUNCTION__);
+        return "INSERT INTO " . $this->quoteTable($tblName) . " ({$colNamesSql}) VALUES ({$colValsSql})" . $this->getCriteriaSql($tblName, $criteria, __FUNCTION__);
     }
 
     /**
@@ -568,7 +568,7 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
         }
         $colNamesSql = is_array($colNames) && !empty($colNames) ? $this->quoteColumns($colNames) : '';
         $multiColValsSql = implode(', ', $multiColVals);
-        return "INSERT INTO " . $this->quoteTable($tblName) . " ({$colNamesSql}) VALUES {$multiColValsSql}" . $this->getCriteriaSql($criteria, __FUNCTION__);
+        return "INSERT INTO " . $this->quoteTable($tblName) . " ({$colNamesSql}) VALUES {$multiColValsSql}" . $this->getCriteriaSql($tblName, $criteria, __FUNCTION__);
     }
 
     /**
@@ -579,21 +579,22 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
      * @return string Generated sql string.
      */
     protected function insertSelect($tblName, $selectSql, $criteria = null) {
-        return "INSERT INTO " . $this->quoteTable($tblName) . " {$selectSql}" . $this->getCriteriaSql($criteria, __FUNCTION__);
+        return "INSERT INTO " . $this->quoteTable($tblName) . " {$selectSql}" . $this->getCriteriaSql($tblName, $criteria, __FUNCTION__);
     }
 
     /**
      * Get criteria sql.
+     * @param string $tblName Table name.
      * @param mixed $criteria TeaMysqlCriteria instance or criteria array.
      * @param string $method Key in TeaMysqlSqlBuilder::$allowCriteriaMap.
      * @return mixed Return criteria sql on success, false on failure.
      */
-    protected function getCriteriaSql($criteria = null, $method = null) {
+    protected function getCriteriaSql($tblName, $criteria = null, $method = null) {
         $allowCriteria = array_key_exists($method, $this->allowCriteriaMap) ? $this->allowCriteriaMap[$method] : array();
         if ($criteria instanceof TeaMysqlCriteria) {
-            return " " . $criteria->build($allowCriteria);
+            return " " . $criteria->setCurrentTableName($tblName)->build($allowCriteria);
         } else if (is_array($criteria) && !empty($criteria)) {
-            return " " . Tea::getDbCriteria()->parseCriteriaArr($criteria)->build($allowCriteria);
+            return " " . Tea::getDbCriteria()->setCurrentTableName($tblName)->parseCriteriaArr($criteria)->build($allowCriteria);
         } else {
             return '';
         }

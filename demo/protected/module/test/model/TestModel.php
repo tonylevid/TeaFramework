@@ -3,13 +3,13 @@
 class TestModel extends TeaModel {
 
     public function tableName() {
-        return '{{test->A}}';
+        return '{{test->T}}';
     }
 
     public function criterias() {
         return array(
             'test_detail_where' => array(
-                'where' => array('A.id:gte' => 5)
+                'where' => array('{{table}}.id:gte' => 5)
             )
         );
     }
@@ -17,10 +17,10 @@ class TestModel extends TeaModel {
     public function joins() {
         return array(
             'left_test_detail' => array(
-                'left:test_detail->TD' => array('TD.parent_id' => 'A.id')
+                'left:test_detail->TD' => array('{{joinTable}}.parent_id' => '{{table}}.id')
             ),
             'inner_test_detail' => array(
-                'test_detail->TD' => array('TD.parent_id' => 'A.id')
+                'test_detail' => array('{{joinTable}}.parent_id' => '{{table}}.id')
             )
         );
     }
