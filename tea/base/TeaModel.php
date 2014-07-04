@@ -11,11 +11,6 @@
  */
 class TeaModel extends TeaCommon {
 
-    const HAS_ONE = 1;
-    const BELONGS_TO = 2;
-    const HAS_MANY = 3;
-    const MANY_MANY = 4;
-
     /**
      * Class config.
      * @var array

@@ -8,6 +8,7 @@ return array(
         )
     ),
     'TeaModel' => array(
+        'arrayResult' => true,
         'defaultConnection' => 'default',
         'connections' => array(
             'default' => array(
@@ -16,7 +17,8 @@ return array(
                 'password' => '',
                 'charset' => 'utf8', // if charset has been defined in dsn, this will be invalid.
                 'tablePrefix' => 'tb_',
-                'tableAliasMark' => '->',
+                'aliasMark' => '->',
+                'tableColumnLinkMark' => '-',
                 'persistent' => true,
                 'emulatePrepare' => true,
                 'autoConnect' => true,
