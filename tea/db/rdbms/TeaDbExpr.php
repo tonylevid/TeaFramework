@@ -21,7 +21,7 @@ class TeaDbExpr {
 
     public function __toString() {
         if (empty($this->params)) {
-            return $this->expr;
+            return (string) ($this->expr);
         }
         $replacedExpr = str_replace(array_merge(array('?'), array_keys($this->params)), '%s', $this->expr);
         return vsprintf($replacedExpr, array_map(array(Tea::getDbQuery(), 'escape'), $this->params));

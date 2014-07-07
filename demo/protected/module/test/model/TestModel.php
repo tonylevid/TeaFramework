@@ -27,6 +27,9 @@ class TestModel extends TeaModel {
 
     public function all() {
         $rst = $this->withJoin('left_test_detail')->withCriteria('test_detail_where')->findAll();
+        // $rst = $this->withJoin('left_test_detail')->withCriteria('test_detail_where')->count(array(
+        //     'where' => array('{{table}}.id:gte' => 10)
+        // ));
         return $rst;
     }
 

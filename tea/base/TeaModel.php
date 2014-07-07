@@ -432,12 +432,25 @@ class TeaModel extends TeaCommon {
     /**
      * Check whether a row exists with the specified criteria.
      * @param mixed $criteria TeaDbCriteria instance or criteria array.
+     * @param string $alias Exists result column alias.
      * @return bool
      */
-    public function exists($criteria = array()) {
-        $sql = $this->getDbSqlBuilder()->exists($this->tableName(), $this->getProperCriteria($criteria), 'exists');
-        $existsVal = $this->findColumnBySql($sql, array(), 'exists');
+    public function exists($criteria = array(), $alias = 'exists') {
+        $sql = $this->getDbSqlBuilder()->exists($this->tableName(), $this->getProperCriteria($criteria), $alias);
+        $rst = $this->findBySql($sql);
+        $existsVal = $this->getColumnValue($rst, $alias);
         return intval($existsVal) === 1 ? true : false;
+    }
+
+    /**
+     * Check whether a row exists with the condition array of criteria where.
+     * @param mixed $condition Condition array of criteria where.
+     * @param string $alias Exists result column alias.
+     * @return bool
+     */
+    public function existsByCondition($condition = array(), $alias = 'exists') {
+        $criteria = !empty($condition) ? array('where' => $condition) : null;
+        return $this->exists($criteria, $alias);
     }
 
     /**
@@ -447,6 +460,30 @@ class TeaModel extends TeaCommon {
      */
     public function existsByPk($pkVal) {
         return $this->exists($this->getPkCriteria($pkVal));
+    }
+
+    /**
+     * Get number of rows with the specified criteria.
+     * @param mixed $criteria TeaDbCriteria instance or criteria array.
+     * @param string $alias Total result column alias.
+     * @return mixed Return number of rows on success, false on failure.
+     */
+    public function count($criteria = array(), $alias = 'total') {
+        $sql = $this->getDbSqlBuilder()->count($this->tableName(), $this->getProperCriteria($criteria), $alias);
+        $rst = $this->findBySql($sql);
+        $totalVal = $this->getColumnValue($rst, $alias);
+        return $totalVal === false ? false : intval($totalVal);
+    }
+
+    /**
+     * Get number of rows with the condition array of criteria where.
+     * @param array $condition Condition array of criteria where.
+     * @param string $alias Total result column alias.
+     * @return mixed Return number of rows on success, false on failure.
+     */
+    public function countByCondition($condition = array(), $alias = 'total') {
+        $criteria = !empty($condition) ? array('where' => $condition) : null;
+        return $this->count($criteria, $alias);
     }
 
     /**

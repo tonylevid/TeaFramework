@@ -20,7 +20,7 @@ return array(
                 'aliasMark' => '->',
                 'tableColumnLinkMark' => '-',
                 'persistent' => true,
-                'emulatePrepare' => true,
+                'emulatePrepare' => false,
                 'autoConnect' => true,
             )
         )
