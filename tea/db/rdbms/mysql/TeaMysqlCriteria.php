@@ -93,12 +93,12 @@ class TeaMysqlCriteria extends TeaDbCriteria {
      * @return $this
      */
     public function duplicateUpdate($vals = array()) {
+        $this->criteriaArr[__FUNCTION__] = $vals;
         $updateVals = array();
         foreach ($vals as $colName => $colVal) {
             $updateVals[] = Tea::getDbSqlBuilder()->quoteColumn($colName) . ' = ' . Tea::getDbQuery()->escape($colVal);
         }
         $sql = "ON DUPLICATE KEY UPDATE " . implode(', ', $updateVals);
-        $this->criteriaArr[__FUNCTION__] = $vals;
         $this->criteriaSqls[__FUNCTION__] = $sql;
         return $this;
     }
@@ -125,7 +125,6 @@ class TeaMysqlCriteria extends TeaDbCriteria {
      * @return $this
      */
     public function where($vals = array()) {
-        $this->_flattenedVals = array();
         $this->criteriaArr[__FUNCTION__] = $vals;
         $this->criteriaSqls[__FUNCTION__] = "WHERE " . $this->getCondValsSql($vals);
         return $this;
@@ -170,7 +169,6 @@ class TeaMysqlCriteria extends TeaDbCriteria {
      * @return $this
      */
     public function having($vals = array()) {
-        $this->_flattenedVals = array();
         $this->criteriaArr[__FUNCTION__] = $vals;
         $this->criteriaSqls[__FUNCTION__] = "HAVING " . $this->getCondValsSql($vals);
         return $this;
@@ -191,6 +189,7 @@ class TeaMysqlCriteria extends TeaDbCriteria {
      * @return $this
      */
     public function orderBy($vals = array()) {
+        $this->criteriaArr[__FUNCTION__] = $vals;
         $orderSqls = array();
         foreach ($vals as $v) {
             $parts = array_map('trim', explode(TeaDbCriteria::OP_DELIMITER, $v));
@@ -203,7 +202,6 @@ class TeaMysqlCriteria extends TeaDbCriteria {
             }
             $orderSqls[] = implode(', ', $partsSqls);
         }
-        $this->criteriaArr[__FUNCTION__] = $vals;
         $this->criteriaSqls[__FUNCTION__] = "ORDER BY " . implode(', ', $orderSqls);
         return $this;
     }
@@ -215,6 +213,7 @@ class TeaMysqlCriteria extends TeaDbCriteria {
      * @return $this
      */
     public function limit($vals = array()) {
+        $this->criteriaArr[__FUNCTION__] = $vals;
         $count = count($vals);
         if ($count === 1) {
             $limitSql = Tea::getDbQuery()->escape($vals[0]);
@@ -225,7 +224,6 @@ class TeaMysqlCriteria extends TeaDbCriteria {
         } else {
             $limitSql = '';
         }
-        $this->criteriaArr[__FUNCTION__] = $vals;
         $this->criteriaSqls[__FUNCTION__] = "LIMIT {$limitSql}";
         return $this;
     }
@@ -248,6 +246,7 @@ class TeaMysqlCriteria extends TeaDbCriteria {
      * @return $this
      */
     public function join($vals = array()) {
+        $this->criteriaArr[__FUNCTION__] = $vals;
         $sqlBuilder = Tea::getDbSqlBuilder();
         $joinSqls = array();
         foreach ($vals as $key => $cond) {
@@ -273,7 +272,6 @@ class TeaMysqlCriteria extends TeaDbCriteria {
             }
             $joinSqls[] = TeaDbCriteria::$joinTypeMap[$joinType] . " " . $sqlBuilder->quoteTable($tblName) . $asSql . " ON " . $colSql;
         }
-        $this->criteriaArr[__FUNCTION__] = $vals;
         $this->criteriaSqls[__FUNCTION__] = implode(' ', $joinSqls);
         return $this;
     }
@@ -367,7 +365,6 @@ class TeaMysqlCriteria extends TeaDbCriteria {
     private function parseCondVal($colNames, $op, $val) {
         $this->throwCondValException($op, $val);
         $parsedStrs = array();
-
         foreach ($colNames as $colName) {
             if (strpos($colName, '.') !== false && !isset($this->criteriaArr['join'])) {
                 $parts = explode('.', $colName);

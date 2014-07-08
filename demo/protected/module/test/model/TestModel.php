@@ -17,7 +17,9 @@ class TestModel extends TeaModel {
     public function joins() {
         return array(
             'left_test_detail' => array(
-                'left:test_detail->TD' => array('{{joinTable}}.parent_id' => '{{table}}.id')
+                'left:test_detail->TD' => array('{{joinTable}}.parent_id' => '{{table}}.id', ':condition' => array(
+                    '{{table}}.id:gt' => 10
+                ))
             ),
             'inner_test_detail' => array(
                 'test_detail' => array('{{joinTable}}.parent_id' => '{{table}}.id')
