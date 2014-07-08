@@ -192,22 +192,19 @@ class TeaRouter extends TeaCommon {
         $pathinfo = $request->getPathinfo();
         switch (self::$config['routeMode']) {
             case 'auto':
-                if (!empty($queryPathinfo)) {
-                    $this->setRouteInfo($queryPathinfo);
-                } else {
-                    $this->setRouteInfo($pathinfo);
-                }
+                $routePathinfo = !empty($queryPathinfo) ? $queryPathinfo : $pathinfo;
                 break;
             case 'path':
-                $this->setRouteInfo($pathinfo);
+                $routePathinfo = $pathinfo;
                 break;
             case 'get':
-                $this->setRouteInfo($queryPathinfo);
+                $routePathinfo = $queryPathinfo;
                 break;
             default:
-                throw new TeaException('Unable to determine route mode {' . self::$config['routeMode'] . '}.');
+                throw new TeaException('Unable to determine route mode ' . self::$config['routeMode'] . '.');
                 break;
         }
+        $this->setRouteInfo($routePathinfo);
     }
 
     /**

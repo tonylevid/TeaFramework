@@ -28,7 +28,9 @@ class TestModel extends TeaModel {
     }
 
     public function all() {
-        $rst = $this->withJoin('left_test_detail')->withCriteria('test_detail_where')->findAll();
+        $count = $this->withJoin('left_test_detail')->withCriteria('test_detail_where')->count();
+        $limitCriteria = $this->loadLib('TeaPager', array($count))->getLimitCriteria();
+        $rst = $this->withJoin('left_test_detail')->withCriteria('test_detail_where')->findAll($limitCriteria);
         return $rst;
     }
 

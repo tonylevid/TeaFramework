@@ -246,6 +246,49 @@ class TeaBase {
         }
         return self::$_routerInstance;
     }
+
+    /**
+     * Create url.
+     * @param string $route Url route string.
+     * @param array $queries Parameters of $_GET after route.
+     * @param string $anchor Anchor at the end of url.
+     * @param string $suffix Url suffix, if empty, it will be the value in TeaRouter config.
+     * @return string Generated url string.
+     */
+    public static function createUrl($route = '', $queries = array(), $anchor = null, $suffix = null) {
+        $request = self::loadLib('TeaRequest');
+        $route = rtrim(ltrim($route, '/'), '/');
+        $routeMode = self::getConfig('TeaRouter.routeMode');
+        $routeModeGetName = self::getConfig('TeaRouter.routeModeGetName');
+        $routeUrlSuffix = self::getConfig('TeaRouter.urlSuffix');
+        $mergedQueries = !empty($route) ? array_merge(array($routeModeGetName => $route), $queries) : $queries;
+        $queryStr = http_build_query($queries);
+        $mergedQueryStr = http_build_query($mergedQueries);
+        $urlQueryStr = !empty($queryStr) ? '?' . $queryStr : '';
+        $urlMergedQueryStr = !empty($mergedQueryStr) ? '?' . $mergedQueryStr : '';
+        $urlSuffix = !empty($suffix) ? $suffix : $routeUrlSuffix;
+        switch ($routeMode) {
+            case 'auto':
+                $queryPathinfo = $request->getQuery($routeModeGetName);
+                if (!empty($queryPathinfo)) {
+                    $url = $urlMergedQueryStr . $anchor;
+                } else {
+                    $url = $route . $urlSuffix . $urlQueryStr . $anchor;
+                }
+                break;
+            case 'path':
+                $url = $route . $urlSuffix . $urlQueryStr . $anchor;
+                break;
+            case 'get':
+                $url = $urlMergedQueryStr . $anchor;
+                break;
+            default:
+                $url = '';
+                break;
+        }
+        $returnUrl = !empty($url) ? $request->getBaseUri() . '/' . $url : '';
+        return $returnUrl;
+    }
     
     /**
      * Get proper TeaDbConnection subclass instance and connect if autoConnect is true.

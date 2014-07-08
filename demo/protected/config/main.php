@@ -4,7 +4,7 @@ return array(
     'TeaRouter' => array(
         'openRouteRules' => true,
         'routeRules' => array(
-            '/\/(.+)\/says\/(.+)/' => '/main/index/${1}/${2}'
+            '/(.+)\/says\/(.+)/' => '/main/index/${1}/${2}'
         )
     ),
     'TeaModel' => array(

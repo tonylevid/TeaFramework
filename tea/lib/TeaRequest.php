@@ -42,6 +42,18 @@ class TeaRequest {
     private $_DELETE;
 
     /**
+     * Base url (with http(s)://).
+     * @var string
+     */
+    private $_baseUrl;
+
+    /**
+     * Base uri (without http(s)://).
+     * @var string
+     */
+    private $_baseUri;
+
+    /**
      * Get $_GET value by name.
      * @param string $name Key in $_GET.
      * @param mixed $default Default value for $name if not set.
@@ -102,11 +114,43 @@ class TeaRequest {
     }
 
     /**
-     * Get request method.
+     * Get REQUEST_METHOD.
      * @return string Request method, such as GET, POST, HEAD, PUT, DELETE.
      */
     public function getRequestMethod() {
         return strtoupper(isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET');
+    }
+
+    /**
+     * Check whether request method is GET.
+     * @return bool
+     */
+    public function isGet() {
+        return $this->getRequestMethod() === 'GET' ? true : false;
+    }
+
+    /**
+     * Check whether request method is POST.
+     * @return bool
+     */
+    public function isPost() {
+        return $this->getRequestMethod() === 'POST' ? true : false;
+    }
+
+    /**
+     * Check whether request method is PUT.
+     * @return bool
+     */
+    public function isPut() {
+        return $this->getRequestMethod() === 'PUT' ? true : false;
+    }
+
+    /**
+     * Check whether request method is DELETE.
+     * @return bool
+     */
+    public function isDelete() {
+        return $this->getRequestMethod() === 'DELETE' ? true : false;
     }
 
     /**
@@ -118,8 +162,8 @@ class TeaRequest {
     }
 
     /**
-     * Get url host string.
-     * @return string Url host.
+     * Get HTTP_HOST.
+     * @return string
      */
     public function getHttpHost() {
         if ($this->_host === null) {
@@ -133,10 +177,18 @@ class TeaRequest {
         return $this->_host;
     }
 
+    /**
+     * Get SCRIPT_NAME.
+     * @return string
+     */
     public function getScriptName() {
         return $_SERVER['SCRIPT_NAME'];
     }
 
+    /**
+     * Get PHP_SELF.
+     * @return string
+     */
     public function getPhpSelf() {
         return $_SERVER['PHP_SELF'];
     }
@@ -150,8 +202,8 @@ class TeaRequest {
     }
 
     /**
-     * Get request uri string.
-     * @return string Request uri.
+     * Get REQUEST_URI.
+     * @return string
      */
     public function getRequestUri() {
         if ($this->_requestUri === null) {
@@ -178,6 +230,10 @@ class TeaRequest {
         return $this->_requestUri;
     }
 
+    /**
+     * Get PATH_INFO.
+     * @return string
+     */
     public function getPathinfo() {
         if ($this->_pathinfo === null) {
             if (isset($_SERVER['PATH_INFO'])) {
@@ -190,11 +246,38 @@ class TeaRequest {
     }
 
     /**
-     * Get query string.
-     * @return string Uri query string.
+     * Get QUERY_STRING.
+     * @return string
      */
     public function getQueryStr() {
         return isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '';
+    }
+
+    /**
+     * Get base uri (without http(s)://) string with filename if file name exists in request uri.
+     * @return string Base uri.
+     */
+    public function getBaseUri() {
+        if ($this->_baseUri === null) {
+            $this->_baseUri = rtrim(str_replace($this->getHttpHost(), '', $this->getBaseUrl()), '/');
+        }
+        return $this->_baseUri;
+    }
+
+    /**
+     * Get base url string (with http(s)://).
+     * @return string Base url.
+     */
+    public function getBaseUrl() {
+        if ($this->_baseUrl === null) {
+            $file = basename($this->getScriptName());
+            if (preg_match('/^' . preg_quote($this->getScriptName(), '/') . '/', $this->getRequestUri())) {
+                $this->_baseUrl = $this->getHttpHost() . $this->getScriptName();
+            } else {
+                $this->_baseUrl = $this->getHttpHost() . str_replace($file, '', $this->getScriptName());
+            }
+        }
+        return $this->_baseUrl;
     }
 
 }
