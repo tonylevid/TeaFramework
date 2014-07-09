@@ -3,10 +3,11 @@
 class MainController extends TeaController {
 
     public function index($name) {
-        $data = $this->loadModel('test')->all();
+        $rst = $this->loadModel('test')->all();
         $sqlAll = $this->loadModel('test')->getLastSql();
         $this->assign(array(
-            'data' => $data,
+            'data' => $rst[0],
+            'pager' => $rst[1]->content(),
             'sqlAll' => $sqlAll,
             'name' => $name
         ));

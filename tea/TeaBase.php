@@ -253,10 +253,9 @@ class TeaBase {
      * @param string $route Url route string.
      * @param array $queries Parameters of $_GET after route.
      * @param string $anchor Anchor at the end of url.
-     * @param string $suffix Url suffix, if empty, it will be the value in TeaRouter config.
      * @return string Generated url string.
      */
-    public static function createUrl($route = '', $queries = array(), $anchor = null, $suffix = null) {
+    public static function createUrl($route = '', $queries = array(), $anchor = null) {
         $request = self::loadLib('TeaRequest');
         $route = rtrim(ltrim($route, '/'), '/');
         $routeMode = self::getConfig('TeaRouter.routeMode');
@@ -267,18 +266,17 @@ class TeaBase {
         $mergedQueryStr = http_build_query($mergedQueries);
         $urlQueryStr = !empty($queryStr) ? '?' . $queryStr : '';
         $urlMergedQueryStr = !empty($mergedQueryStr) ? '?' . $mergedQueryStr : '';
-        $urlSuffix = !empty($suffix) ? $suffix : $routeUrlSuffix;
         switch ($routeMode) {
             case 'auto':
                 $queryPathinfo = $request->getQuery($routeModeGetName);
                 if (!empty($queryPathinfo)) {
                     $url = $urlMergedQueryStr . $anchor;
                 } else {
-                    $url = $route . $urlSuffix . $urlQueryStr . $anchor;
+                    $url = $route . $routeUrlSuffix . $urlQueryStr . $anchor;
                 }
                 break;
             case 'path':
-                $url = $route . $urlSuffix . $urlQueryStr . $anchor;
+                $url = $route . $routeUrlSuffix . $urlQueryStr . $anchor;
                 break;
             case 'get':
                 $url = $urlMergedQueryStr . $anchor;

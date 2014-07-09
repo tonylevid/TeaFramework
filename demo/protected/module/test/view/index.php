@@ -5,6 +5,7 @@
     <title>Hello, <?php echo $name; ?>. 您好，<?php echo $name; ?>。</title>
 </head>
 <body>
+    <?php echo $pager; ?>
     <?php var_dump($sqlAll); ?>
     <?php var_dump($data); ?>
 </body>

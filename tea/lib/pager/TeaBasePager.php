@@ -7,7 +7,7 @@
  * @link http://www.tframework.com/
  * @copyright http://tonylevid.com/
  * @license http://www.tframework.com/license/
- * @package lib
+ * @package lib.pager
  */
 class TeaBasePager {
 
@@ -30,11 +30,21 @@ class TeaBasePager {
     private $_itemsTotal = 0;
 
     /**
-     * Constructor.
-     * @param int $itemsTotal Total number of items.
+     * Tea::createUrl() arguments for TeaBasePager::createUrl().
+     * @var array
      */
-    public function __construct($itemsTotal) {
+    private $_createUrlArgs = array();
+
+    /**
+     * Constructor, set total number of items.
+     * @param int $itemsTotal Total number of items.
+     * @param string $route Url route string.
+     * @param array $queries Parameters of $_GET after route.
+     * @param string $anchor Anchor at the end of url.
+     */
+    public function __construct($itemsTotal, $route = '', $queries = array(), $anchor = null) {
         $this->setItemsTotal($itemsTotal);
+        $this->setCreateUrlArgs($route, $queries, $anchor);
     }
 
     /**
@@ -92,6 +102,32 @@ class TeaBasePager {
     }
 
     /**
+     * Set Tea::createUrl() arguments for TeaBasePager::createUrl().
+     * @param string $route Url route string, if empty, it will be current url pathinfo.
+     * @param array $queries Parameters of $_GET after route, if empty, it will be $_GET array.
+     * @param string $anchor Anchor at the end of url.
+     * @return $this
+     */
+    public function setCreateUrlArgs($route = '', $queries = array(), $anchor = null) {
+        if (empty($route)) {
+            $route = Tea::loadLib('TeaRequest')->getPathinfo();
+        }
+        if (empty($queries)) {
+            $queries = $_GET;
+        }
+        $this->_createUrlArgs = array($route, $queries, $anchor);
+        return $this;
+    }
+
+    /**
+     * Get Tea::createUrl() arguments for TeaBasePager::createUrl().
+     * @return array Tea::createUrl() arguments for TeaBasePager::createUrl().
+     */
+    public function getCreateUrlArgs() {
+        return $this->_createUrlArgs;
+    }
+
+    /**
      * Get total number of pages.
      * @return int Total number of pages.
      */
@@ -101,6 +137,7 @@ class TeaBasePager {
 
     /**
      * Set zero-based page offset.
+     * @param int $pageOffset Zero-based page offset.
      * @return $this
      */
     public function setPageOffset($pageOffset) {
@@ -127,6 +164,7 @@ class TeaBasePager {
 
     /**
      * Set page number value of $_REQUEST.
+     * @param int $pageNum Page number value of $_REQUEST.
      * @return $this
      */
     public function setPageNum($pageNum) {
@@ -176,6 +214,30 @@ class TeaBasePager {
             );
         }
         return $criteria;
+    }
+
+    /**
+     * Create pager url.
+     * @param int $pageOffset Zero-based page offset.
+     * @return string Generated url string.
+     */
+    public function createPagerUrl($pageOffset) {
+        $pageName = $this->getPageName();
+        $pagesTotal = $this->getPagesTotal();
+        $createUrlArgs = $this->getCreateUrlArgs();
+        $pageOffset = intval($pageOffset);
+        if ($pageOffset < 0) {
+            $pageOffset = 0;
+        } else if ($pageOffset > ($pagesTotal - 1)) {
+            $pageOffset = $pagesTotal - 1;
+        }
+        if (isset($createUrlArgs[1]) && is_array($createUrlArgs[1])) {
+            $createUrlArgs[1][$pageName] = $pageOffset + 1;
+        } else {
+            $createUrlArgs[1] = array($pageName => $pageOffset + 1);
+        }
+        $url = call_user_func_array('Tea::createUrl', $createUrlArgs);
+        return $url;
     }
 
 }
