@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TeaPager class file.
+ * TeaBasePager class file.
  *
  * @author tonylevid <tonylevid@gmail.com>
  * @link http://www.tframework.com/
@@ -9,7 +9,7 @@
  * @license http://www.tframework.com/license/
  * @package lib
  */
-class TeaPager {
+class TeaBasePager {
 
     /**
      * String key in $_REQUEST to get page index, defaults to 'page'.
@@ -100,16 +100,6 @@ class TeaPager {
     }
 
     /**
-     * Set page number value of $_REQUEST.
-     * @return $this
-     */
-    public function setPageNum($pageNum) {
-        $pageName = $this->getPageName();
-        $_REQUEST[$pageName] = intval($pageNum);
-        return $this;
-    }
-
-    /**
      * Set zero-based page offset.
      * @return $this
      */
@@ -133,6 +123,24 @@ class TeaPager {
             $curPage = $pagesTotal - 1;
         }
         return $curPage;
+    }
+
+    /**
+     * Set page number value of $_REQUEST.
+     * @return $this
+     */
+    public function setPageNum($pageNum) {
+        $pageName = $this->getPageName();
+        $_REQUEST[$pageName] = intval($pageNum);
+        return $this;
+    }
+
+    /**
+     * Get page number value of $_REQUEST.
+     * @return int Page number value of $_REQUEST.
+     */
+    public function getPageNum() {
+        return $this->getPageOffset() + 1;
     }
 
     /**

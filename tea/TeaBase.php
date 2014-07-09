@@ -183,14 +183,14 @@ class TeaBase {
      * @return mixed Return Helper instance on success, false on failure.
      */
     public static function loadHelper($name, $args = array()) {
+        $nameParts = explode('.', $name);
+        $lastKey = count($nameParts) - 1;
+        $nameParts[$lastKey] = ucfirst($nameParts[$lastKey]);
         if (self::isLoadNameAbsolute($name)) {
-            $nameParts = explode('.', $name);
-            $lastKey = count($nameParts) - 1;
-            $nameParts[$lastKey] = ucfirst($nameParts[$lastKey]);
             array_splice($nameParts, -1, 0, 'helper');
             return self::load(implode('.', $nameParts) . 'Helper');
         }
-        $name = ucfirst($name);
+        $name = implode('.', $nameParts);
         return self::load("helper.{$name}Helper", $args);
     }
 
@@ -201,14 +201,14 @@ class TeaBase {
      * @return mixed Return Library instance on success, false on failure.
      */
     public static function loadLib($name, $args = array()) {
+        $nameParts = explode('.', $name);
+        $lastKey = count($nameParts) - 1;
+        $nameParts[$lastKey] = ucfirst($nameParts[$lastKey]);
         if (self::isLoadNameAbsolute($name)) {
-            $nameParts = explode('.', $name);
-            $lastKey = count($nameParts) - 1;
-            $nameParts[$lastKey] = ucfirst($nameParts[$lastKey]);
             array_splice($nameParts, -1, 0, 'lib');
             return self::load(implode('.', $nameParts));
         }
-        $name = ucfirst($name);
+        $name = implode('.', $nameParts);
         return self::load("lib.{$name}", $args);
     }
 
@@ -220,15 +220,16 @@ class TeaBase {
      * @return mixed Return Model instance on success, false on failure.
      */
     public static function loadModel($name, $args = array()) {
+        $nameParts = explode('.', $name);
+        $lastKey = count($nameParts) - 1;
+        $nameParts[$lastKey] = ucfirst($nameParts[$lastKey]);
         if (self::isLoadNameAbsolute($name)) {
-            $nameParts = explode('.', $name);
-            $lastKey = count($nameParts) - 1;
-            $nameParts[$lastKey] = ucfirst($nameParts[$lastKey]);
             array_splice($nameParts, -1, 0, 'model');
             $model = self::load(implode('.', $nameParts) . 'Model');
+        } else {
+            $ucName = implode('.', $nameParts);
+            $model = self::load("model.{$ucName}Model", $args);
         }
-        $ucName = ucfirst($name);
-        $model = self::load("model.{$ucName}Model", $args);
         if ($model instanceof TeaModel) {
             return $model;
         } else {
@@ -473,6 +474,7 @@ class TeaBase {
                     'system.console.*',
                     'system.helper.*',
                     'system.lib.*',
+                    'system.lib.pager.*',
                     'system.vendor.*',
                     'system.db.rdbms.*',
                     'system.db.rdbms.mssql.*',
