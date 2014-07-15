@@ -30,7 +30,7 @@ class TeaBasePager {
     private $_itemsTotal = 0;
 
     /**
-     * Tea::createUrl() arguments for TeaBasePager::createUrl().
+     * Tea::createUrl() arguments for TeaBasePager::createPageUrl().
      * @var array
      */
     private $_createUrlArgs = array();
@@ -102,7 +102,7 @@ class TeaBasePager {
     }
 
     /**
-     * Set Tea::createUrl() arguments for TeaBasePager::createUrl().
+     * Set Tea::createUrl() arguments for TeaBasePager::createPageUrl().
      * @param string $route Url route string, if empty, it will be current url pathinfo.
      * @param array $queries Parameters of $_GET after route, if empty, it will be $_GET array.
      * @param string $anchor Anchor at the end of url.
@@ -120,8 +120,8 @@ class TeaBasePager {
     }
 
     /**
-     * Get Tea::createUrl() arguments for TeaBasePager::createUrl().
-     * @return array Tea::createUrl() arguments for TeaBasePager::createUrl().
+     * Get Tea::createUrl() arguments for TeaBasePager::createPageUrl().
+     * @return array Tea::createUrl() arguments for TeaBasePager::createPageUrl().
      */
     public function getCreateUrlArgs() {
         return $this->_createUrlArgs;
@@ -221,7 +221,7 @@ class TeaBasePager {
      * @param int $pageOffset Zero-based page offset.
      * @return string Generated url string.
      */
-    public function createPagerUrl($pageOffset) {
+    public function createPageUrl($pageOffset) {
         $pageName = $this->getPageName();
         $pagesTotal = $this->getPagesTotal();
         $createUrlArgs = $this->getCreateUrlArgs();

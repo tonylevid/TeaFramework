@@ -95,7 +95,7 @@ abstract class TeaBaseStyledPager extends TeaBasePager {
      */
     public function getPrevLink() {
         $prevOffset = $this->getPageOffset() - 1;
-        return $prevOffset < 0 ? '' : $this->createPagerUrl($prevOffset);
+        return $prevOffset < 0 ? '' : $this->createPageUrl($prevOffset);
     }
 
     /**
@@ -104,7 +104,7 @@ abstract class TeaBaseStyledPager extends TeaBasePager {
      */
     public function getNextLink() {
         $nextOffset = $this->getPageOffset() + 1;
-        return $nextOffset > ($this->getPagesTotal() - 1) ? '' : $this->createPagerUrl($nextOffset);
+        return $nextOffset > ($this->getPagesTotal() - 1) ? '' : $this->createPageUrl($nextOffset);
     }
 
     /**
@@ -112,7 +112,7 @@ abstract class TeaBaseStyledPager extends TeaBasePager {
      * @return string
      */
     public function getFirstLink() {
-        return $this->createPagerUrl(0);
+        return $this->createPageUrl(0);
     }
 
     /**
@@ -120,7 +120,7 @@ abstract class TeaBaseStyledPager extends TeaBasePager {
      * @return string
      */
     public function getLastLink() {
-        return $this->createPagerUrl($this->getPagesTotal() - 1);
+        return $this->createPageUrl($this->getPagesTotal() - 1);
     }
 
     /**
