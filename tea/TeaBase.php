@@ -469,9 +469,12 @@ class TeaBase {
                 ),
                 'autoImport' => array(
                     'system.base.*',
-                    'system.console.*',
                     'system.helper.*',
                     'system.lib.*',
+                    'system.lib.imgborn.*',
+                    'system.lib.imgborn.driver.*',
+                    'system.lib.imgborn.driver.gd.*',
+                    'system.lib.imgborn.driver.imagick.*',
                     'system.lib.pager.*',
                     'system.vendor.*',
                     'system.db.rdbms.*',
