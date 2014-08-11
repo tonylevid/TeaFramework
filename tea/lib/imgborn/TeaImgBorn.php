@@ -8,14 +8,34 @@
  * @copyright http://tonylevid.com/
  * @license http://www.imgborn.com/license/
  */
-class TeaImgBorn implements TeaIImgBorn {
+class TeaImgBorn extends TeaCommon implements TeaIImgBorn {
+
+    /**
+     * Class config.
+     * @var array
+     */
+    public static $config = array(
+
+    );
+
+    private $_imgInstance;
+
+    /**
+     * Constructor, set class config.
+     */
+    public function __construct() {
+        $this->setClassConfig(__CLASS__);
+    }
 
     public function getDriverType() {
         
     }
 
     public function getImgInstance() {
-
+        if (empty($this->_imgInstance)) {
+            $this->_imgInstance = null;
+        }
+        return $this->_imgInstance;
     }
 
     public function getImgWidth() {
