@@ -33,4 +33,26 @@ CONTENT;
         return $content;
     }
 
+    /**
+     * Pager content.
+     * @param string $content User defined pager content, defaults to null.
+     * @return string Pager content.
+     */
+    public function ajaxContent($content = null) {
+        if (!empty($content)) {
+            return $content;
+        }
+        $content = <<<CONTENT
+<div class="{$this->containerCssClass}">
+    <span class="{$this->totalCssClass}">共 <span class="{$this->totalNumCssClass}">{$this->getPagesTotal()}</span> 页</span>
+    <span class="{$this->firstCssClass}"><a data-link="{$this->getFirstLink()}" href="javascript:void(0);">{$this->firstText}</a></span>
+    <span class="{$this->prevCssClass}"><a data-link="{$this->getPrevLink()}" href="javascript:void(0);">{$this->prevText}</a></span>
+    <span class="{$this->nextCssClass}"><a data-link="{$this->getNextLink()}" href="javascript:void(0);">{$this->nextText}</a></span>
+    <span class="{$this->lastCssClass}"><a data-link="{$this->getLastLink()}" href="javascript:void(0);">{$this->lastText}</a></span>
+    <span class="{$this->currentCssClass}">第 <span class="{$this->currentNumCssClass}">{$this->getPageNum()}</span> 页</span>
+</div>
+CONTENT;
+        return $content;
+    }
+
 }

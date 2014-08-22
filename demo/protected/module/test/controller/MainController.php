@@ -7,7 +7,7 @@ class MainController extends TeaController {
         $sqlAll = $this->loadModel('test')->getLastSql();
         $this->assign(array(
             'data' => $rst[0],
-            'pager' => $rst[1]->content(),
+            'pager' => $rst[1]->ajaxContent(),
             'sqlAll' => $sqlAll,
             'name' => $name
         ));
