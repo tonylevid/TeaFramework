@@ -86,8 +86,8 @@ class TeaImgBorn extends TeaCommon implements TeaIImgBorn {
         return $this->getImgInstance()->watermarkImg($imgFile, $options);
     }
 
-    public function captcha($dict = array(), $options = array()) {
-        return $this->getImgInstance()->captcha($dict, $options);
+    public function captcha($class = null, $options = array()) {
+        return $this->getImgInstance()->captcha($class, $options);
     }
 
     public function save($filename) {

@@ -34,7 +34,7 @@ interface TeaIImgBorn {
 
     public function watermarkImg($imgFile, array $options = array());
 
-    public function captcha(array $dict = array(), array $options = array());
+    public function captcha($class = null, array $options = array());
 
     public function save($filename);
     
