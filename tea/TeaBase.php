@@ -313,11 +313,9 @@ class TeaBase {
         }
         if (isset(self::$_connectionTypeMap[$driverType])) {
             $connClass = self::$_connectionTypeMap[$driverType];
-            if (!self::$_connection instanceof $connClass) {
-                self::$_connection = new $connClass($connInfo);
-                if ($autoConnect) {
-                    self::$_connection->connect();
-                }
+            self::$_connection = new $connClass($connInfo);
+            if ($autoConnect) {
+                self::$_connection->connect();
             }
         } else {
             throw new TeaDbException("TeaBase could not determine the driver type, check your dsn '{$dsn}'.");
