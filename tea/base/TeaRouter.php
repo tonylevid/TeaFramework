@@ -82,7 +82,7 @@ class TeaRouter extends TeaCommon {
      * Constructor, set class config.
      */
     public function __construct() {
-        Tea::setClassConfig(__CLASS__);
+        $this->setClassConfig(__CLASS__);
     }
 
     /**
