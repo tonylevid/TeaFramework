@@ -11,6 +11,12 @@
  */
 class TeaImage {
 
+    public function __construct() {
+        if (!extension_loaded('gd')) {
+            throw new Exception('TeaImage requires gd extension loaded.');
+        }
+    }
+
 }
 
 class TeaImageThumbnail {
