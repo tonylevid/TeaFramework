@@ -12,3 +12,15 @@
 class TeaImage {
 
 }
+
+class TeaImageThumbnail {
+
+}
+
+class TeaImageWatermark {
+
+}
+
+class TeaImageCaptcha {
+    
+}
