@@ -129,11 +129,4 @@ abstract class TeaBaseStyledPager extends TeaBasePager {
      * @return string Pager content.
      */
     abstract public function content($content = null);
-
-    /**
-     * Pager ajax content.
-     * @param string $content User defined pager content, defaults to null.
-     * @return string Pager ajax content.
-     */
-    abstract public function ajaxContent($content = null);
 }
