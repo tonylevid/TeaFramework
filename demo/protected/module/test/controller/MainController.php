@@ -14,4 +14,14 @@ class MainController extends TeaController {
         $this->render();
     }
 
+    public function captcha() {
+        $captcha = $this->loadLib('TeaImage')->captcha(100, 30, array('bgColor' => 'FFFCCC'));
+        $_SESSION['captcha'] = $captcha->getCaptchaVal();
+        $captcha->output();
+    }
+
+    public function captchaVal() {
+        var_dump($_SESSION['captcha']);
+    }
+
 }

@@ -97,6 +97,7 @@ class TeaBase {
      * @param array $config User's config array.
      */
     public static function init($config = array()) {
+        session_start();
         self::$config = ArrayHelper::mergeArray($config, self::getTeaBaseConfig());
         self::setModuleMap();
         self::setAutoImport();
