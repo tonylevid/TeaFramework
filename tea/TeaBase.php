@@ -17,19 +17,19 @@ defined('APP_PATH') or define('APP_PATH', str_replace('/', DIRECTORY_SEPARATOR, 
 defined('TEA_PATH') or define('TEA_PATH', dirname(__FILE__));
 
 class TeaBase {
-    
+
     /**
      * Tea config array.
      * @var array
      */
     public static $config = array();
-    
+
     /**
      * All module => path map.
      * @var array
      */
     public static $moduleMap = array();
-    
+
     /**
      * Imported class => file map.
      * @var array
@@ -64,7 +64,7 @@ class TeaBase {
         'odbc' =>  'TeaOdbcConnection',
         'mongodb' => 'TeaMongodbConnection'
     );
-    
+
     /**
      * Run the application.
      * @param array $config User's config array.
@@ -91,7 +91,7 @@ class TeaBase {
         }
         self::run($config, $routeArgs);
     }
-    
+
     /**
      * Tea initialization.
      * @param array $config User's config array.
@@ -237,7 +237,7 @@ class TeaBase {
             return new TeaTempModel($name);
         }
     }
-    
+
     /**
      * Get current running TeaRouter instance.
      * @return TeaRouter Current running TeaRouter instance.
@@ -289,7 +289,7 @@ class TeaBase {
         $returnUrl = !empty($url) ? $request->getBaseUri() . '/' . $url : '';
         return $returnUrl;
     }
-    
+
     /**
      * Get proper TeaDbConnection subclass instance and connect if autoConnect is true.
      * @param mixed $connInfo String or array, defaults to string 'default'. If string, it should be the connection info group key in main config model node.
@@ -347,7 +347,7 @@ class TeaBase {
     public static function getDbSqlBuilder() {
         return self::getDbConnection()->getSqlBuilder();
     }
-    
+
     /**
      * Get proper TeaDbCriteria subclass instance if autoConnect is true.
      * @return TeaDbCriteria Proper TeaDbCriteria subclass instance.
@@ -413,7 +413,7 @@ class TeaBase {
         }
         return $config = $value;
     }
-    
+
     /**
      * Set config for class.
      * @param string $className Class name, you can use __CLASS__ in class.
@@ -426,7 +426,7 @@ class TeaBase {
         }
         self::setConfig($className, $className::$$configParam);
     }
-    
+
     /**
      * Set module map.
      */
@@ -439,7 +439,7 @@ class TeaBase {
             }
         }
     }
-    
+
     /**
      * Set auto import.
      */
