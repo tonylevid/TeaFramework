@@ -258,9 +258,10 @@ class TeaImage {
         // $left = $calcPositions['MM'][0] + $textBox['left'];
         // $top = $calcPositions['MM'][1] + $textBox['top'];
         // imagettftext($this->_gdRes, floatval($options['fontSize']), 0, $left, $top, $fontColor, $options['fontFile'], $randStr);
-        
+
         // render each character
         $prevCharWidth = 0;
+        $left = 0;
         foreach ($randChars as $char) {
             $fontAngle = 0;
             $textBox = $this->calculateTextBox($char, $options['fontFile'], floatval($options['fontSize']), $fontAngle);
@@ -372,7 +373,7 @@ class TeaImage {
             'top' => abs($minY) - 1,
             'width' => $maxX - $minX,
             'height' => $maxY - $minY,
-            'box' => $rect 
+            'box' => $rect
         );
     }
 
@@ -432,7 +433,7 @@ class TeaImage {
     /**
      * Rgba alpha to image alpha for function imagecopymerge().
      * @param float $rgbaAlpha Alpha number from 0 to 1.
-     * @return int Image alpha for function imagecopymerge(). 
+     * @return int Image alpha for function imagecopymerge().
      */
     protected function rgbaAlphaToImageAlpha($rgbaAlpha) {
         if ($rgbaAlpha < 0) {
@@ -462,16 +463,16 @@ class TeaImage {
      * @return bool
      */
     protected function imagecopymerge_alpha($dst_im, $src_im, $dst_x, $dst_y, $src_x, $src_y, $src_w, $src_h, $pct) {
-        // creating a cut resource 
+        // creating a cut resource
         $cut = imagecreatetruecolor($src_w, $src_h);
 
-        // copying relevant section from background to the cut resource 
+        // copying relevant section from background to the cut resource
         imagecopy($cut, $dst_im, 0, 0, $dst_x, $dst_y, $src_w, $src_h);
-        
-        // copying relevant section from watermark to the cut resource 
+
+        // copying relevant section from watermark to the cut resource
         imagecopy($cut, $src_im, 0, 0, $src_x, $src_y, $src_w, $src_h);
-        
-        // insert cut resource to destination image 
+
+        // insert cut resource to destination image
         return imagecopymerge($dst_im, $cut, $dst_x, $dst_y, 0, 0, $src_w, $src_h, $pct);
     }
 

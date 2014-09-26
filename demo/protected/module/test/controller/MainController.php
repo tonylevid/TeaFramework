@@ -24,4 +24,10 @@ class MainController extends TeaController {
         var_dump($_SESSION['captcha']);
     }
 
+    public function upload() {
+        echo '<pre>';
+        print_r($this->loadLib('TeaUpload')->upload()->getFileInfo());
+        echo '</pre>';
+    }
+
 }

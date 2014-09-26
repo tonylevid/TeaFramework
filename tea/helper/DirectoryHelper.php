@@ -19,7 +19,7 @@ class DirectoryHelper {
      */
     public static function mkdirs($dir, $mode = 0777) {
         if (!is_dir($dir)) {
-            $this->mkdirs(dirname($dir), $mode);
+            self::mkdirs(dirname($dir), $mode);
             return @mkdir($dir, $mode);
         }
         return true;
@@ -36,7 +36,7 @@ class DirectoryHelper {
         $dirArr = array();
         foreach ($dir as $d) {
             if (is_dir($dir . DIRECTORY_SEPARATOR. $d)) {
-                $dirArr[$d] = $this->dirTree($dir . DIRECTORY_SEPARATOR . $d, $filters);
+                $dirArr[$d] = self::dirTree($dir . DIRECTORY_SEPARATOR . $d, $filters);
             } else {
                 $dirArr[] = $d;
             }
