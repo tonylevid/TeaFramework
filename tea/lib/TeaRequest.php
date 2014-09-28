@@ -198,7 +198,7 @@ class TeaRequest {
      * @return string Url directory.
      */
     public function getUrlDir() {
-        return dirname($this->getScriptName());
+        return rtrim(dirname($this->getScriptName()), '/');
     }
 
     /**

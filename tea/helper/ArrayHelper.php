@@ -19,7 +19,7 @@ class ArrayHelper {
     public static function isAssoc($arr) {
         return (is_array($arr) && (count($arr) === 0 || 0 !== count(array_diff_key($arr, array_keys(array_keys($arr))))));
     }
-    
+
     /**
      * Check array is multi-dimensional or not.
      * @param array $arr Array to be checked.
@@ -33,7 +33,7 @@ class ArrayHelper {
         }
         return false;
     }
-    
+
     /**
      * Flatten multi-dimensional array to one-dimensional.
      * @param array $arr Array to be flattened.
@@ -53,9 +53,17 @@ class ArrayHelper {
     public static function mergeArray($arr, $userArr) {
         foreach ($userArr as $key => $val) {
             if (array_key_exists($key, $arr) && is_array($val)) {
-                $arr[$key] = self::mergeArray($arr[$key], $userArr[$key]);
+                if (is_string($key)) {
+                    $arr[$key] = self::mergeArray($arr[$key], $userArr[$key]);
+                } else {
+                    $arr[] = self::mergeArray($arr[$key], $userArr[$key]);
+                }
             } else {
-                $arr[$key] = $val;
+                if (is_string($key)) {
+                    $arr[$key] = $val;
+                } else if (is_int($key)) {
+                    $arr[] = $val;
+                }
             }
         }
         return $arr;

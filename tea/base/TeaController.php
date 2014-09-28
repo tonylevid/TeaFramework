@@ -55,12 +55,12 @@ class TeaController extends TeaCommon {
 
     /**
      * Assign value or values array for template.
-     * If number of arguments is one and the argument is an array: 
+     * If number of arguments is one and the argument is an array:
      * $this->assign(array(
      *     string name1 => mixed value1,
      *     string name2 => mixed value2
      * ));
-     * If number of arguments is two: 
+     * If number of arguments is two:
      * $this->assign(string name, mixed value);
      * @param mixed $param,... Optional arguments.
      * @throws TException
@@ -79,7 +79,7 @@ class TeaController extends TeaCommon {
 
     /**
      * Render template.
-     * @param string $tpl Template to be rendered. If empty, it will detect automatically.
+     * @param string $tpl Template to be rendered. If empty, it will detect automatically with router.
      * @param array $vals An array of variable name and variable value to be assigned.
      * @param bool $output Output or not, defaults to true.
      * @return mixed If param $output is false, it will return the rendered template string, else output it.
@@ -106,6 +106,16 @@ class TeaController extends TeaCommon {
         } else {
             throw new TeaException("Unable to render, '{$tplName}' is not a valid template.");
         }
+    }
+
+    /**
+     * A handy method of $this->render().
+     * @param string $tpl Template to be rendered. If empty, it will detect automatically with router.
+     * @param array $vals An array of variable name and variable value to be assigned.
+     * @return string The rendered template string.
+     */
+    public function renderContent($tpl = null, $vals = array()) {
+        return $this->render($tpl, $vals, false);
     }
 
 }
