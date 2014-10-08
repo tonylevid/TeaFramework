@@ -9,7 +9,7 @@
  * @license http://www.tframework.com/license/
  * @package base
  */
-class TeaRouter extends TeaCommon {
+class TeaRouter {
 
     /**
      * Class config.
@@ -82,7 +82,7 @@ class TeaRouter extends TeaCommon {
      * Constructor, set class config.
      */
     public function __construct() {
-        $this->setClassConfig(__CLASS__);
+        Tea::setClassConfig(__CLASS__);
     }
 
     /**
@@ -187,7 +187,7 @@ class TeaRouter extends TeaCommon {
             $this->setRouteInfo($routeArgsPathinfo);
             return null;
         }
-        $request = $this->loadLib('TeaRequest');
+        $request = Tea::loadLib('TeaRequest');
         $queryPathinfo = $request->getQuery(self::$config['routeModeGetName']);
         $pathinfo = $request->getPathinfo();
         switch (self::$config['routeMode']) {

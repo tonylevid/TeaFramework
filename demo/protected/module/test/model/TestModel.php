@@ -29,7 +29,7 @@ class TestModel extends TeaModel {
 
     public function all() {
         $count = $this->withJoin('left_test_detail')->withCriteria('test_detail_where')->count();
-        $pager = $this->loadLib('TeaLinkPager', array($count))->setItemsPerPage(5);
+        $pager = Tea::loadLib('TeaLinkPager', array($count))->setItemsPerPage(5);
         $rst = $this->withJoin('left_test_detail')->withCriteria('test_detail_where')->findAll($pager->getLimitCriteria());
         return array($rst, $pager);
     }

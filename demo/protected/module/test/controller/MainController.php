@@ -3,8 +3,8 @@
 class MainController extends TeaController {
 
     public function index($name) {
-        $rst = $this->loadModel('test')->all();
-        $sqlAll = $this->loadModel('test')->getLastSql();
+        $rst = Tea::loadModel('test')->all();
+        $sqlAll = Tea::loadModel('test')->getLastSql();
         $this->assign(array(
             'data' => $rst[0],
             'pager' => $rst[1]->content(),
@@ -15,7 +15,7 @@ class MainController extends TeaController {
     }
 
     public function captcha() {
-        $captcha = $this->loadLib('TeaImage')->captcha(100, 30, array('bgColor' => 'FFFCCC'));
+        $captcha = Tea::loadLib('TeaImage')->captcha(100, 30, array('bgColor' => 'FFFCCC'));
         $_SESSION['captcha'] = $captcha->getCaptchaVal();
         $captcha->output();
     }
@@ -26,7 +26,7 @@ class MainController extends TeaController {
 
     public function upload() {
         echo '<pre>';
-        print_r($this->loadLib('TeaUpload')->upload()->getFileInfo());
+        print_r(Tea::loadLib('TeaUpload')->upload()->getFileInfo());
         echo '</pre>';
     }
 

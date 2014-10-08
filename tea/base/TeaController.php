@@ -9,7 +9,7 @@
  * @license http://www.tframework.com/license/
  * @package base
  */
-class TeaController extends TeaCommon {
+class TeaController {
 
     /**
      * Class config.
@@ -30,7 +30,7 @@ class TeaController extends TeaCommon {
      * Constructor, set class config.
      */
     public function __construct() {
-        $this->setClassConfig(__CLASS__);
+        Tea::setClassConfig(__CLASS__);
     }
 
     /**
@@ -90,11 +90,11 @@ class TeaController extends TeaCommon {
             $vals = array_merge($this->_assignedVals, $vals);
             extract($vals);
         }
-        $router = $this->getRouter();
+        $router = Tea::getRouter();
         $moduleName = $router->getModuleName();
         $tplBasePathAlias = empty($moduleName) ? 'protected.view' : "module.{$moduleName}.view";
         $tplName = empty($tpl) ? $router->getActionName() : $tpl;
-        $tplFile = $this->aliasToPath($tplBasePathAlias) . DIRECTORY_SEPARATOR . $tplName . '.php';
+        $tplFile = Tea::aliasToPath($tplBasePathAlias) . DIRECTORY_SEPARATOR . $tplName . '.php';
         if (is_file($tplFile)) {
             ob_start();
             include $tplFile;
