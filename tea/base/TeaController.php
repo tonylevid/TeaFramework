@@ -78,8 +78,22 @@ class TeaController {
     }
 
     /**
+     * Redirect url.
+     * @param mixed $redirect Url string or Tea::createUrl() parameters array.
+     */
+    public function redirect($redirect) {
+        $redirectUrl = null;
+        if (is_string($redirect)) {
+            $redirectUrl = $redirect;
+        } else if (is_array($redirect)) {
+            $redirectUrl = call_user_func_array('Tea::createUrl', $redirect);
+        }
+        header("Location: {$redirectUrl}");
+    }
+
+    /**
      * Render template.
-     * @param string $tpl Template to be rendered. If empty, it will detect automatically with router.
+     * @param string $tpl Template to be rendered, dot notation path. If empty, it will detect automatically with router.
      * @param array $vals An array of variable name and variable value to be assigned.
      * @param bool $output Output or not, defaults to true.
      * @return mixed If param $output is false, it will return the rendered template string, else output it.
@@ -90,11 +104,17 @@ class TeaController {
             $vals = array_merge($this->_assignedVals, $vals);
             extract($vals);
         }
-        $router = Tea::getRouter();
-        $moduleName = $router->getModuleName();
-        $tplBasePathAlias = empty($moduleName) ? 'protected.view' : "module.{$moduleName}.view";
-        $tplName = empty($tpl) ? $router->getActionName() : $tpl;
-        $tplFile = Tea::aliasToPath($tplBasePathAlias) . DIRECTORY_SEPARATOR . $tplName . '.php';
+        $tplSuffix = '.php';
+        $tplFile = Tea::aliasToPath($tpl) . $tplSuffix;
+        $tplParts = explode('.', $tpl);
+        $tplName = array_pop($tplParts);
+        if (!is_file($tplFile)) {
+            $router = Tea::getRouter();
+            $moduleName = $router->getModuleName();
+            $tplBasePathAlias = empty($moduleName) ? 'protected.view' : "module.{$moduleName}.view";
+            $tplName = empty($tpl) ? $router->getActionName() : $tpl;
+            $tplFile = Tea::aliasToPath($tplBasePathAlias) . DIRECTORY_SEPARATOR . $tplName . $tplSuffix;
+        }
         if (is_file($tplFile)) {
             ob_start();
             include $tplFile;
