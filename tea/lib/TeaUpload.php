@@ -52,11 +52,11 @@ class TeaUpload {
                 foreach ($files as $k => &$file) {
                     $file['save_name'] = null;
                     $file['save_path'] = null;
-                    if (!$status) {
-                        $file['error'] = self::UPLOAD_ERR_CREATE_FOLDER_DENIED;
-                    }
-                    if (is_array($allowedTypes) && !empty($allowedTypes)) {
-                        if (!in_array($file['type'], $allowedTypes)) {
+                    if (empty($file['error'])) {
+                        if (!$status) {
+                            $file['error'] = self::UPLOAD_ERR_CREATE_FOLDER_DENIED;
+                        }
+                        if (is_array($allowedTypes) && !empty($allowedTypes) && !in_array($file['type'], $allowedTypes)) {
                             $file['error'] = self::UPLOAD_ERR_TYPE_NOT_ALLOWED;
                         }
                     }
