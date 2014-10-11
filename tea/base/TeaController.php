@@ -92,6 +92,23 @@ class TeaController {
     }
 
     /**
+     * Echo json data.
+     * @param mixed $data Main data.
+     * @param mixed $msg Message.
+     * @param mixed $code Code.
+     */
+    public function ajaxReturn($data, $msg = null, $code = 0) {
+        header('Content-type: application/json');
+        $arr = array(
+            'data' => $data,
+            'msg' => $msg,
+            'code' => $code
+        );
+        echo json_encode($arr);
+        exit();
+    }
+
+    /**
      * Render template.
      * @param string $tpl Template to be rendered, dot notation path. If empty, it will detect automatically with router.
      * @param array $vals An array of variable name and variable value to be assigned.
