@@ -151,7 +151,7 @@ class TeaController {
      * @param array $vals An array of variable name and variable value to be assigned.
      * @return string The rendered template string.
      */
-    public function renderContent($tpl = null, $vals = array()) {
+    public function getRenderContent($tpl = null, $vals = array()) {
         return $this->render($tpl, $vals, false);
     }
 

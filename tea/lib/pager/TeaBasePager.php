@@ -153,11 +153,12 @@ class TeaBasePager {
     public function getPageOffset() {
         $pageName = $this->getPageName();
         $pagesTotal = $this->getPagesTotal();
+        $pagesTotalOffset = $pagesTotal > 0 ? $pagesTotal - 1 : 0;
         $curPage = isset($_REQUEST[$pageName]) ? intval($_REQUEST[$pageName]) - 1 : 0;
         if ($curPage < 0) {
             $curPage = 0;
-        } else if ($curPage > ($pagesTotal - 1)) {
-            $curPage = $pagesTotal - 1;
+        } else if ($curPage > $pagesTotalOffset) {
+            $curPage = $pagesTotalOffset;
         }
         return $curPage;
     }
@@ -226,10 +227,11 @@ class TeaBasePager {
         $pagesTotal = $this->getPagesTotal();
         $createUrlArgs = $this->getCreateUrlArgs();
         $pageOffset = intval($pageOffset);
+        $pagesTotalOffset = $pagesTotal > 0 ? $pagesTotal - 1 : 0;
         if ($pageOffset < 0) {
             $pageOffset = 0;
-        } else if ($pageOffset > ($pagesTotal - 1)) {
-            $pageOffset = $pagesTotal - 1;
+        } else if ($pageOffset > $pagesTotalOffset) {
+            $pageOffset = $pagesTotalOffset;
         }
         if (isset($createUrlArgs[1]) && is_array($createUrlArgs[1])) {
             $createUrlArgs[1][$pageName] = $pageOffset + 1;
