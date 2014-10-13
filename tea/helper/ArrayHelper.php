@@ -111,5 +111,25 @@ class ArrayHelper {
         });
         return $rst;
     }
+    
+    /**
+     * Filter data with callback.
+     * @param mixed $filter String callback or callback.
+     * @param array $arr Data to be filtered.
+     * @return array Return filtered data on success, false on failure.
+     */
+    public static function filterData($filter, $arr) {
+        if (is_array($arr)) {
+            foreach ($arr as $key => $val) {
+                if (is_array($val)) {
+                    $arr[$key] = self::filterData($filter, $val);
+                } else {
+                    $arr[$key] = call_user_func($filter, $val);
+                }
+            }
+            return $arr;
+        }
+        return false;
+    }
 
 }

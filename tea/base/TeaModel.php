@@ -792,7 +792,9 @@ class TeaModel {
      * @return mixed Proper criteria.
      */
     public function getProperCriteria($userCriteria) {
-        if ($userCriteria instanceof TeaDbCriteria) {
+        if (is_numeric($userCriteria)) {
+            $criteria = ArrayHelper::mergeArray($this->_addonCriteriaArr, $this->getPkCriteria($userCriteria));
+        } else if ($userCriteria instanceof TeaDbCriteria) {
             $userCriteriaArr = $userCriteria->criteriaArr;
             $criteria = ArrayHelper::mergeArray($this->_addonCriteriaArr, $userCriteriaArr);
         } else if (is_array($userCriteria) && !empty($userCriteria)) {

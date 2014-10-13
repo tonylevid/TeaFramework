@@ -28,18 +28,36 @@ class TeaRequest {
      * @var string
      */
     private $_pathinfo;
+    
+    /**
+     * Http REQUEST parameters.
+     * @var array 
+     */
+    private $_REQUEST_DATA;
+
+    /**
+     * Http GET parameters.
+     * @var array 
+     */
+    private $_GET_DATA;
+
+    /**
+     * Http POST parameters.
+     * @var array 
+     */
+    private $_POST_DATA;
 
     /**
      * Http PUT parameters.
      * @var array
      */
-    private $_PUT;
+    private $_PUT_DATA;
 
     /**
      * Http DELETE parameters.
      * @var array
      */
-    private $_DELETE;
+    private $_DELETE_DATA;
 
     /**
      * Base url (with http(s)://).
@@ -52,6 +70,48 @@ class TeaRequest {
      * @var string
      */
     private $_baseUri;
+    
+    public function __construct($filters = array('htmlspecialchars')) {
+        if ($this->_REQUEST_DATA === null) {
+            $this->_REQUEST_DATA = $_REQUEST;
+        }
+        if ($this->_GET_DATA === null) {
+            $this->_GET_DATA = $_GET;
+        }
+        if ($this->_POST_DATA === null) {
+            $this->_POST_DATA = $_POST;
+        }
+        if ($this->_PUT_DATA === null) {
+            $this->_PUT_DATA = $this->getRequestMethod() === 'PUT' ? $this->getRestParams() : array();
+        }
+        if ($this->_DELETE_DATA === null) {
+            $this->_DELETE_DATA = $this->getRequestMethod() === 'DELETE' ? $this->getRestParams() : array();
+        }
+        $data = array($this->_REQUEST_DATA, $this->_GET_DATA, $this->_POST_DATA, $this->_PUT_DATA, $this->_DELETE_DATA);
+        foreach ($data as &$raw) {
+            foreach ($filters as $filter) {
+                $filteredRaw = ArrayHelper::filterData($filter, $raw);
+                if ($filteredRaw !== false) {
+                    $raw = $filteredRaw;
+                }
+            }
+        }
+        unset($raw);
+        list($this->_REQUEST_DATA, $this->_GET_DATA, $this->_POST_DATA, $this->_PUT_DATA, $this->_DELETE_DATA) = $data;
+    }
+
+    /**
+     * Get $_REQUEST value by name.
+     * @param string $name Key in $_REQUEST.
+     * @param mixed $default Default value for $name if not set.
+     * @return mixed $_REQUEST value.
+     */
+    public function getRequest($name = null, $default = null) {
+        if ($name === null) {
+            return $this->_REQUEST_DATA;
+        }
+        return isset($this->_REQUEST_DATA[$name]) ? $this->_REQUEST_DATA[$name] : $default;
+    }
 
     /**
      * Get $_GET value by name.
@@ -59,8 +119,11 @@ class TeaRequest {
      * @param mixed $default Default value for $name if not set.
      * @return mixed $_GET value.
      */
-    public function getQuery($name, $default = null) {
-        return isset($_GET[$name]) ? $_GET[$name] : $default;
+    public function getQuery($name = null, $default = null) {
+        if ($name === null) {
+            return $this->_GET_DATA;
+        }
+        return isset($this->_GET_DATA[$name]) ? $this->_GET_DATA[$name] : $default;
     }
 
     /**
@@ -69,34 +132,37 @@ class TeaRequest {
      * @param mixed $default Default value for $name if not set.
      * @return mixed $_POST value.
      */
-    public function getPost($name, $default = null) {
-        return isset($_POST[$name]) ? $_POST[$name] : $default;
+    public function getPost($name = null, $default = null) {
+        if ($name === null) {
+            return $this->_POST_DATA;
+        }
+        return isset($this->_POST_DATA[$name]) ? $this->_POST_DATA[$name] : $default;
     }
 
     /**
      * Get PUT value by name.
-     * @param string $name Key in $this->_PUT.
+     * @param string $name Key in $this->_PUT_DATA.
      * @param mixed $default Default value for $name if not set.
      * @return mixed PUT value.
      */
-    public function getPut($name, $default = null) {
-        if ($this->_PUT === null) {
-            $this->_PUT = $this->getRequestMethod() === 'PUT' ? $this->getRestParams() : array();
+    public function getPut($name = null, $default = null) {
+        if ($name === null) {
+            return $this->_PUT_DATA;
         }
-        return isset($this->_PUT[$name]) ? $this->_PUT[$name] : $default;
+        return isset($this->_PUT_DATA[$name]) ? $this->_PUT_DATA[$name] : $default;
     }
 
     /**
      * Get DELETE value by name.
-     * @param string $name Key in $this->_DELETE.
+     * @param string $name Key in $this->_DELETE_DATA.
      * @param mixed $default Default value for $name if not set.
      * @return mixed DELETE value.
      */
-    public function getDelete($name, $default = null) {
-        if ($this->_DELETE === null) {
-            $this->_DELETE = $this->getRequestMethod() === 'DELETE' ? $this->getRestParams() : array();
+    public function getDelete($name = null, $default = null) {
+        if ($name === null) {
+            return $this->_DELETE_DATA;
         }
-        return isset($this->_DELETE[$name]) ? $this->_DELETE[$name] : $default;
+        return isset($this->_DELETE_DATA[$name]) ? $this->_DELETE_DATA[$name] : $default;
     }
 
     /**
