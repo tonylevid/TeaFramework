@@ -131,5 +131,31 @@ class ArrayHelper {
         }
         return false;
     }
+    
+    /**
+     * Get tree array.
+     * @param array $arr Result array.
+     * @param array $options Tree options, defaults to the options in the function.
+     * @return array
+     */
+    public static function getTree($arr, $options = array()) {
+        $options = array_merge(array(
+            'idKey' => 'id',
+            'pidKey' => 'pid',
+            'childrenKey' => 'children'
+        ), $options);
+        list($idKey, $pidKey, $childrenKey) = array($options['idKey'], $options['pidKey'], $options['childrenKey']);
+        $tree = array();
+        $ids = array_map(function($row) use ($idKey) {return $row[$idKey];}, $arr);
+        $arr = array_combine($ids, $arr);
+        foreach ($arr as $item) {
+            if (isset($arr[$item[$pidKey]])) {
+                $arr[$item[$pidKey]][$childrenKey][] =& $arr[$item[$idKey]];
+            } else {
+                $tree[] =& $arr[$item[$idKey]];
+            }
+        }
+        return $tree;
+    }
 
 }
