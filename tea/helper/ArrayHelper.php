@@ -131,6 +131,18 @@ class ArrayHelper {
         }
         return false;
     }
+
+    /**
+     * Convert result array to primary key indexed array.
+     * @param array $arr Result array.
+     * @param string $pkColName Primary key column name.
+     * @return array
+     */
+    public static function pkIndex($arr, $pkColName = 'id') {
+        $ids = array_map(function($row) use ($pkColName) {return $row[$pkColName];}, $arr);
+        $arr = array_combine($ids, $arr);
+        return $arr;
+    }
     
     /**
      * Get tree array.
@@ -185,7 +197,14 @@ class ArrayHelper {
         return array_pop($args);
     }
     
-    public static function idPathSort($arr, $options = array(), $padLen = 8) {
+    /**
+     * Deep first sort array by id path.
+     * @param array $arr Result array. The array index must be id(primary key), see self::pkIndex().
+     * @param array $options Field map.
+     * @param int $padZeroLen Number of padding zero.
+     * @return array Sorted array.
+     */
+    public static function idPathDeepFirstSort($arr, $options = array(), $padZeroLen = 0) {
         $options = array_merge(array(
             'idKey' => 'id',
             'idPathKey' => 'id_path',
@@ -194,8 +213,6 @@ class ArrayHelper {
         $idPathSortKey = '_id_path_sort';
         list($idKey, $idPathKey, $sortKey) = array($options['idKey'], $options['idPathKey'], $options['sortKey']);
         if (is_array($arr) && !empty($arr)) {
-            $ids = array_map(function($row) use ($idKey) {return $row[$idKey];}, $arr);
-            $arr = array_combine($ids, $arr);
             foreach ($arr as $key => &$val) {
                 if (!isset($val[$idPathKey])) {
                     $val[$idPathKey] = '';
@@ -206,12 +223,12 @@ class ArrayHelper {
                 }
                 $idParts = explode('.', $val[$idPathKey]);
                 foreach ($idParts as $i => $v) {
-                    $idParts[$i] = str_pad($v, $padLen, '0', STR_PAD_LEFT);
+                    $idParts[$i] = str_pad($v, $padZeroLen, '0', STR_PAD_LEFT);
                     if (isset($arr[$v])){
                        if (!isset($arr[$v][$sortKey])) {
                            $arr[$v][$sortKey] = 1;
                        }
-                       $idParts[$i] = str_pad($arr[$v][$sortKey], $padLen, '0', STR_PAD_LEFT) . $idParts[$i];
+                       $idParts[$i] = str_pad($arr[$v][$sortKey], $padZeroLen, '0', STR_PAD_LEFT) . $idParts[$i];
                     }
                 }
                 $val[$idPathSortKey] = implode('.', $idParts);
