@@ -210,9 +210,11 @@ class TeaRouter {
     /**
      * Set route pathinfo and rules.
      */
-    private function setRouteInfo($pathinfo) {
+    private function setRouteInfo($pathinfo) {        
         $this->setRoutePathinfo($pathinfo);
         $this->setRouteRules($pathinfo);
+        // after having determined module and controller, then import proper controller.
+        $this->importController();
     }
 
     /**
@@ -229,9 +231,7 @@ class TeaRouter {
             array_shift($pathSegments);
         }
         $this->_urlControllerName = isset($pathSegments[0]) ? $pathSegments[0] : TeaController::$config['defaultController'];
-        $this->_controllerName = $this->getControllerNameBySegment($this->_urlControllerName);
-        // after having determined module and controller, then import proper controller.
-        $this->importController();
+        $this->_controllerName = $this->getControllerNameBySegment($this->_urlControllerName);       
         // set action name and action parameters.
         $this->_urlActionName = isset($pathSegments[1]) ? $pathSegments[1] : TeaController::$config['defaultAction'];
         $this->_actionName = $this->getActionNameBySegment($this->_controllerName, $this->_urlActionName);
@@ -248,7 +248,7 @@ class TeaRouter {
             $routeRules = self::$config['routeRules'];
             foreach ($routeRules as $rule => $route) {
                 if (!empty($route) && preg_match($rule, $pathinfo)) {
-                    $pathinfo = preg_replace($rule, $route, $pathinfo);
+                    $pathinfo = preg_replace($rule, $route, $pathinfo);                   
                     $this->setRoutePathinfo($pathinfo);
                 }
             }

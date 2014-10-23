@@ -304,7 +304,7 @@ class TeaMysqlQuery extends TeaDbQuery {
      * @return int Last insert id.
      */
     public function getLastInsertId() {
-        return $this->getConn()->lastInsertId();
+        return intval($this->getConn()->lastInsertId());
     }
 
     /**
@@ -321,9 +321,6 @@ class TeaMysqlQuery extends TeaDbQuery {
      * @return string Escaped string.
      */
     public function escape($val) {
-        if (is_numeric($val)) {
-            $val += 0;
-        }
         if ($val === null) {
             return 'NULL';
         } else if (is_bool($val)) {

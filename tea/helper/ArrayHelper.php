@@ -204,7 +204,7 @@ class ArrayHelper {
      * @param int $padZeroLen Number of padding zero.
      * @return array Sorted array.
      */
-    public static function idPathDeepFirstSort($arr, $options = array(), $padZeroLen = 0) {
+    public static function idPathDeepFirstSort($arr, $options = array(), $padZeroLen = 8) {
         $options = array_merge(array(
             'idKey' => 'id',
             'idPathKey' => 'id_path',

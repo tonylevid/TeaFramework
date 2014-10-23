@@ -110,7 +110,9 @@ class TeaBasePager {
      */
     public function setCreateUrlArgs($route = '', $queries = array(), $anchor = null) {
         if (empty($route)) {
-            $route = Tea::loadLib('TeaRequest')->getPathinfo();
+            $pathinfo = Tea::loadLib('TeaRequest')->getPathinfo();
+            $route = preg_replace('/' . preg_quote(Tea::getConfig('TeaRouter.urlSuffix')) . '$/', '', $pathinfo);
+            $route = ltrim(rtrim($route, '/'), '/');
         }
         if (empty($queries)) {
             $queries = $_GET;
