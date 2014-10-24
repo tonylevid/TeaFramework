@@ -28,5 +28,18 @@ class StringHelper {
     public static function underscoreToCamel($str) {
         return lcfirst(implode('', array_map('ucfirst', explode('_', $str))));
     }
+    
+    /**
+     * Convert tag string like 'foo, bar,   barz，boom,，,' to 'foo,bar,barz,boom'.
+     * @param string $str Input string.
+     * @param mixed $search String or array indicates separator(s).
+     * @param string $glue Imploded glue.
+     * @return string
+     */
+    public static function trimTags($str, $search = array('，', ','), $glue = ',') {
+        $replacedStr = str_replace($search, $glue, $str);
+        $strParts = array_filter(array_map('trim', explode($glue, $replacedStr)));
+        return implode($glue, $strParts);
+    }
 
 }

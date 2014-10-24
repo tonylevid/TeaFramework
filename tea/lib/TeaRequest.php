@@ -71,7 +71,7 @@ class TeaRequest {
      */
     private $_baseUri;
     
-    public function __construct($filters = array('htmlspecialchars')) {
+    public function __construct($filters = array('htmlspecialchars', 'trim')) {
         if ($this->_REQUEST_DATA === null) {
             $this->_REQUEST_DATA = $_REQUEST;
         }

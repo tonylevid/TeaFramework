@@ -470,6 +470,7 @@ class TeaBase {
                     'system.base.*',
                     'system.helper.*',
                     'system.lib.*',
+                    'system.lib.cache.*',
                     'system.lib.pager.*',
                     'system.vendor.*',
                     'system.db.rdbms.*',

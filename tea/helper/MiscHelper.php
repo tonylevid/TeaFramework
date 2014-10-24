@@ -29,5 +29,42 @@ class MiscHelper {
         }
         return $ip;
     }
+    
+    public static function commonEncode($data, $privateKey = 'TeaFrameworkRocks') {
+        $strArr = array();
+        if (is_string($data)) {
+            $strArr[] = $data;
+        } else if (is_array($data)) {
+            $strArr = $data;
+        }
+        $hashedArr = array();
+        foreach ($strArr as $str) {
+            $privateKeyHash = hash('sha256', $str, true);
+            if (extension_loaded('mcrypt')) {
+                $hashedArr[] = base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $privateKeyHash, $str, MCRYPT_MODE_ECB));
+            } else {
+                $hashedArr[] = base64_encode($str);
+            }
+        }
+        return implode(' ', $hashedArr);
+    }
+    
+    public static function commonDecode($data, $privateKey = 'TeaFrameworkRocks') {
+        $hashedArr = explode(' ', trim($data));
+        $strArr = array();
+        foreach ($hashedArr as $str) {
+            $privateKeyHash = hash('sha256', $str, true);
+            if (extension_loaded('mcrypt')) {
+                $strArr[] = trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $privateKeyHash, base64_decode($str), MCRYPT_MODE_ECB));
+            } else {
+                $strArr[] = base64_decode($str);
+            }
+        }
+        if (count($strArr) === 1) {
+            return implode(' ', $strArr);
+        } else {
+            return $strArr;
+        }
+    }
 
 }

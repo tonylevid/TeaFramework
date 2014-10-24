@@ -210,7 +210,7 @@ class ArrayHelper {
             'idPathKey' => 'id_path',
             'sortKey' => 'sort'
         ), $options);
-        $idPathSortKey = '_id_path_sort';
+        $idPathSortKey = '_id_path_sort_';
         list($idKey, $idPathKey, $sortKey) = array($options['idKey'], $options['idPathKey'], $options['sortKey']);
         if (is_array($arr) && !empty($arr)) {
             foreach ($arr as $key => &$val) {
@@ -236,6 +236,21 @@ class ArrayHelper {
             return self::orderBy($arr, $idPathSortKey, SORT_ASC);
         }
         return $arr;
+    }
+    
+    /**
+     * Return the values from a single column in the input array.
+     * @param array $arr A multi-dimensional array (record set) from which to pull a column of values.
+     * @param string $colName The column of values to return.
+     * @return array
+     */
+    public static function arrayColumn($arr, $colName) {
+        if (function_exists('array_column')) {
+            return array_column($arr, $colName);
+        }
+        return array_map(function($row) use ($colName) {
+            return $row[$colName];
+        }, $arr);
     }
 
 }
