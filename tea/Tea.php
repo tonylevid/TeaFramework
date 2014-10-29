@@ -3,9 +3,9 @@
 require dirname(__FILE__) . DIRECTORY_SEPARATOR . 'TeaBase.php';
 
 /**
- * Tea bootstrap file.
- * Tea is a helper class of TeaBase class file.
- * By writing your own Tea class, you can customize some functionalities of TeaBase.
+ * Tea框架引导文件。
+ * Tea是TeaBase的帮助类。
+ * 你可以用此类自定义一些TeaBase基础方法。
  *
  * @author tonylevid <tonylevid@gmail.com>
  * @link http://www.tframework.com/

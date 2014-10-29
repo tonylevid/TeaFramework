@@ -3,7 +3,7 @@
 require dirname(__FILE__) . DIRECTORY_SEPARATOR . 'helper' . DIRECTORY_SEPARATOR . 'ArrayHelper.php';
 
 /**
- * TeaBase class file
+ * TeaBase类文件。
  *
  * @author tonylevid <tonylevid@gmail.com>
  * @link http://www.tframework.com/
@@ -19,37 +19,37 @@ defined('TEA_PATH') or define('TEA_PATH', dirname(__FILE__));
 class TeaBase {
 
     /**
-     * Tea config array.
+     * Tea配置数组。
      * @var array
      */
     public static $config = array();
 
     /**
-     * All module => path map.
+     * 所有 模块 => 路径 映射数组。
      * @var array
      */
     public static $moduleMap = array();
 
     /**
-     * Imported class => file map.
+     * 已加载 类 => 文件 映射数组。
      * @var array
      */
     public static $importMap = array();
 
     /**
-     * TeaRouter instance.
+     * 当前运行期TeaRouter类实例。
      * @var TeaRouter
      */
     private static $_routerInstance;
 
     /**
-     * Proper TeaDbConnection subclass instance.
+     * 当前运行期所适配的TeaDbConnection子类实例。
      * @var TeaDbConnection
      */
     private static $_connection;
 
     /**
-     * Connection type to connection class map.
+     * 数据库连接类型 => 数据库连接类 映射数组。
      * @var array
      */
     private static $_connectionTypeMap = array(
@@ -66,8 +66,8 @@ class TeaBase {
     );
 
     /**
-     * Run the application.
-     * @param array $config User's config array.
+     * 运行程序。
+     * @param array $config 用户配置数组。
      */
     public static function run($config = array(), $routeArgs = array()) {
         self::init($config);
@@ -79,8 +79,8 @@ class TeaBase {
     }
 
     /**
-     * Run the console application.
-     * @param array $config User's config array.
+     * 运行程序并支持cli模式。
+     * @param array $config 用户配置数组。
      */
     public static function runConsole($config = array()) {
         global $argv;
@@ -93,8 +93,8 @@ class TeaBase {
     }
 
     /**
-     * Tea initialization.
-     * @param array $config User's config array.
+     * Tea框架初始化。
+     * @param array $config 用户配置数组。
      */
     public static function init($config = array()) {
         session_start();
@@ -104,9 +104,9 @@ class TeaBase {
     }
 
     /**
-     * Import a class or directory.
-     * @param string $alias Dot notation alias.
-     * @param bool $forceImport Whether to import immediately.
+     * 导入一个类或者一个文件夹下的所有类（不会递归导入）。
+     * @param string $alias 圆点记法别名。别名可使用配置项TeaBase.pathAliasMap中的别名，如system.lib.*。
+     * @param bool $forceImport 是否立即导入，默认为false，false为惰性加载。
      * @return bool
      * @throws TeaException
      */
@@ -139,8 +139,8 @@ class TeaBase {
     }
 
     /**
-     * Autoloader
-     * @param string $className Autoloaded class name.
+     * 自动加载。
+     * @param string $className 自动加载类名。
      * @return bool
      */
     public static function autoload($className) {
@@ -152,10 +152,10 @@ class TeaBase {
     }
 
     /**
-     * Load class and get the instance.
-     * @param string $name Dot notation alias. You can use relative dot notation path.
-     * @param array $args Class's constructor parameters, defaults to array().
-     * @return mixed Return class instance on success, false on failure.
+     * 加载类并获取实例。
+     * @param string $name 圆点记法别名。如果第一个别名不是TeaBase.pathAliasMap中的别名，则会根据当前运行期自动判断。
+     * @param array $args 类构造函数的参数，默认为空数组array()。
+     * @return mixed 成功则返回类实例，失败则返回false。
      */
     public static function load($name, $args = array()) {
         $nameParts = explode('.', $name);
@@ -178,10 +178,10 @@ class TeaBase {
     }
 
     /**
-     * Load helper and get the instance.
-     * @param string $name Dot notation alias. For example: 'array' or 'protected.helper.array'.
-     * @param array $args Helper's constructor parameters, defaults to array().
-     * @return mixed Return Helper instance on success, false on failure.
+     * 加载帮组类并获取实例。
+     * @param string $name 圆点记法别名。例如：'array' 或者 'protected.helper.array'。
+     * @param array $args 类构造函数的参数，默认为空数组array()。
+     * @return mixed 成功则返回类实例，失败则返回false。
      */
     public static function loadHelper($name, $args = array()) {
         $nameParts = explode('.', $name);
@@ -196,10 +196,10 @@ class TeaBase {
     }
 
     /**
-     * Load library and get the instance.
-     * @param string $name Dot notation alias. For example: 'pager' or 'protected.lib.pager'.
-     * @param array $args Library's constructor parameters, defaults to array().
-     * @return mixed Return Library instance on success, false on failure.
+     * 加载类库并获取实例。
+     * @param string $name 圆点记法别名。例如：'pager' 或者 'protected.lib.pager'。
+     * @param array $args 类构造函数的参数，默认为空数组array()。
+     * @return mixed 成功则返回类实例，失败则返回false。
      */
     public static function loadLib($name, $args = array()) {
         $nameParts = explode('.', $name);
@@ -214,11 +214,11 @@ class TeaBase {
     }
 
     /**
-     * Load model and get the instance.
-     * If could not load the model class, this will try to create a TeaTempModel instance.
-     * @param string $name Dot notation alias. For example: 'test' or 'protected.model.test'.
-     * @param array $args Model's constructor parameters, defaults to array().
-     * @return mixed Return Model instance on success, false on failure.
+     * 加载模型类并获取实例。
+     * 如果无法找到此模型类, 则会根据名称（此名称被视为表名）创建一个TeaTempModel实例。
+     * @param string $name 圆点记法别名。例如：'test' 或者 'protected.model.test'。
+     * @param array $args 类构造函数的参数，默认为空数组array()。
+     * @return mixed 成功则返回类实例，失败则返回false。
      */
     public static function loadModel($name, $args = array()) {
         $nameParts = explode('.', $name);
@@ -239,8 +239,8 @@ class TeaBase {
     }
 
     /**
-     * Get current running TeaRouter instance.
-     * @return TeaRouter Current running TeaRouter instance.
+     * 获取当前运行期TeaRouter类实例。
+     * @return TeaRouter 当前运行期TeaRouter类实例。
      */
     public static function getRouter() {
         if (!self::$_routerInstance instanceof TeaRouter) {
@@ -250,11 +250,11 @@ class TeaBase {
     }
 
     /**
-     * Create url.
-     * @param string $route Url route string.
-     * @param array $queries Parameters of $_GET after route.
-     * @param string $anchor Anchor at the end of url.
-     * @return string Generated url string.
+     * 创建链接。
+     * @param string $route 路由字符串。
+     * @param array $queries $_GET相关参数。
+     * @param string $anchor 链接后面的锚点，默认为null。
+     * @return string 生成的链接。
      */
     public static function createUrl($route = '', $queries = array(), $anchor = null) {
         $request = self::loadLib('TeaRequest');
@@ -291,9 +291,9 @@ class TeaBase {
     }
 
     /**
-     * Get proper TeaDbConnection subclass instance and connect if autoConnect is true.
-     * @param mixed $connInfo String or array, defaults to string 'default'. If string, it should be the connection info group key in main config model node.
-     * @return TeaDbConnection Proper TeaDbConnection subclass instance.
+     * 根据数据库连接信息获取适配的TeaDbConnection子类实例，并当配置autoConnect是true时自动连接。
+     * @param mixed $connInfo 字符串或数组，默认为配置项TeaModel.defaultConnection。如果为字符串，那么它应当是配置项TeaModel.connections中的一项。
+     * @return TeaDbConnection 适配的TeaDbConnection子类实例。
      * @throws TeaDbException
      */
     public static function getDbConnection($connInfo = null) {
@@ -325,41 +325,41 @@ class TeaBase {
     }
 
     /**
-     * Get proper TeaDbQuery subclass instance if autoConnect is true.
-     * @return TeaDbQuery Proper TeaDbQuery subclass instance.
+     * 获取当前运行期所适配的TeaDbQuery子类实例。
+     * @return TeaDbQuery 适配的TeaDbQuery子类实例。
      */
     public static function getDbQuery() {
         return self::getDbConnection()->getQuery();
     }
 
     /**
-     * Get proper TeaDbSchema subclass instance if autoConnect is true.
-     * @return TeaDbSchema Proper TeaDbSchema subclass instance.
+     * 获取当前运行期所适配的TeaDbSchema子类实例。
+     * @return TeaDbSchema 适配的TeaDbSchema子类实例。
      */
     public static function getDbSchema() {
         return self::getDbConnection()->getSchema();
     }
 
     /**
-     * Get proper TeaDbSqlBuilder subclass instance if autoConnect is true.
-     * @return TeaDbSqlBuilder Proper TeaDbSqlBuilder subclass instance.
+     * 获取当前运行期所适配的TeaDbSqlBuilder子类实例。
+     * @return TeaDbSqlBuilder 适配的TeaDbSqlBuilder子类实例。
      */
     public static function getDbSqlBuilder() {
         return self::getDbConnection()->getSqlBuilder();
     }
 
     /**
-     * Get proper TeaDbCriteria subclass instance if autoConnect is true.
-     * @return TeaDbCriteria Proper TeaDbCriteria subclass instance.
+     * 获取当前运行期所适配的TeaDbCriteria子类实例。
+     * @return TeaDbCriteria 适配的TeaDbCriteria子类实例。
      */
     public static function getDbCriteria() {
         return self::getDbConnection()->getCriteria();
     }
 
     /**
-     * Convert alias to path.
-     * @param string $alias Alias string.
-     * @return string Path string.
+     * 根据路径别名获取真实路径。
+     * @param string $alias 路径别名。
+     * @return string 真实路径。
      */
     public static function aliasToPath($alias) {
         $pathAliases = self::getConfig('TeaBase.pathAliasMap');
@@ -375,9 +375,9 @@ class TeaBase {
     }
 
     /**
-     * Get config by dot notation.
-     * @param string $nodeStr Dot notation path, defaults to null. If empty, function will return full config array.
-     * @return mixed Return config value on success, false on failure.
+     * 通过圆点记法字符串获取运行期配置。
+     * @param string $nodeStr 圆点记法字符串，默认为null。如果此项为空，此方法将返回整个配置数组。
+     * @return mixed 成功则返回配置的值，失败则返回false。
      */
     public static function getConfig($nodeStr = null) {
         if (empty($nodeStr)) {
@@ -397,10 +397,10 @@ class TeaBase {
     }
 
     /**
-     * Set config by dot notation.
-     * @param string $nodeStr Dot notation path.
-     * @param mixed $value Value to be set.
-     * @return mixed Return the value has been set.
+     * 通过圆点记法字符串设置运行期配置。
+     * @param string $nodeStr 圆点记法字符串。
+     * @param mixed $value 配置项值。
+     * @return mixed 返回设置的配置项值。
      */
     public static function setConfig($nodeStr, $value) {
         $nodes = explode('.', $nodeStr);
@@ -415,9 +415,9 @@ class TeaBase {
     }
 
     /**
-     * Set config for class.
-     * @param string $className Class name, you can use __CLASS__ in class.
-     * @param string $configParam Config variable name, defaults to 'config'.
+     * 设置类通用配置项，用于将类配置导入Tea框架配置。
+     * @param string $className 类名称，你可以在当前类使用 __CLASS__ 。
+     * @param string $configParam 类配置项静态变量名，默认为'config'.
      */
     public static function setClassConfig($className, $configParam = 'config') {
         $classConfig = self::getConfig($className);
@@ -428,7 +428,7 @@ class TeaBase {
     }
 
     /**
-     * Set module map.
+     * 设置模块映射。
      */
     protected static function setModuleMap() {
         $modulePaths = glob(self::aliasToPath('module.*'), GLOB_ONLYDIR);
@@ -441,7 +441,7 @@ class TeaBase {
     }
 
     /**
-     * Set auto import.
+     * 设置自动导入。
      */
     protected static function setAutoImport() {
         // import core classes and autoImport in main config.
@@ -454,7 +454,7 @@ class TeaBase {
     }
 
     /**
-     * Get TeaBase default config.
+     * 获取TeaBase默认配置。
      * @return array
      */
     protected static function getTeaBaseConfig() {
@@ -486,8 +486,8 @@ class TeaBase {
     }
 
     /**
-     * Check whether the name for load methods is absolute.
-     * @param string $name The name for load methods.
+     * 查看别名是否为配置项TeaBase.pathAliasMap中的别名。
+     * @param string $name 别名
      * @return bool
      */
     private static function isLoadNameAbsolute($name) {
