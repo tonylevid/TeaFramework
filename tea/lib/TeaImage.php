@@ -52,7 +52,9 @@ class TeaImage {
         }
         if (defined('APP_PATH')) {
             $defaultFont = APP_PATH . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'font' . DIRECTORY_SEPARATOR . 'STHeiti-Light.ttc';
-            $this->setCommonFontFile($defaultFont);
+            if (file_exists($defaultFont)) {
+                $this->setCommonFontFile($defaultFont);
+            }
         }
     }
 
