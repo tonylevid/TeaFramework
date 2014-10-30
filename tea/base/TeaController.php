@@ -129,7 +129,7 @@ class TeaController {
             $router = Tea::getRouter();
             $moduleName = $router->getModuleName();
             $tplBasePathAlias = empty($moduleName) ? 'protected.view' : "module.{$moduleName}.view";
-            $tplName = empty($tpl) ? $router->getActionName() : $tpl;
+            $tplName = empty($tpl) ? strtolower($router->getUrlControllerName()) . '_' . strtolower($router->getUrlActionName()) : $tpl;
             $tplFile = Tea::aliasToPath($tplBasePathAlias) . DIRECTORY_SEPARATOR . $tplName . $tplSuffix;
         }
         if (is_file($tplFile)) {
