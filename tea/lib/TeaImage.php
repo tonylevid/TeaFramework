@@ -24,6 +24,7 @@ class TeaImage {
     protected static $_imgOutputFuncMap = array(
         'gif' => 'imagegif',
         'jpg' => 'imagejpeg',
+        'jpe' => 'imagejpeg',
         'jpeg' => 'imagejpeg',
         'png' => 'imagepng',
         'wbmp' => 'imagewbmp',
