@@ -172,7 +172,9 @@ class TeaMysqlQuery extends TeaDbQuery {
             $this->_statement->execute();
             $this->_params = array();
         } catch (PDOException $e) {
-            $errMsg = get_class($this) . " prepared sql execution error: {$this->getLastSql()}\n";
+            $lastSql = $this->getLastSql();
+            $lastSqlPart = mb_strlen($lastSql, 'utf-8') > 100 ? mb_substr($lastSql, 0, 100, 'utf-8') . '...' : $lastSql;
+            $errMsg = get_class($this) . " prepared sql execution error: {$lastSqlPart}\n";
             $errMsg .= "{$e->getMessage()}\n";
             foreach ($this->_params as $key => $val) {
                 $key = gettype($key) . ' ' . var_export($key, true);
