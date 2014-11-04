@@ -17,7 +17,8 @@ class TeaController {
      */
     public static $config = array(
         'defaultController' => 'Main',
-        'defaultAction' => 'index'
+        'defaultAction' => 'index',
+        'tplSuffix' => '.php'
     );
 
     /**
@@ -121,16 +122,19 @@ class TeaController {
             $vals = array_merge($this->_assignedVals, $vals);
             extract($vals);
         }
-        $tplSuffix = '.php';
+        $tplSuffix = self::$config['tplSuffix'];
         $tplFile = Tea::aliasToPath($tpl) . $tplSuffix;
         $tplParts = explode('.', $tpl);
         $tplName = array_pop($tplParts);
+        $router = Tea::getRouter();
+        $moduleName = $router->getModuleName();
+        $tplBasePathAlias = empty($moduleName) ? 'protected.view' : "module.{$moduleName}.view";
         if (!is_file($tplFile)) {
-            $router = Tea::getRouter();
-            $moduleName = $router->getModuleName();
-            $tplBasePathAlias = empty($moduleName) ? 'protected.view' : "module.{$moduleName}.view";
             $tplName = empty($tpl) ? strtolower($router->getUrlControllerName()) . '_' . strtolower($router->getUrlActionName()) : $tpl;
             $tplFile = Tea::aliasToPath($tplBasePathAlias) . DIRECTORY_SEPARATOR . $tplName . $tplSuffix;
+        }
+        if (!is_file($tplFile)) {
+            $tplFile = Tea::aliasToPath($tplBasePathAlias . '.' . $tpl) . $tplSuffix;
         }
         if (is_file($tplFile)) {
             ob_start();

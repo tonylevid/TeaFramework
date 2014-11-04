@@ -9,4 +9,11 @@ class MainController extends TeaController {
         ));
     }
 
+    public function getName() {
+        $datas = array(
+            'china' => 'America'
+        );
+        $this->render('Main.getName', $datas);
+    }
+
 }
