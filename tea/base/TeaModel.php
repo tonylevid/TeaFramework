@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TeaModel class file.
+ * TeaModel类文件。
  *
  * @author tonylevid <tonylevid@gmail.com>
  * @link http://www.tframework.com/
@@ -12,24 +12,24 @@
 class TeaModel {
 
     /**
-     * Class config.
+     * 类配置数组。
      * @var array
      */
     public static $config = array(
-        'arrayResult' => true,
-        'defaultConnection' => 'default',
-        'connections' => array(
-            'default' => array(
-                'dsn' => 'mysql:host=127.0.0.1;dbname=test;',
-                'username' => 'root',
-                'password' => '123456',
-                'charset' => 'utf8', // if charset has been defined in dsn, this will be invalid.
-                'tablePrefix' => 'tb_',
-                'aliasMark' => '->',
-                'tableColumnLinkMark' => '-',
-                'persistent' => true,
-                'emulatePrepare' => true,
-                'autoConnect' => true,
+        'arrayResult' => true, // 是否数组化结果集，false则结果集为object。
+        'defaultConnection' => 'default', // 默认数据库连接key。
+        'connections' => array( // 数据库连接信息组。
+            'default' => array( // 数据库连接key名。
+                'dsn' => 'mysql:host=127.0.0.1;dbname=test;', // 数据库连接dsn，请参考pdo dsn写法，如mysql的写法http://php.net/manual/en/ref.pdo-mysql.connection.php。
+                'username' => 'root', // 数据库用户名。
+                'password' => '123456', // 数据库密码。
+                'charset' => 'utf8', // 数据库字符集，如果字符集已经在dsn里设置，则此项无效。
+                'tablePrefix' => 'tb_', // 数据库表前缀。
+                'aliasMark' => '->', // 数据库表别名连接符，在有表名处使用即可创建别名。如'my_table->a'，则'a'代表'my_table'。
+                'tableColumnLinkMark' => '-', // join查询自动表前缀连接符，这在多张表有字段相同时非常有用，不用担心表名相同而引起的值覆盖。
+                'persistent' => true, // 是否持久连接，建议开启。
+                'emulatePrepare' => true, // 是否模拟prepare，建议开启。
+                'autoConnect' => true // 是否自动连接，建议开启。
             )
         )
     );

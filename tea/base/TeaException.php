@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TeaException class file
+ * TeaException类文件。
  *
  * @author tonylevid <tonylevid@gmail.com>
  * @link http://www.tframework.com/

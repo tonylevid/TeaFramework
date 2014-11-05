@@ -286,7 +286,7 @@ class TeaBase {
                 $url = '';
                 break;
         }
-        $returnUrl = !empty($url) ? $request->getBaseUri() . '/' . $url : '';
+        $returnUrl = !empty($url) ? $request->getBaseUri() . '/' . $url : '/';
         return $returnUrl;
     }
 

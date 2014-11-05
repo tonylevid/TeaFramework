@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TeaDbException class file
+ * TeaDbException类文件。
  *
  * @author tonylevid <tonylevid@gmail.com>
  * @link http://www.tframework.com/
@@ -10,14 +10,18 @@
  * @package system
  */
 class TeaDbException extends TeaException {
-
+    
+    /**
+     * 错误信息。
+     * @var array
+     */
     public $errorInfo;
 
     /**
-     * Constructor.
-     * @param string $message PDO error message.
-     * @param integer $code PDO error code.
-     * @param mixed $errorInfo PDO error info.
+     * 构造函数。
+     * @param string $message PDO错误消息。
+     * @param integer $code PDO错误代码。
+     * @param mixed $errorInfo PDO错误信息。
      */
     public function __construct($message, $code = 0, $errorInfo = null) {
         $this->errorInfo = $errorInfo;

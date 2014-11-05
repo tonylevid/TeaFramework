@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TeaController class file.
+ * TeaController类文件。
  *
  * @author tonylevid <tonylevid@gmail.com>
  * @link http://www.tframework.com/
@@ -12,7 +12,7 @@
 class TeaController {
 
     /**
-     * Class config.
+     * 类配置数组。
      * @var array
      */
     public static $config = array(
@@ -22,21 +22,21 @@ class TeaController {
     );
 
     /**
-     * Assigned values for template.
+     * 模板已推送变量映射数组。
      * @var array
      */
     private $_assignedVals = array();
 
     /**
-     * Constructor, set class config.
+     * 构造函数，加载配置。
      */
     public function __construct() {
         Tea::setClassConfig(__CLASS__);
     }
 
     /**
-     * Hook method, invoking before action.
-     * @param string $name Action name.
+     * 钩子函数，在action前执行，在控制器里声明beforeAction方法即可。
+     * @param string $name 当前action名称。
      */
     public function onBeforeAction($name) {
         if (method_exists($this, 'beforeAction')) {
@@ -45,8 +45,8 @@ class TeaController {
     }
 
     /**
-     * Hook method, invoking after action.
-     * @param string $name Action name.
+     * 钩子函数，在action后执行，在控制器里声明afterAction方法即可。
+     * @param string $name 当前action名称。
      */
     public function onAfterAction($name) {
         if (method_exists($this, 'afterAction')) {
@@ -55,15 +55,15 @@ class TeaController {
     }
 
     /**
-     * Assign value or values array for template.
-     * If number of arguments is one and the argument is an array:
+     * 为模板推送变量。
+     * 如果只有一个参数，且第一个参数为数组：
      * $this->assign(array(
      *     string name1 => mixed value1,
      *     string name2 => mixed value2
      * ));
-     * If number of arguments is two:
+     * 如果有两个参数:
      * $this->assign(string name, mixed value);
-     * @param mixed $param,... Optional arguments.
+     * @param mixed $param,... 可变长度参数。
      * @throws TException
      */
     public function assign() {
@@ -79,8 +79,8 @@ class TeaController {
     }
 
     /**
-     * Redirect url.
-     * @param mixed $redirect Url string or Tea::createUrl() parameters array.
+     * 重定向url。
+     * @param mixed $redirect url字符串或者Tea::createUrl()的参数数组。
      */
     public function redirect($redirect) {
         $redirectUrl = null;
@@ -93,10 +93,10 @@ class TeaController {
     }
 
     /**
-     * Echo json data.
-     * @param mixed $data Main data.
-     * @param mixed $msg Message.
-     * @param mixed $code Code.
+     * 输出json数据。
+     * @param mixed $data 输出的数据，对应键名为'data'。
+     * @param mixed $msg 输出的消息提示，对应键名为'msg'。
+     * @param mixed $code 输出的状态代码，对应键名为'code'。
      */
     public function ajaxReturn($data, $msg = null, $code = 0) {
         header('Content-type: application/json');
@@ -110,14 +110,15 @@ class TeaController {
     }
 
     /**
-     * Render template.
-     * @param string $tpl Template to be rendered, dot notation path. If empty, it will detect automatically with router.
-     * @param array $vals An array of variable name and variable value to be assigned.
-     * @param bool $output Output or not, defaults to true.
-     * @return mixed If param $output is false, it will return the rendered template string, else output it.
+     * 渲染模板。
+     * @param string $tpl 需要被渲染的模板，圆点标记路径。如果为空，则将根据当前路由自动检测。
+     * @param array $vals 推送到模板的变量映射数组。
+     * @param string $theme 主题文件夹。
+     * @param bool $output 是否输出，默认为true。
+     * @return mixed 如果不输出，将返回被渲染后的模板字符串，否则输出被渲染后的模板。
      * @throws TeaException
      */
-    public function render($tpl = null, $vals = array(), $output = true) {
+    public function render($tpl = null, $vals = array(), $theme = null, $output = true) {
         if (is_array($vals)) {
             $vals = array_merge($this->_assignedVals, $vals);
             extract($vals);
@@ -129,13 +130,16 @@ class TeaController {
         $router = Tea::getRouter();
         $moduleName = $router->getModuleName();
         $tplBasePathAlias = empty($moduleName) ? 'protected.view' : "module.{$moduleName}.view";
+        if (!empty($theme)) {
+            $tplBasePathAlias = $tplBasePathAlias . '.' . $theme;
+        }
         if (!is_file($tplFile)) {
             $tplName = empty($tpl) ? strtolower($router->getUrlControllerName()) . '_' . strtolower($router->getUrlActionName()) : $tpl;
             $tplFile = Tea::aliasToPath($tplBasePathAlias) . DIRECTORY_SEPARATOR . $tplName . $tplSuffix;
         }
         if (!is_file($tplFile)) {
             $tplFile = Tea::aliasToPath($tplBasePathAlias . '.' . $tpl) . $tplSuffix;
-        }
+        }       
         if (is_file($tplFile)) {
             ob_start();
             include $tplFile;
@@ -150,13 +154,14 @@ class TeaController {
     }
 
     /**
-     * A handy method of $this->render().
-     * @param string $tpl Template to be rendered. If empty, it will detect automatically with router.
-     * @param array $vals An array of variable name and variable value to be assigned.
-     * @return string The rendered template string.
+     * $this->render()的便捷方法。
+     * @param string $tpl 需要被渲染的模板，圆点标记路径。如果为空，则将根据当前路由自动检测。
+     * @param array $vals 推送到模板的变量映射数组。
+     * @param string $theme 主题文件夹。
+     * @return string 返回被渲染后的模板字符串。
      */
-    public function getRenderContent($tpl = null, $vals = array()) {
-        return $this->render($tpl, $vals, false);
+    public function getRenderContent($tpl = null, $vals = array(), $theme = null) {
+        return $this->render($tpl, $vals, $theme, false);
     }
 
 }
