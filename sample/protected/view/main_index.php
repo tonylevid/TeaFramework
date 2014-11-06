@@ -5,6 +5,6 @@
     <title>Hello, <?php echo $name; ?>. 您好，<?php echo $name; ?>。</title>
 </head>
 <body>
-    <span style="font-weight: bold;"><?php echo $name; ?> says <?php echo $say; ?></span>
+    <span style="font-weight: bold;"><?php echo $name; ?> says <?php echo $says; ?></span>
 </body>
 </html>
