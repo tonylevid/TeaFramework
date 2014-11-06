@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TeaRouter class file.
+ * TeaRouter类文件。
  *
  * @author tonylevid <tonylevid@gmail.com>
  * @link http://www.tframework.com/
@@ -12,82 +12,82 @@
 class TeaRouter {
 
     /**
-     * Class config.
+     * 类配置数组。
      * @var array
      */
     public static $config = array(
-        'caseInsensitive' => true,
-        'routeMode' => 'auto',  // 'path', 'get' or 'auto'
-        'routeModeGetName' => 'r',  // only available when route mode is 'get'
-        'urlSuffix' => '',
-        'openRouteRules' => false,
-        'routeRules' => array() // regexp => route array
+        'caseInsensitive' => true, // 是否开启大小写敏感。
+        'routeMode' => 'auto',  // 路由模式，共三种'path', 'get' 和 'auto'。
+        'routeModeGetName' => 'r',  // 路由参数名，仅当路由模式为'get'时有效。
+        'urlSuffix' => '', // url后缀。
+        'openRouteRules' => false, // 是否开启路由规则。
+        'routeRules' => array() // 路由规则数组，数组格式：array(regexp => route, ...)
     );
 
     /**
-     * Current controller instance.
+     * 当前控制器实例。
      * @var object
      */
     private $_controller;
 
     /**
-     * Current url module name.
+     * 当前url模块名。
      * @var string
      */
     private $_urlModuleName;
 
     /**
-     * Current module name.
+     * 当前模块名。
      * @var string
      */
     private $_moduleName;
 
     /**
-     * Current url controller name.
+     * 当前url控制器名。
      * @var string
      */
     private $_urlControllerName;
 
     /**
-     * Current controller class name.
+     * 当前控制器名。
      * @var string
      */
     private $_controllerName;
 
     /**
-     * Current url action name.
+     * 当前url动作名。
      * @var string
      */
     private $_urlActionName;
 
     /**
-     * Current action name.
+     * 当前动作名。
      * @var string
      */
     private $_actionName;
 
     /**
-     * Action parameters.
+     * 动作接收参数。
      * @var array
      */
     private $_actionParams = array();
 
     /**
-     * Arguments of method TeaRouter::route().
+     * TeaRouter::route()的路由参数值。
      * @var array
      */
     private $_routeArgs = array();
 
     /**
-     * Constructor, set class config.
+     * 构造函数，加载配置。
      */
     public function __construct() {
         Tea::setClassConfig(__CLASS__);
     }
 
     /**
-     * Route and run.
-     * @param array $routeArgs Used for setting route information.
+     * 路由并运行程序。
+     * @param array $routeArgs 手动设置的路由参数。
      * @throws TeaException
      */
     public function route($routeArgs = array()) {
@@ -115,7 +115,7 @@ class TeaRouter {
     }
 
     /**
-     * Get current controller instance.
+     * 获取当前控制器实例。
      * @return object
      */
     public function getController() {
@@ -123,7 +123,7 @@ class TeaRouter {
     }
 
     /**
-     * Get current url module name.
+     * 获取当前url模块名。
      * @return string
      */
     public function getUrlModuleName() {
@@ -131,7 +131,7 @@ class TeaRouter {
     }
 
     /**
-     * Get current module name.
+     * 获取当前模块名。
      * @return string
      */
     public function getModuleName() {
@@ -139,7 +139,7 @@ class TeaRouter {
     }
 
     /**
-     * Get current url controller name.
+     * 获取当前url控制器名。
      * @return string
      */
     public function getUrlControllerName() {
@@ -147,7 +147,7 @@ class TeaRouter {
     }
 
     /**
-     * Get current controller name.
+     * 获取当前控制器名。
      * @return string
      */
     public function getControllerName() {
@@ -155,7 +155,7 @@ class TeaRouter {
     }
 
     /**
-     * Get current url action name.
+     * 获取当前url动作名。
      * @return string
      */
     public function getUrlActionName() {
@@ -163,7 +163,7 @@ class TeaRouter {
     }
 
     /**
-     * Get current action name.
+     * 获取当前动作名。
      * @return string
      */
     public function getActionName() {
@@ -171,7 +171,7 @@ class TeaRouter {
     }
 
     /**
-     * Get current action parameters.
+     * 获取动作接收参数。
      * @return array
      */
     public function getActionParams() {
@@ -179,7 +179,7 @@ class TeaRouter {
     }
 
     /**
-     * Set module name, controller name, action name and action params.
+     * 设置模块名，控制器名，动作名和动作接收参数。
      */
     protected function setRoute() {
         if (!empty($this->_routeArgs)) {
@@ -208,18 +208,18 @@ class TeaRouter {
     }
 
     /**
-     * Set route pathinfo and rules.
+     * 设置路由的pathinfo和路由规则。
      */
     private function setRouteInfo($pathinfo) {        
         $this->setRoutePathinfo($pathinfo);
         $this->setRouteRules($pathinfo);
-        // after having determined module and controller, then import proper controller.
+        // 在检测模块和控制器后，导入合适的控制器。
         $this->importController();
     }
 
     /**
-     * Set route pathinfo information.
-     * @param string $pathinfo pathinfo style string.
+     * 设置路由的pathinfo信息。
+     * @param string $pathinfo pathinfo风格的字符串。
      */
     private function setRoutePathinfo($pathinfo) {
         $trimedPathinfo = preg_replace('/' . preg_quote(self::$config['urlSuffix'], '/') . '$/', '', $pathinfo);
@@ -239,9 +239,9 @@ class TeaRouter {
     }
 
     /**
-     * Set route rules.
-     * This method must call after TeaRouter::setRoutePathinfo().
-     * @param string $pathinfo pathinfo style string.
+     * 设置路由规则。
+     * 此方法必须在TeaRouter::setRoutePathinfo()后调用。
+     * @param string $pathinfo pathinfo风格的字符串。
      */
     private function setRouteRules($pathinfo) {
         if (self::$config['openRouteRules']) {
@@ -256,7 +256,7 @@ class TeaRouter {
     }
 
     /**
-     * Import proper controller.
+     * 导入合适的控制器。
      */
     private function importController() {
         $moduleName = $this->getModuleName();
@@ -269,8 +269,8 @@ class TeaRouter {
     }
 
     /**
-     * Check whether segment is a module.
-     * @param string $segment Segment string.
+     * 检测字符串是否为模块。
+     * @param string $segment 被检测字符串。
      * @return bool
      */
     private function isModule($segment) {
@@ -286,9 +286,9 @@ class TeaRouter {
     }
 
     /**
-     * Get lowercased module map.
-     * @param bool $isNameMap Whether return module name array map.
-     * @param bool $moduleToLower If it is true, it will return moduleName => lowercasedModuleName array map, else return lowercasedModuleName => moduleName array map.
+     * 获取小写字母化的模块映射数组。
+     * @param bool $isNameMap 是否返回模块名称小写化的映射数组，true则根据$moduleToLower返回模块名映射数组，false则返回array(小写模块名 => 模块路径)映射数组。
+     * @param bool $moduleToLower 如果为true，返回array(模块名 => 小写模块名)映射数组，为false返回array(小写模块名 => 模块名)映射数组。
      * @return array
      */
     private function getLcModuleMap($isNameMap = false, $moduleToLower = false) {
@@ -308,8 +308,8 @@ class TeaRouter {
     }
 
     /**
-     * Get module name by module segment.
-     * @param string $segment Segment string.
+     * 根据字符串获取正确的模块名。
+     * @param string $segment 被检测的字符串。
      * @return string
      */
     private function getModuleNameBySegment($segment) {
@@ -324,8 +324,8 @@ class TeaRouter {
     }
 
     /**
-     * Get controller name by controller segment.
-     * @param string $segment Segment string.
+     * 根据字符串获取正确的控制器名。
+     * @param string $segment 被检测的字符串。
      * @return string
      */
     private function getControllerNameBySegment($segment) {
@@ -337,9 +337,9 @@ class TeaRouter {
     }
 
     /**
-     * Get action name by action segment.
-     * @param mixed $controllerName Controller name or controller instance.
-     * @param string $segment Segment string.
+     * 根据字符串获取正确的动作名。
+     * @param mixed $controllerName 控制器名或者控制器实例。
+     * @param string $segment 被检测的字符串。
      * @return string
      */
     private function getActionNameBySegment($controllerName, $segment) {

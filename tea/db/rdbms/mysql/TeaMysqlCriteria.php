@@ -259,6 +259,10 @@ class TeaMysqlCriteria extends TeaDbCriteria {
             $asSql = !empty($tblAlias) ? " AS " . $sqlBuilder->normalQuote($tblAlias) : '';
             $colSqls = array();
             foreach ($cond as $colA => $colB) {
+                if (is_int($colA) && is_string($colB)) {
+                    $colA = "{{table}}.{$colB}";
+                    $colB = "{{joinTable}}.{$colB}";
+                }
                 if ($colA !== ':condition') {
                     $colA = str_replace(array('{{table}}', '{{joinTable}}'), array($this->_currentTblName, $this->_joinTblName), $colA);
                     $colB = str_replace(array('{{table}}', '{{joinTable}}'), array($this->_currentTblName, $this->_joinTblName), $colB);

@@ -415,7 +415,7 @@ class TeaBase {
     }
 
     /**
-     * 设置类通用配置项，用于将类配置导入Tea框架配置。
+     * 设置类通用配置项，用于将类配置导入Tea框架。
      * @param string $className 类名称，你可以在当前类使用 __CLASS__ 。
      * @param string $configParam 类配置项静态变量名，默认为'config'.
      */

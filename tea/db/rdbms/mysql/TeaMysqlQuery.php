@@ -207,7 +207,7 @@ class TeaMysqlQuery extends TeaDbQuery {
      * @param int $curOri For representing a scrollable cursor, this value cursor orientation determines which row will be returned to the caller.
      * This value must be one of the TeaDbQuery::FETCH_ORI_* constants, you must set the parameter $scrollCursor of TeaDbQuery::prepare() or TeaDbQuery::query() to true.
      * @param int $offset The offset depends on $curOri.
-     * @return mixed The return value of this function on success depends on the fetch type. In all cases, FALSE is returned on failure.
+     * @return mixed The return value of this function on success depends on the fetch type. In all cases, false is returned on failure.
      */
     public function fetch($fetchStyle = self::FETCH_ASSOC, $curOri = self::CUR_ORI_NEXT, $offset = 0) {
         return $this->_statement->fetch($fetchStyle, $curOri, $offset);

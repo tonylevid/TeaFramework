@@ -395,17 +395,17 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
      * @return string Real table name.
      */
     public function getTableName($tblName) {
-        $tblName = preg_replace('/^{{(.+)}}$/', '$1', $tblName);
-        if (strpos($tblName, Tea::getDbConnection()->aliasMark) !== false) {
-            $aliasParts = explode(Tea::getDbConnection()->aliasMark, $tblName);
+        $tblNameReplaced = preg_replace('/^{{(.+)}}$/', '$1', $tblName);
+        if (strpos($tblNameReplaced, Tea::getDbConnection()->aliasMark) !== false) {
+            $aliasParts = explode(Tea::getDbConnection()->aliasMark, $tblNameReplaced);
             $tblParts = explode('.', $aliasParts[0]);
         } else {
-            $tblParts = explode('.', $tblName);
+            $tblParts = explode('.', $tblNameReplaced);
         }
         $partsKeys = array_keys($tblParts);
         $lastKey = array_pop($partsKeys);
         foreach ($tblParts as $key => &$part) {
-            if ($key === $lastKey) {
+            if ($key === $lastKey && preg_match('/^{{(.+)}}$/', $tblName)) {
                 $part = Tea::getDbConnection()->tablePrefix . $part;
             }
         }

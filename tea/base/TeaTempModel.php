@@ -1,8 +1,8 @@
 <?php
 
 /**
- * TeaTempModel class file.
- * This class is used for creating temporary model instance.
+ * TeaTempModel类文件。
+ * 此类为了创建临时的模型类。
  * 
  * @author tonylevid <tonylevid@gmail.com>
  * @link http://www.tframework.com/
@@ -13,13 +13,14 @@
 class TeaTempModel extends TeaModel {
 
     /**
-     * Table name.
+     * 真实表名。
      * @var string
      */
     private $_tableName;
 
     /**
-     * Constructor.
+     * 构造函数。
+     * @param string $tableName 真实表名。
      */
     public function __construct($tableName) {
         parent::__construct();
@@ -27,7 +28,7 @@ class TeaTempModel extends TeaModel {
     }
 
     /**
-     * @return string Table name.
+     * @return string 真实表名。
      */
     public function tableName() {
         return $this->_tableName;

@@ -16,9 +16,9 @@ class TeaController {
      * @var array
      */
     public static $config = array(
-        'defaultController' => 'Main',
-        'defaultAction' => 'index',
-        'tplSuffix' => '.php'
+        'defaultController' => 'Main', // 默认控制器。
+        'defaultAction' => 'index', // 默认动作。
+        'tplSuffix' => '.php' // 模板后缀。
     );
 
     /**
