@@ -248,8 +248,15 @@ class TeaRouter {
             $routeRules = self::$config['routeRules'];
             foreach ($routeRules as $rule => $route) {
                 if (!empty($route) && preg_match($rule, $pathinfo)) {
-                    $pathinfo = preg_replace($rule, $route, $pathinfo);                   
-                    $this->setRoutePathinfo($pathinfo);
+                    $replacedPathinfo = null;
+                    if (is_string($route)) {
+                        $replacedPathinfo = preg_replace($rule, $route, $pathinfo);
+                    } else if (is_callable($route)) {
+                        $replacedPathinfo = preg_replace_callback($rule, $route, $pathinfo);
+                    }
+                    if (!empty($replacedPathinfo)) {
+                        $this->setRoutePathinfo($replacedPathinfo);
+                    }
                 }
             }
         }
