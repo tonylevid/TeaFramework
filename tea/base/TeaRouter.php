@@ -16,7 +16,7 @@ class TeaRouter {
      * @var array
      */
     public static $config = array(
-        'caseInsensitive' => true, // 是否开启大小写敏感。
+        'caseInsensitive' => true, // 是否开启大小写不敏感。
         'routeMode' => 'auto',  // 路由模式，共三种'path', 'get' 和 'auto'。
         'routeModeGetName' => 'r',  // 路由参数名，仅当路由模式为'get'时有效。
         'urlSuffix' => '', // url后缀。
@@ -339,6 +339,8 @@ class TeaRouter {
         $controllerName = $segment;
         if (self::$config['caseInsensitive']) {
             $controllerName = ucfirst(strtolower($segment)) . 'Controller';
+        } else {
+            $controllerName = $segment . 'Controller';
         }
         return $controllerName;
     }

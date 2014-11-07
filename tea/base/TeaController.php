@@ -133,11 +133,29 @@ class TeaController {
         if (!empty($theme)) {
             $tplBasePathAlias = $tplBasePathAlias . '.' . $theme;
         }
+        // 尝试自动查找模板
+        // 第一种：url控制器名_url动作名
+        if (!is_file($tplFile)) {
+            $tplName = empty($tpl) ? $router->getUrlControllerName() . '_' . $router->getUrlActionName() : $tpl;
+            $tplFile = Tea::aliasToPath($tplBasePathAlias) . DIRECTORY_SEPARATOR . $tplName . $tplSuffix;
+        }
+        // 第二种：小写url控制器名_小写url动作名
         if (!is_file($tplFile)) {
             $tplName = empty($tpl) ? strtolower($router->getUrlControllerName()) . '_' . strtolower($router->getUrlActionName()) : $tpl;
             $tplFile = Tea::aliasToPath($tplBasePathAlias) . DIRECTORY_SEPARATOR . $tplName . $tplSuffix;
         }
+        // 第三种：url控制器名/url动作名
         if (!is_file($tplFile)) {
+            $tplName = empty($tpl) ? $router->getUrlControllerName() . DIRECTORY_SEPARATOR . $router->getUrlActionName() : $tpl;
+            $tplFile = Tea::aliasToPath($tplBasePathAlias) . DIRECTORY_SEPARATOR . $tplName . $tplSuffix;
+        }
+        // 第四种：小写url控制器名/url动作名
+        if (!is_file($tplFile)) {
+            $tplName = empty($tpl) ? strtolower($router->getUrlControllerName()) . DIRECTORY_SEPARATOR . strtolower($router->getUrlActionName()) : $tpl;
+            $tplFile = Tea::aliasToPath($tplBasePathAlias) . DIRECTORY_SEPARATOR . $tplName . $tplSuffix;
+        }
+        // 支持 自定义路径/自定义模板名 和 自定义路径.自定义模板名 两种写法来指定渲染模板
+        if (!is_file($tplFile) && !empty($tpl)) {
             $tplFile = Tea::aliasToPath($tplBasePathAlias . '.' . $tpl) . $tplSuffix;
         }       
         if (is_file($tplFile)) {
@@ -149,7 +167,8 @@ class TeaController {
                 return ob_get_clean();
             }
         } else {
-            throw new TeaException("Unable to render, '{$tplName}' is not a valid template.");
+            $tplFileFolder = dirname($tplFile);
+            throw new TeaException("Unable to render, '{$tplName}' is not a valid template. File folder path: '{$tplFileFolder}'.");
         }
     }
 
