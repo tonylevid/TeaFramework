@@ -118,11 +118,7 @@ class TeaController {
      * @return mixed 如果不输出，将返回被渲染后的模板字符串，否则输出被渲染后的模板。
      * @throws TeaException
      */
-    public function render($tpl = null, $vals = array(), $theme = null, $output = true) {
-        if (is_array($vals)) {
-            $vals = array_merge($this->_assignedVals, $vals);
-            extract($vals);
-        }
+    public function render($tpl = null, $vals = array(), $theme = null, $output = true) {       
         $tplSuffix = self::$config['tplSuffix'];
         $tplFile = Tea::aliasToPath($tpl) . $tplSuffix;
         $tplParts = explode('.', $tpl);
@@ -159,9 +155,17 @@ class TeaController {
             $tplFile = Tea::aliasToPath($tplBasePathAlias . '.' . $tpl) . $tplSuffix;
         }       
         if (is_file($tplFile)) {
+            // 防止释放变量覆盖参数$tplFile, $output
+            $varUniqTplFile_1qas43dg6vb = $tplFile;
+            $varUniqOutput_3f8gk08sj7v = $output;
             ob_start();
-            include $tplFile;
-            if ($output) {
+            // 释放变量
+            if (is_array($vals)) {
+                $vals = array_merge($this->_assignedVals, $vals);
+                extract($vals);
+            }
+            include $varUniqTplFile_1qas43dg6vb;
+            if ($varUniqOutput_3f8gk08sj7v) {
                 echo ob_get_clean();
             } else {
                 return ob_get_clean();
