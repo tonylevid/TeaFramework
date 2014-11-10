@@ -2,16 +2,24 @@
 
 class TeaCacheFile implements TeaICache {
     
-    public $cacheBasePathAlias = 'protected.cache';
+    public $cacheBasePath = null;
     
     public $cacheExpireKey = '_tea_cache_expire_';
     
     public $cacheKeyKey = '_tea_cache_key_';
     
     public $cacheDataKey = '_tea_cache_data_';
+    
+    public function __construct($cacheBasePath = null) {
+        if (empty($cacheBasePath)) {
+            $this->cacheBasePath = APP_PATH . DIRECTORY_SEPARATOR . 'protected' . DIRECTORY_SEPARATOR . 'cache';
+        } else {
+            $this->cacheBasePath = $cacheBasePath;
+        }
+    }
 
     public function cache($key, $val, $expire = 0) {
-        $file = Tea::aliasToPath($this->cacheBasePathAlias . '.' . $key) . '.php';
+        $file = $this->cacheBasePath . DIRECTORY_SEPARATOR . Tea::aliasToPath($key) . '.php';
         $fileFolder = dirname($file);
         if (!is_dir($fileFolder)) {
             DirectoryHelper::mkdirs($fileFolder);
@@ -30,7 +38,7 @@ FILESTR;
     }
     
     public function getCache($key) {
-        $file = Tea::aliasToPath($this->cacheBasePathAlias . '.' . $key) . '.php';
+        $file = $this->cacheBasePath . DIRECTORY_SEPARATOR . Tea::aliasToPath($key) . '.php';
         if (!file_exists($file)) {
             return false;
         }

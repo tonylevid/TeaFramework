@@ -6,8 +6,9 @@ class TeaCache implements TeaICache {
     
     protected $_cacheInstance;
 
-    public function __construct($constCacheType = self::CACHE_TYPE_FILE) {
-        $this->_cacheInstance = new $constCacheType();
+    public function __construct($constCacheType = self::CACHE_TYPE_FILE, $cacheInstCntrArgs = array()) {
+        $rfc = new ReflectionClass($constCacheType);
+        $this->_cacheInstance = $rfc->newInstanceArgs($cacheInstCntrArgs);
     }
     
     public function cache($key, $val, $expire = 0) {
