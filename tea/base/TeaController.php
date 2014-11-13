@@ -53,6 +53,16 @@ class TeaController {
             $this->afterAction($name);
         }
     }
+    
+    /**
+     * 钩子函数，在action无法找到时执行，在控制器里声明emptyAction方法即可。
+     * @param string $name 当前action名称。
+     */
+    public function onEmptyAction($name) {
+        if (method_exists($this, 'emptyAction')) {
+            $this->emptyAction($name);
+        }
+    }
 
     /**
      * 为模板推送变量。

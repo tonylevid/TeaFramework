@@ -100,17 +100,20 @@ class TeaRouter {
         if (!$rfc->isSubClassOf('TeaController')) {
             throw new TeaException("Controller '{$this->getControllerName()}' must extend 'TController'.");
         }
-        if (!$rfc->hasMethod($this->getActionName())) {
-            throw new TeaException("Action '{$this->getActionName()}' does not exist.");
-        }
-        $this->_controller = $rfc->newInstance();
-        $method = $rfc->getMethod($this->getActionName());
-        if (method_exists($this->_controller, $this->getActionName()) && $method->isPublic() && !$method->isStatic()) {
-            $rfc->getMethod('onBeforeAction')->invoke($this->_controller, $this->getActionName());
-            $method->invokeArgs($this->_controller, $this->getActionParams());
-            $rfc->getMethod('onAfterAction')->invoke($this->_controller, $this->getActionName());
+        $this->_controller = $rfc->newInstance();       
+        if (method_exists($this->_controller, $this->getActionName())) {
+            if ($method->isPublic() && !$method->isStatic()) {
+                $method = $rfc->getMethod($this->getActionName());
+                $rfc->getMethod('onBeforeAction')->invoke($this->_controller, $this->getActionName());
+                $method->invokeArgs($this->_controller, $this->getActionParams());
+                $rfc->getMethod('onAfterAction')->invoke($this->_controller, $this->getActionName());
+            } else {
+                throw new TeaException("Action '{$this->getActionName()}' could not be accessed.");
+            }
         } else {
-            throw new TeaException("Action '{$this->getActionName()}' could not be accessed.");
+            $rfc->getMethod('onBeforeAction')->invoke($this->_controller, $this->getActionName());
+            $rfc->getMethod('onEmptyAction')->invoke($this->_controller, $this->getActionName());
+            $rfc->getMethod('onAfterAction')->invoke($this->_controller, $this->getActionName());
         }
     }
 
