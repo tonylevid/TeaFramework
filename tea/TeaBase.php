@@ -89,6 +89,8 @@ class TeaBase {
             } else if (!empty($errorPageUrl)) {
                 self::getRouter()->getController()->redirect($errorPageUrl);
             } else {
+                echo $exception->getMessage();
+                echo "\n";
                 echo $exception->getTraceAsString();
             }
         }

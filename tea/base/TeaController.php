@@ -18,7 +18,8 @@ class TeaController {
     public static $config = array(
         'defaultController' => 'Main', // 默认控制器。
         'defaultAction' => 'index', // 默认动作。
-        'tplSuffix' => '.php' // 模板后缀。
+        'tplSuffix' => '.php', // 模板后缀。
+        'theme' => null // 主题文件夹名
     );
 
     /**
@@ -123,7 +124,7 @@ class TeaController {
      * 渲染模板。
      * @param string $tpl 需要被渲染的模板，圆点标记路径。如果为空，则将根据当前路由自动检测。
      * @param array $vals 推送到模板的变量映射数组。
-     * @param string $theme 主题文件夹。
+     * @param string $theme 主题文件夹名。
      * @param bool $output 是否输出，默认为true。
      * @return mixed 如果不输出，将返回被渲染后的模板字符串，否则输出被渲染后的模板。
      * @throws TeaException
@@ -136,6 +137,7 @@ class TeaController {
         $router = Tea::getRouter();
         $moduleName = $router->getModuleName();
         $tplBasePathAlias = empty($moduleName) ? 'protected.view' : "module.{$moduleName}.view";
+        $theme = empty($theme) ? self::$config['theme'] : $theme;
         if (!empty($theme)) {
             $tplBasePathAlias = $tplBasePathAlias . '.' . $theme;
         }
