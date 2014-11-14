@@ -70,12 +70,28 @@ class TeaBase {
      * @param array $config 用户配置数组。
      */
     public static function run($config = array(), $routeArgs = array()) {
-        self::init($config);
-        self::getRouter()->route($routeArgs);
-        defined('APP_END_TIME') or define('APP_END_TIME', microtime(true));
-        defined('APP_END_MEM') or define('APP_END_MEM', memory_get_usage());
-        defined('APP_USED_TIME') or define('APP_USED_TIME', APP_END_TIME - APP_BEGIN_TIME);
-        defined('APP_USED_MEM') or define('APP_USED_MEM', APP_END_MEM - APP_BEGIN_MEM);
+        try {
+            self::init($config);
+            self::getRouter()->route($routeArgs);
+            defined('APP_END_TIME') or define('APP_END_TIME', microtime(true));
+            defined('APP_END_MEM') or define('APP_END_MEM', memory_get_usage());
+            defined('APP_USED_TIME') or define('APP_USED_TIME', APP_END_TIME - APP_BEGIN_TIME);
+            defined('APP_USED_MEM') or define('APP_USED_MEM', APP_END_MEM - APP_BEGIN_MEM);
+        } catch (Exception $exception) {
+            $exceptionFile = self::getConfig('TeaBase.exceptionFile');
+            $tryExcptFile = self::aliasToPath($exceptionFile) . '.php';
+            if (is_file($tryExcptFile)) {
+                $exceptionFile = $tryExcptFile;
+            }
+            $errorPageUrl = self::getConfig('TeaBase.errorPageUrl');
+            if (!empty($exceptionFile) && is_file($exceptionFile)) {
+                include $exceptionFile;
+            } else if (!empty($errorPageUrl)) {
+                self::getRouter()->getController()->redirect($errorPageUrl);
+            } else {
+                echo $exception->getTraceAsString();
+            }
+        }
     }
 
     /**
@@ -98,7 +114,7 @@ class TeaBase {
      */
     public static function init($config = array()) {
         session_start();
-        self::$config = ArrayHelper::mergeArray($config, self::getTeaBaseConfig());
+        self::$config = ArrayHelper::mergeArray(self::getTeaBaseConfig(), $config);
         self::setModuleMap();
         self::setAutoImport();
     }
@@ -480,7 +496,9 @@ class TeaBase {
                     'system.db.rdbms.odbc.*',
                     'system.db.rdbms.pgsql.*',
                     'system.db.rdbms.sqlite.*',
-                )
+                ),
+                'exceptionFile' => null,
+                'errorPageUrl' => null
             )
         );
     }
