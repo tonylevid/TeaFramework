@@ -63,7 +63,7 @@ class TeaModel {
      */
     public function __construct() {
         Tea::setClassConfig(__CLASS__);
-        $this->_arrayResult = self::$config['arrayResult'];
+        $this->_arrayResult = Tea::getConfig('TeaModel.arrayResult');
     }
 
     /**
@@ -229,7 +229,7 @@ class TeaModel {
      * @param mixed $vals 插入数据。
      * <pre>
      * 插入的数据有三种格式。
-     * 
+     *
      * 第一种为一维数组，表示一条数据：
      * array(col1Val, col2Val, colNVal, ...)
      * 或者
@@ -303,7 +303,7 @@ class TeaModel {
                 $data = Tea::getDbQuery()->query($sql)->fetchObj($modelName);
             }
         }
-        $this->_arrayResult = self::$config['arrayResult'];
+        $this->_arrayResult = Tea::getConfig('TeaModel.arrayResult');
         $this->onAfterFind();
         return $data;
     }
@@ -326,7 +326,7 @@ class TeaModel {
                 $data = Tea::getDbQuery()->query($sql, $params)->fetchObj($modelName);
             }
         }
-        $this->_arrayResult = self::$config['arrayResult'];
+        $this->_arrayResult = Tea::getConfig('TeaModel.arrayResult');
         $this->onAfterFind();
         return $data;
     }
@@ -396,7 +396,7 @@ class TeaModel {
                 $data = Tea::getDbQuery()->query($sql)->fetchObjs($modelName);
             }
         }
-        $this->_arrayResult = self::$config['arrayResult'];
+        $this->_arrayResult = Tea::getConfig('TeaModel.arrayResult');
         $this->onAfterFind();
         return $data;
     }
@@ -419,7 +419,7 @@ class TeaModel {
                 $data = Tea::getDbQuery()->query($sql, $params)->fetchObjs($modelName);
             }
         }
-        $this->_arrayResult = self::$config['arrayResult'];
+        $this->_arrayResult = Tea::getConfig('TeaModel.arrayResult');
         $this->onAfterFind();
         return $data;
     }

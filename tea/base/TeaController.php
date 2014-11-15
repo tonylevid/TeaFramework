@@ -54,7 +54,7 @@ class TeaController {
             $this->afterAction($name);
         }
     }
-    
+
     /**
      * 钩子函数，在action无法找到时执行，在控制器里声明emptyAction方法即可。
      * @param string $name 当前action名称。
@@ -123,21 +123,71 @@ class TeaController {
     /**
      * 渲染模板。
      * @param string $tpl 需要被渲染的模板，圆点标记路径。如果为空，则将根据当前路由自动检测。
+     * 注意：此方法如果在模板中用来包含公共模板，请为$tpl赋值，以防止路由自动检测渲染相同模板，而引起无限循环照成页面为空。
      * @param array $vals 推送到模板的变量映射数组。
      * @param string $theme 主题文件夹名。
-     * @param bool $output 是否输出，默认为true。
      * @return mixed 如果不输出，将返回被渲染后的模板字符串，否则输出被渲染后的模板。
      * @throws TeaException
      */
-    public function render($tpl = null, $vals = array(), $theme = null, $output = true) {       
-        $tplSuffix = self::$config['tplSuffix'];
+    public function render($tpl = null, $vals = array(), $theme = null) {
+        $tplFile = $this->getTplFile($tpl, $theme);
+        if (is_file($tplFile)) {
+            // 防止释放变量覆盖参数$tplFile, $output
+            $varUniqTplFile_1qas43dg6vb = $tplFile;
+            ob_start();
+            // 释放变量
+            if (is_array($vals)) {
+                $vals = array_merge($this->_assignedVals, $vals);
+                extract($vals);
+            }
+            include $varUniqTplFile_1qas43dg6vb;
+            echo ob_get_clean();
+        } else {
+            throw new TeaException("Unable to render, '{$tplFile}' is not a valid template.");
+        }
+    }
+
+    /**
+     * 获取渲染模板内容
+     * @param string $tpl 需要被渲染的模板，圆点标记路径。如果为空，则将根据当前路由自动检测。
+     * 注意：此方法如果在模板中用来包含公共模板，请为$tpl赋值，以防止路由自动检测渲染相同模板，而引起无限循环照成页面为空。
+     * @param array $vals 推送到模板的变量映射数组。
+     * @param string $theme 主题文件夹。
+     * @return string 返回被渲染后的模板字符串。
+     */
+    public function getRenderContent($tpl = null, $vals = array(), $theme = null) {
+        $tplFile = $this->getTplFile($tpl, $theme);
+        if (is_file($tplFile)) {
+            // 防止释放变量覆盖参数$tplFile
+            $varUniqTplFile_1qas43dg6vb = $tplFile;
+            //ob_start();
+            // 释放变量
+            if (is_array($vals)) {
+                $vals = array_merge($this->_assignedVals, $vals);
+                extract($vals);
+            }
+            include $varUniqTplFile_1qas43dg6vb;
+            return ob_get_clean();
+        } else {
+            throw new TeaException("Unable to render, '{$tplFile}' is not a valid template.");
+        }
+    }
+    
+    /**
+     * 获取模板真实路径。
+     * @param string $tpl 需要被渲染的模板，圆点标记路径。如果为空，则将根据当前路由自动检测。
+     * @param string $theme 主题文件夹。
+     * @return string 模板真实路径。
+     */
+    protected function getTplFile($tpl = null, $theme = null) {
+        $tplSuffix = Tea::getConfig('TeaController.tplSuffix');
         $tplFile = Tea::aliasToPath($tpl) . $tplSuffix;
         $tplParts = explode('.', $tpl);
         $tplName = array_pop($tplParts);
         $router = Tea::getRouter();
         $moduleName = $router->getModuleName();
         $tplBasePathAlias = empty($moduleName) ? 'protected.view' : "module.{$moduleName}.view";
-        $theme = empty($theme) ? self::$config['theme'] : $theme;
+        $theme = empty($theme) ? Tea::getConfig('TeaController.theme') : $theme;
         if (!empty($theme)) {
             $tplBasePathAlias = $tplBasePathAlias . '.' . $theme;
         }
@@ -165,38 +215,8 @@ class TeaController {
         // 支持 自定义路径/自定义模板名 和 自定义路径.自定义模板名 两种写法来指定渲染模板
         if (!is_file($tplFile) && !empty($tpl)) {
             $tplFile = Tea::aliasToPath($tplBasePathAlias . '.' . $tpl) . $tplSuffix;
-        }       
-        if (is_file($tplFile)) {
-            // 防止释放变量覆盖参数$tplFile, $output
-            $varUniqTplFile_1qas43dg6vb = $tplFile;
-            $varUniqOutput_3f8gk08sj7v = $output;
-            ob_start();
-            // 释放变量
-            if (is_array($vals)) {
-                $vals = array_merge($this->_assignedVals, $vals);
-                extract($vals);
-            }
-            include $varUniqTplFile_1qas43dg6vb;
-            if ($varUniqOutput_3f8gk08sj7v) {
-                echo ob_get_clean();
-            } else {
-                return ob_get_clean();
-            }
-        } else {
-            $tplFileFolder = dirname($tplFile);
-            throw new TeaException("Unable to render, '{$tplName}' is not a valid template. File folder path: '{$tplFileFolder}'.");
         }
-    }
-
-    /**
-     * $this->render()的便捷方法。
-     * @param string $tpl 需要被渲染的模板，圆点标记路径。如果为空，则将根据当前路由自动检测。
-     * @param array $vals 推送到模板的变量映射数组。
-     * @param string $theme 主题文件夹。
-     * @return string 返回被渲染后的模板字符串。
-     */
-    public function getRenderContent($tpl = null, $vals = array(), $theme = null) {
-        return $this->render($tpl, $vals, $theme, false);
+        return $tplFile;
     }
 
 }

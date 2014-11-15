@@ -197,7 +197,7 @@ class TeaBase {
 
     /**
      * 加载帮组类并获取实例。
-     * @param string $name 圆点记法别名。例如：'array' 或者 'protected.helper.array'。
+     * @param string $name 圆点记法别名，请省略helper文件夹。例如：'array' 或者 'protected.array'。
      * @param array $args 类构造函数的参数，默认为空数组array()。
      * @return mixed 成功则返回类实例，失败则返回false。
      */
@@ -215,7 +215,7 @@ class TeaBase {
 
     /**
      * 加载类库并获取实例。
-     * @param string $name 圆点记法别名。例如：'pager' 或者 'protected.lib.pager'。
+     * @param string $name 圆点记法别名，请省略lib文件夹。例如：'pager' 或者 'protected.pager'。
      * @param array $args 类构造函数的参数，默认为空数组array()。
      * @return mixed 成功则返回类实例，失败则返回false。
      */
@@ -234,7 +234,7 @@ class TeaBase {
     /**
      * 加载模型类并获取实例。
      * 如果无法找到此模型类, 则会根据名称（此名称被视为表名）创建一个TeaTempModel实例。
-     * @param string $name 圆点记法别名。例如：'test' 或者 'protected.model.test'。
+     * @param string $name 圆点记法别名，请省略model文件夹。例如：'test' 或者 'protected.test'。
      * @param array $args 类构造函数的参数，默认为空数组array()。
      * @return mixed 成功则返回类实例，失败则返回false。
      */
