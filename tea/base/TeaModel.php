@@ -106,6 +106,21 @@ class TeaModel {
         );
         return $arr;
     }
+    
+    /**
+     * 获取用字段名过滤后的数组。
+     * @param array $data 需要过滤的数组。
+     * @return array 过滤后的数组。
+     */
+    public function filterWithColumns($data = array()) {
+        $filteredData = array();
+        foreach ($data as $col => $val) {
+            if ($this->isTableColumn($col)) {
+                $filteredData[$col] = $val;
+            }
+        }
+        return $filteredData;
+    }
 
     /**
      * 钩子函数。
