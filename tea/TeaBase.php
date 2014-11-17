@@ -23,6 +23,12 @@ class TeaBase {
      * @var array
      */
     public static $config = array();
+    
+    /**
+     * Tea原配置数组（即合并后的数组，不受动态配置影响）。
+     * @var array
+     */
+    public static $originalConfig = array();
 
     /**
      * 所有 模块 => 路径 映射数组。
@@ -117,6 +123,7 @@ class TeaBase {
     public static function init($config = array()) {
         session_start();
         self::$config = ArrayHelper::mergeArray(self::getTeaBaseConfig(), $config);
+        self::$originalConfig = self::$config;
         self::setModuleMap();
         self::setAutoImport();
     }
@@ -397,12 +404,12 @@ class TeaBase {
      * @param string $nodeStr 圆点记法字符串，默认为null。如果此项为空，此方法将返回整个配置数组。
      * @return mixed 成功则返回配置的值，失败则返回false。
      */
-    public static function getConfig($nodeStr = null) {
+    public static function getConfig($nodeStr = null, $isOriginal = false) {
+        $config = $isOriginal ? self::$originalConfig : self::$config;
         if (empty($nodeStr)) {
-            return self::$config;
+            return $config;
         } else {
             $nodes = explode('.', $nodeStr);
-            $config = self::$config;
             foreach ($nodes as $node) {
                 if (isset($config[$node])) {
                     $config = $config[$node];
