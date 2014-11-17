@@ -121,12 +121,11 @@ class TeaController {
     }
 
     /**
-     * 渲染模板。
+     * 输出渲染模板。
      * @param string $tpl 需要被渲染的模板，圆点标记路径。如果为空，则将根据当前路由自动检测。
      * 注意：此方法如果在模板中用来包含公共模板，请为$tpl赋值，以防止路由自动检测渲染相同模板，而引起无限循环照成页面为空。
      * @param array $vals 推送到模板的变量映射数组。
      * @param string $theme 主题文件夹名。
-     * @return mixed 如果不输出，将返回被渲染后的模板字符串，否则输出被渲染后的模板。
      * @throws TeaException
      */
     public function render($tpl = null, $vals = array(), $theme = null) {
@@ -154,6 +153,7 @@ class TeaController {
      * @param array $vals 推送到模板的变量映射数组。
      * @param string $theme 主题文件夹。
      * @return string 返回被渲染后的模板字符串。
+     * @throws TeaException
      */
     public function getRenderContent($tpl = null, $vals = array(), $theme = null) {
         $tplFile = $this->getTplFile($tpl, $theme);
