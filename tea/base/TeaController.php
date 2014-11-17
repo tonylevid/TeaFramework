@@ -105,17 +105,32 @@ class TeaController {
 
     /**
      * 输出json数据。
-     * @param mixed $data 输出的数据，对应键名为'data'。
-     * @param mixed $msg 输出的消息提示，对应键名为'msg'。
-     * @param mixed $code 输出的状态代码，对应键名为'code'。
+     * @param mixed $data 如果参数个数为3，则为输出的数据，对应键名为'data'。如果参数个数为1，且为数组，则为键值对应的数组。
+     * @param mixed $msg 如果参数个数为3，则为输出的消息提示，对应键名为'msg'。
+     * @param mixed $code 如果参数个数为3，则为输出的状态代码，对应键名为'code'。
      */
-    public function ajaxReturn($data, $msg = null, $code = 0) {
+    public function ajaxReturn() {
         header('Content-type: application/json');
-        $arr = array(
-            'data' => $data,
-            'msg' => $msg,
-            'code' => $code
-        );
+        $args = func_get_args();
+        if (func_num_args() === 3) {
+            $arr = array(
+                'data' => $args[0],
+                'msg' => $args[1],
+                'code' => $args[2]
+            );
+        } else if (func_num_args() === 1 && is_array($args[0])) {
+            $arr = array(
+                'data' => $args[0]['data'],
+                'msg' => $args[0]['msg'],
+                'code' => $args[0]['code']
+            );
+        } else {
+            $arr = array(
+                'data' => null,
+                'msg' => null,
+                'code' => 0
+            );
+        }
         echo json_encode($arr);
         exit();
     }

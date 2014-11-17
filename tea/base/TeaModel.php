@@ -91,6 +91,21 @@ class TeaModel {
     public function __set($name, $value) {
         $this->{$name} = $value;
     }
+    
+    /**
+     * 返回供TeaController::ajaxReturn()使用的数据。
+     * @param mixed $data 输出的数据，对应键名为'data'。
+     * @param mixed $msg 输出的消息提示，对应键名为'msg'。
+     * @param mixed $code 输出的状态代码，对应键名为'code'。
+     */
+    public function ajaxData($data = null, $msg = null, $code = 0) {
+        $arr = array(
+            'data' => $data,
+            'msg' => $msg,
+            'code' => $code
+        );
+        return $arr;
+    }
 
     /**
      * 钩子函数。
