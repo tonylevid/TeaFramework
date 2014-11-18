@@ -132,7 +132,6 @@ class TeaController {
             );
         }
         echo json_encode($arr);
-        exit();
     }
 
     /**
