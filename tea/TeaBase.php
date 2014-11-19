@@ -14,6 +14,7 @@ require dirname(__FILE__) . DIRECTORY_SEPARATOR . 'helper' . DIRECTORY_SEPARATOR
 defined('APP_BEGIN_TIME') or define('APP_BEGIN_TIME', microtime(true));
 defined('APP_BEGIN_MEM') or define('APP_BEGIN_MEM', memory_get_usage());
 defined('APP_PATH') or define('APP_PATH', str_replace('/', DIRECTORY_SEPARATOR, dirname($_SERVER['SCRIPT_FILENAME'])));
+defined('APP_PROTECTED') or define('APP_PROTECTED', 'protected');
 defined('TEA_PATH') or define('TEA_PATH', dirname(__FILE__));
 
 class TeaBase {
@@ -23,7 +24,7 @@ class TeaBase {
      * @var array
      */
     public static $config = array();
-    
+
     /**
      * Tea原配置数组（即合并后的数组，不受动态配置影响）。
      * @var array
@@ -488,8 +489,8 @@ class TeaBase {
                 'pathAliasMap' => array(
                     'app' => APP_PATH,
                     'system' => TEA_PATH,
-                    'protected' => APP_PATH . DIRECTORY_SEPARATOR . 'protected',
-                    'module' => APP_PATH . DIRECTORY_SEPARATOR . 'protected' . DIRECTORY_SEPARATOR . 'module',
+                    'protected' => APP_PATH . DIRECTORY_SEPARATOR . APP_PROTECTED,
+                    'module' => APP_PATH . DIRECTORY_SEPARATOR . APP_PROTECTED . DIRECTORY_SEPARATOR . 'module',
                 ),
                 'autoImport' => array(
                     'system.base.*',
