@@ -252,5 +252,44 @@ class ArrayHelper {
             return $row[$colName];
         }, $arr);
     }
+    
+    /**
+     * 二维化数组（处理类似$_POST的多维数组）
+     * 如可以把以下格式数组：
+     * <pre>
+     * array(
+     *     'foo' => array(1, 2),
+     *     'bar' => array(10, 20)
+     * );
+     * </pre>
+     * 处理成以下格式的数组：
+     * <pre>
+     * array(
+     *     0 => array(
+     *         'foo' => 1,
+     *         'bar' => 10
+     *     ),
+     *     1 => array(
+     *         'foo' => 2,
+     *         'bar' => 20
+     *     )
+     * )
+     * </pre>
+     * @param array $arr 待处理数组
+     * @param array $filterKeys 需要被处理的键名过滤
+     * @return array 二维化后的数组
+     */
+    public static function normalize($arr, $filterKeys = array()) {
+        $filterKeys = empty($filterKeys) ? array_keys($arr) : $filterKeys;
+        $newArr = array();
+        foreach ($arr as $key => $items) {
+            if (in_array($key, $filterKeys)) {
+                foreach ($items as $i => $v) {
+                    $newArr[$i][$key] = $v;
+                }
+            }
+        }
+        return $newArr;
+    }
 
 }
