@@ -101,6 +101,8 @@ class TeaController {
             $redirectUrl = call_user_func_array('Tea::createUrl', $redirect);
         }
         header("Location: {$redirectUrl}");
+        $this->onAfterAction(Tea::getRouter()->getActionName());
+        exit();
     }
 
     /**
@@ -132,6 +134,8 @@ class TeaController {
             );
         }
         echo json_encode($arr);
+        $this->onAfterAction(Tea::getRouter()->getActionName());
+        exit();
     }
 
     /**
