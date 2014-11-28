@@ -98,7 +98,7 @@ class TeaRouter {
         }
         $rfc = new ReflectionClass($this->getControllerName());
         if (!$rfc->isSubClassOf('TeaController')) {
-            throw new TeaException("Controller '{$this->getControllerName()}' must extend 'TController'.");
+            throw new TeaException("Controller '{$this->getControllerName()}' must extend 'TeaController'.");
         }
         $this->_controller = $rfc->newInstance();
         if (method_exists($this->_controller, $this->getActionName())) {

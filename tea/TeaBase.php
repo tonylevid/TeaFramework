@@ -132,7 +132,7 @@ class TeaBase {
     /**
      * 导入一个类或者一个文件夹下的所有类（不会递归导入）。
      * @param string $alias 圆点记法别名。别名可使用配置项TeaBase.pathAliasMap中的别名，如system.lib.*。
-     * @param bool $forceImport 是否立即导入，默认为false，false为惰性加载。
+     * @param bool $forceImport 是否立即导入，默认为false，false为惰性加载。注意：$forceImport为true时，如果多次导入相同文件，会照成页面为空。
      * @return bool
      * @throws TeaException
      */
@@ -147,6 +147,9 @@ class TeaBase {
         }
         if (is_array($files) && !empty($files)) {
             foreach ($files as $file) {
+                if (!is_file($file)) {
+                    throw new TeaException("Imported file '{$file}' not exists.");
+                }
                 if ($forceImport) {
                     require $file;
                 } else {
