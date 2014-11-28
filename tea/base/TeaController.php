@@ -88,6 +88,14 @@ class TeaController {
             throw new TeaException('Unknown assign error.');
         }
     }
+    
+    /**
+     * 获取已推送的变量。
+     * @return array
+     */
+    public function getAssignedVals() {
+        return $this->_assignedVals;
+    }
 
     /**
      * 重定向url。
