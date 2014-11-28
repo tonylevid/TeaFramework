@@ -81,7 +81,7 @@ class TeaController {
         $argNum = func_num_args();
         $args = func_get_args();
         if ($argNum === 1 && is_array($args[0])) {
-            $this->_assignedVals = $args[0];
+            $this->_assignedVals = array_merge($this->_assignedVals, $args[0]);
         } else if ($argNum === 2) {
             $this->_assignedVals[$args[0]] = $args[1];
         } else {
