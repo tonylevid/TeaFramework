@@ -30,7 +30,10 @@ class MiscHelper {
         return $ip;
     }
     
-    public static function commonEncode($data, $privateKey = 'TeaFrameworkRocks') {
+    public static function commonEncode($data, $privateKey = null) {
+        if (empty($privateKey)) {
+            $privateKey = Tea::getConfig('TeaBase.privateHashKey');
+        }
         $strArr = array();
         if (is_string($data)) {
             $strArr[] = $data;
@@ -39,7 +42,7 @@ class MiscHelper {
         }
         $hashedArr = array();
         foreach ($strArr as $str) {
-            $privateKeyHash = hash('sha256', $str, true);
+            $privateKeyHash = hash('sha256', $privateKey, true);
             if (extension_loaded('mcrypt')) {
                 $hashedArr[] = base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $privateKeyHash, $str, MCRYPT_MODE_ECB));
             } else {
@@ -49,11 +52,14 @@ class MiscHelper {
         return implode(' ', $hashedArr);
     }
     
-    public static function commonDecode($data, $privateKey = 'TeaFrameworkRocks') {
+    public static function commonDecode($data, $privateKey = null) {
+        if (empty($privateKey)) {
+            $privateKey = Tea::getConfig('TeaBase.privateHashKey');
+        }
         $hashedArr = explode(' ', trim($data));
         $strArr = array();
         foreach ($hashedArr as $str) {
-            $privateKeyHash = hash('sha256', $str, true);
+            $privateKeyHash = hash('sha256', $privateKey, true);
             if (extension_loaded('mcrypt')) {
                 $strArr[] = trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $privateKeyHash, base64_decode($str), MCRYPT_MODE_ECB));
             } else {
@@ -65,6 +71,16 @@ class MiscHelper {
         } else {
             return $strArr;
         }
+    }
+    
+    public static function commonEncodeHttpQuery($params, $privateKey = null) {
+        return self::commonEncode(http_build_query($params), $privateKey);
+    }
+    
+    public static function commonDecodeHttpQuery($encodedQuery, $privateKey = null) {
+        $params = array();
+        parse_str(self::commonDecode($encodedQuery, $privateKey), $params);
+        return $params;
     }
 
 }

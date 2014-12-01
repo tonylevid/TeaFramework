@@ -510,6 +510,7 @@ class TeaBase {
                     'system.db.rdbms.pgsql.*',
                     'system.db.rdbms.sqlite.*',
                 ),
+                'privateHashKey' => 'TeaFrameworkRocks',
                 'exceptionFile' => null,
                 'errorPageUrl' => null
             )
