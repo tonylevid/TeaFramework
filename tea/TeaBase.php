@@ -241,6 +241,24 @@ class TeaBase {
         $name = implode('.', $nameParts);
         return self::load("lib.{$name}", $args);
     }
+    
+    /**
+     * 加载第三方类库并获取实例。
+     * @param string $name 圆点记法别名，请省略vendor文件夹。例如：'curl' 或者 'protected.curl'。
+     * @param array $args 类构造函数的参数，默认为空数组array()。
+     * @return mixed 成功则返回类实例，失败则返回false。
+     */
+    public static function loadVendor($name, $args = array()) {
+        $nameParts = explode('.', $name);
+        $lastKey = count($nameParts) - 1;
+        $nameParts[$lastKey] = ucfirst($nameParts[$lastKey]);
+        if (self::isLoadNameAbsolute($name)) {
+            array_splice($nameParts, -1, 0, 'vendor');
+            return self::load(implode('.', $nameParts));
+        }
+        $name = implode('.', $nameParts);
+        return self::load("vendor.{$name}", $args);
+    }
 
     /**
      * 加载模型类并获取实例。
