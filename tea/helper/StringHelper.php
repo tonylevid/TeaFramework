@@ -32,7 +32,7 @@ class StringHelper {
     /**
      * Convert tag string like 'foo, bar,   barz，boom,，,' to 'foo,bar,barz,boom'.
      * @param string $str Input string.
-     * @param mixed $search String or array indicates separator(s).
+     * @param mixed $search String or array indicates separator(s), defaults to array('，', ',').
      * @param string $glue Imploded glue.
      * @return string
      */
@@ -40,6 +40,16 @@ class StringHelper {
         $replacedStr = str_replace($search, $glue, $str);
         $strParts = array_filter(array_map('trim', explode($glue, $replacedStr)));
         return implode($glue, $strParts);
+    }
+    
+    /**
+     * Xml转换成数组
+     * @param string $xmlStr xml字符串
+     * @return array
+     */
+    public static function xmlToArray($xmlStr) {
+        $xml = simplexml_load_string($xmlStr);
+        return json_decode(json_encode($xml), true);
     }
 
 }
