@@ -210,8 +210,6 @@ class TeaController {
     protected function getTplFile($tpl = null, $theme = null) {
         $tplSuffix = Tea::getConfig('TeaController.tplSuffix');
         $tplFile = Tea::aliasToPath($tpl) . $tplSuffix;
-        $tplParts = explode('.', $tpl);
-        $tplName = array_pop($tplParts);
         $router = Tea::getRouter();
         $moduleName = $router->getModuleName();
         $tplBasePathAlias = empty($moduleName) ? 'protected.view' : "module.{$moduleName}.view";
@@ -220,31 +218,47 @@ class TeaController {
             $tplBasePathAlias = $tplBasePathAlias . '.' . $theme;
         }
         // 尝试自动查找模板
-        // 第一种：url控制器名_url动作名
         if (!is_file($tplFile)) {
-            $tplName = empty($tpl) ? $router->getUrlControllerName() . '_' . $router->getUrlActionName() : $tpl;
-            $tplFile = Tea::aliasToPath($tplBasePathAlias) . DIRECTORY_SEPARATOR . $tplName . $tplSuffix;
-        }
-        // 第二种：小写url控制器名_小写url动作名
-        if (!is_file($tplFile)) {
-            $tplName = empty($tpl) ? strtolower($router->getUrlControllerName()) . '_' . strtolower($router->getUrlActionName()) : $tpl;
-            $tplFile = Tea::aliasToPath($tplBasePathAlias) . DIRECTORY_SEPARATOR . $tplName . $tplSuffix;
-        }
-        // 第三种：url控制器名/url动作名
-        if (!is_file($tplFile)) {
-            $tplName = empty($tpl) ? $router->getUrlControllerName() . DIRECTORY_SEPARATOR . $router->getUrlActionName() : $tpl;
-            $tplFile = Tea::aliasToPath($tplBasePathAlias) . DIRECTORY_SEPARATOR . $tplName . $tplSuffix;
-        }
-        // 第四种：小写url控制器名/url动作名
-        if (!is_file($tplFile)) {
-            $tplName = empty($tpl) ? strtolower($router->getUrlControllerName()) . DIRECTORY_SEPARATOR . strtolower($router->getUrlActionName()) : $tpl;
-            $tplFile = Tea::aliasToPath($tplBasePathAlias) . DIRECTORY_SEPARATOR . $tplName . $tplSuffix;
-        }
-        // 支持 自定义路径/自定义模板名 和 自定义路径.自定义模板名 两种写法来指定渲染模板
-        if (!is_file($tplFile) && !empty($tpl)) {
-            $tplFile = Tea::aliasToPath($tplBasePathAlias . '.' . $tpl) . $tplSuffix;
+            $tryTplNames = $this->getTryTplNames($tpl, $router);
+            foreach ($tryTplNames as $tplName) {
+                $tryTplFile = Tea::aliasToPath($tplBasePathAlias) . DIRECTORY_SEPARATOR . $tplName . $tplSuffix;
+                if (is_file($tryTplFile)) {
+                    $tplFile = $tryTplFile;
+                }
+            }
         }
         return $tplFile;
+    }
+    
+    /**
+     * 获取尝试模板名
+     * @param string $tpl 输入的模板名
+     * @param TeaRouter $router 当前运行期TeaRouter类实例。
+     * @return array 尝试的模板名
+     */
+    protected function getTryTplNames($tpl, $router) {
+        $tryTplNames = array();
+        // $tpl为空时自动查找
+        if (empty($tpl)) {
+            // 第一种：url控制器名_url动作名
+            $tryTplNames[] = $router->getUrlControllerName() . '_' . $router->getUrlActionName();
+            // 第二种：小写url控制器名_小写url动作名
+            $tryTplNames[] = strtolower($router->getUrlControllerName()) . '_' . strtolower($router->getUrlActionName());
+            // 第三种：url控制器名/url动作名
+            $tryTplNames[] = $router->getUrlControllerName() . DIRECTORY_SEPARATOR . $router->getUrlActionName();
+            // 第四种：小写url控制器名/小写url动作名
+            $tryTplNames[] = strtolower($router->getUrlControllerName()) . DIRECTORY_SEPARATOR . strtolower($router->getUrlActionName());
+        }
+        // $tpl不为空时自动查找
+        if (!empty($tpl)) {
+            // 第一种：$tpl为 自定义文件夹/自定义模板名 和 自定义文件夹.自定义模板名
+            $tryTplNames[] = Tea::aliasToPath($tpl);
+            // 第二种：url控制器名/$tpl
+            $tryTplNames[] = $router->getUrlControllerName() . DIRECTORY_SEPARATOR . $tpl;
+            // 第三种：小写url控制器名/$tpl
+            $tryTplNames[] = strtolower($router->getUrlControllerName()) . DIRECTORY_SEPARATOR . $tpl;
+        }
+        return $tryTplNames;
     }
 
 }
