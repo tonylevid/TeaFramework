@@ -842,7 +842,7 @@ class TeaModel {
      * @return mixed 合适的条件。
      */
     public function getProperCriteria($userCriteria) {
-        if (is_numeric($userCriteria)) {
+        if (is_numeric($userCriteria) || is_string($userCriteria)) {
             $criteria = ArrayHelper::mergeArray($this->_addonCriteriaArr, $this->getPkCriteria($userCriteria));
         } else if ($userCriteria instanceof TeaDbCriteria) {
             $userCriteriaArr = $userCriteria->criteriaArr;
