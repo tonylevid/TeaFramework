@@ -62,6 +62,8 @@ class TeaController {
     public function onEmptyAction($name) {
         if (method_exists($this, 'emptyAction')) {
             $this->emptyAction($name);
+        } else {
+            throw new TeaException("Action '{$name}' does not exist.");
         }
     }
 
