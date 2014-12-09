@@ -131,7 +131,7 @@ class TeaModel {
      */
     public function tableName() {
         $modelName = get_class($this);
-        return StringHelper::camelToUnderscore(preg_replace('/(.+)Model/', '$1', $modelName));
+        return '{{' . StringHelper::camelToUnderscore(preg_replace('/(.+)Model/', '$1', $modelName)) . '}}';
     }
 
     /**

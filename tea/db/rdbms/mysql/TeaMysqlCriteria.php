@@ -235,6 +235,7 @@ class TeaMysqlCriteria extends TeaDbCriteria {
      * The values will be like this: 
      * array(
      *     'foo' => array('foo.id' => 'tbl.id'),
+     *     'foo' => array('id'), 
      *     'left:bar->alias' => array('alias.name' => 'tbl.name'),
      *     'left:bla->alias' => array('alias.name' => 'tbl.name', ':condition' => array(
      *         'alias.id:gt' => 1 // For other conditions, you can use key ':condition' to declare.
