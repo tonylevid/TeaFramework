@@ -137,15 +137,8 @@ class TeaBase {
      * @throws TeaException
      */
     public static function import($alias, $forceImport = false) {
-        $path = self::aliasToPath($alias);
-        $last = basename($path);
-        $files = array();
-        if ($last === '*') {
-            $files = glob($path . '.php');
-        } else {
-            $files = array($path . '.php');
-        }
-        if (is_array($files) && !empty($files)) {
+        $files = self::aliasToFiles($alias);
+        if (!empty($files)) {
             foreach ($files as $file) {
                 if (!is_file($file)) {
                     throw new TeaException("Imported file '{$file}' not exists.");
@@ -190,20 +183,29 @@ class TeaBase {
         $nameParts = explode('.', $name);
         $className = array_pop($nameParts);
         if (!array_key_exists($className, self::$importMap)) {
-            if (self::isLoadNameAbsolute($name)) {
-                $loadName = $name;
-            } else {
-                $router = self::getRouter();
-                $moduleName = $router->getModuleName();
-                $loadName = empty($moduleName) ? 'protected.' . $name : "module.{$moduleName}." . $name;
-            }
-            self::import($loadName);
+            $importAlias = self::getProperLoadName($name);
+            self::import($importAlias);
         }
         if (class_exists($className)) {
             $rfc = new ReflectionClass($className);
             return $rfc->newInstanceArgs($args);
         }
         return false;
+    }
+    
+    /**
+     * 根据路由自动获取合适的加载类别名，用于self::import()或者self::aliasToFiles()。
+     * @param string $name 圆点记法别名。如果第一个别名不是TeaBase.pathAliasMap中的别名，则会根据当前运行期自动判断。
+     * @return string 合适的加载类别名。
+     */
+    public static function getProperLoadName($name) {
+        if (self::isLoadNameAbsolute($name)) {
+            $importAlias = $name;
+        } else {
+            $moduleName = self::getRouter()->getModuleName();
+            $importAlias = empty($moduleName) ? 'protected.' . $name : "module.{$moduleName}." . $name;
+        }
+        return $importAlias;
     }
 
     /**
@@ -218,7 +220,7 @@ class TeaBase {
         $nameParts[$lastKey] = ucfirst($nameParts[$lastKey]);
         if (self::isLoadNameAbsolute($name)) {
             array_splice($nameParts, -1, 0, 'helper');
-            return self::load(implode('.', $nameParts) . 'Helper');
+            return self::load(implode('.', $nameParts) . 'Helper', $args);
         }
         $name = implode('.', $nameParts);
         return self::load("helper.{$name}Helper", $args);
@@ -236,7 +238,7 @@ class TeaBase {
         $nameParts[$lastKey] = ucfirst($nameParts[$lastKey]);
         if (self::isLoadNameAbsolute($name)) {
             array_splice($nameParts, -1, 0, 'lib');
-            return self::load(implode('.', $nameParts));
+            return self::load(implode('.', $nameParts), $args);
         }
         $name = implode('.', $nameParts);
         return self::load("lib.{$name}", $args);
@@ -254,7 +256,7 @@ class TeaBase {
         $nameParts[$lastKey] = ucfirst($nameParts[$lastKey]);
         if (self::isLoadNameAbsolute($name)) {
             array_splice($nameParts, -1, 0, 'vendor');
-            return self::load(implode('.', $nameParts));
+            return self::load(implode('.', $nameParts), $args);
         }
         $name = implode('.', $nameParts);
         return self::load("vendor.{$name}", $args);
@@ -273,13 +275,15 @@ class TeaBase {
         $nameParts[$lastKey] = ucfirst($nameParts[$lastKey]);
         if (self::isLoadNameAbsolute($name)) {
             array_splice($nameParts, -1, 0, 'model');
-            $model = self::load(implode('.', $nameParts) . 'Model');
+            $loadName = implode('.', $nameParts) . 'Model';
         } else {
             $ucName = implode('.', $nameParts);
-            $model = self::load("model.{$ucName}Model", $args);
+            $loadName = "model.{$ucName}Model";
         }
-        if ($model instanceof TeaModel) {
-            return $model;
+        $aliasFiles = self::aliasToFiles(self::getProperLoadName($loadName));
+        $importedFile = array_pop($aliasFiles);
+        if (is_file($importedFile)) {
+            return self::load($loadName, $args);
         } else {
             return new TeaTempModel($name);
         }
@@ -420,6 +424,26 @@ class TeaBase {
         $path = implode(DIRECTORY_SEPARATOR, $parts);
         return $path;
     }
+    
+    /**
+     * 根据路径别名获取真实路径下的文件。
+     * @param string $alias 路径别名。
+     * @return mixed 返回文件路径数组，如果没有文件或失败则返回false。
+     */
+    public static function aliasToFiles($alias) {
+        $path = self::aliasToPath($alias);
+        $last = basename($path);
+        $files = array();
+        if ($last === '*') {
+            $files = glob($path . '.php');
+        } else {
+            $files = array($path . '.php');
+        }
+        if (is_array($files) && !empty($files)) {
+            return $files;
+        }
+        return false;
+    }
 
     /**
      * 通过圆点记法字符串获取运行期配置。
@@ -472,6 +496,20 @@ class TeaBase {
             $className::$$configParam = ArrayHelper::mergeArray($className::$$configParam, $classConfig);
         }
         self::setConfig($className, $className::$$configParam);
+    }
+    
+    /**
+     * 查看别名是否为配置项TeaBase.pathAliasMap中的别名。
+     * @param string $name 别名
+     * @return bool
+     */
+    public static function isLoadNameAbsolute($name) {
+        $nameParts = explode('.', $name);
+        $first = array_shift($nameParts);
+        if (array_key_exists($first, self::getConfig('TeaBase.pathAliasMap'))) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -533,20 +571,6 @@ class TeaBase {
                 'errorPageUrl' => null
             )
         );
-    }
-
-    /**
-     * 查看别名是否为配置项TeaBase.pathAliasMap中的别名。
-     * @param string $name 别名
-     * @return bool
-     */
-    private static function isLoadNameAbsolute($name) {
-        $nameParts = explode('.', $name);
-        $first = array_shift($nameParts);
-        if (array_key_exists($first, self::getConfig('TeaBase.pathAliasMap'))) {
-            return true;
-        }
-        return false;
     }
 
 }
