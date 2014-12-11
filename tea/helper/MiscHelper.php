@@ -10,19 +10,23 @@
  * @package helper
  */
 class MiscHelper {
-
+    
+    /**
+     * 获取客户端IP地址
+     * @return string
+     */
     public static function getClientIp() {
         if (getenv('HTTP_CLIENT_IP')) {
             $ip = getenv('HTTP_CLIENT_IP');
-        } else if(getenv('HTTP_X_FORWARDED_FOR')) {
+        } else if (getenv('HTTP_X_FORWARDED_FOR')) {
             $ip = getenv('HTTP_X_FORWARDED_FOR');
-        } else if(getenv('HTTP_X_FORWARDED')) {
+        } else if (getenv('HTTP_X_FORWARDED')) {
             $ip = getenv('HTTP_X_FORWARDED');
-        } else if(getenv('HTTP_FORWARDED_FOR')) {
+        } else if (getenv('HTTP_FORWARDED_FOR')) {
             $ip = getenv('HTTP_FORWARDED_FOR');
-        } else if(getenv('HTTP_FORWARDED')) {
-           $ip = getenv('HTTP_FORWARDED');
-        } else if(getenv('REMOTE_ADDR')) {
+        } else if (getenv('HTTP_FORWARDED')) {
+            $ip = getenv('HTTP_FORWARDED');
+        } else if (getenv('REMOTE_ADDR')) {
             $ip = getenv('REMOTE_ADDR');
         } else {
             $ip = '0.0.0.0';
@@ -30,14 +34,20 @@ class MiscHelper {
         return $ip;
     }
     
+    /**
+     * 公共加密字符串函数。
+     * @param mixed $data 字符串或者多个字符串的数组。
+     * @param string $privateKey 秘钥，默认为配置项'TeaBase.privateHashKey'。若mcrypt扩展未开启，则此函数仅用base64_encode加密。
+     * @return string 返回加密字符串，如果$data为数组，则返回用空格连接起来的加密字符串。
+     */
     public static function commonEncode($data, $privateKey = null) {
         if (empty($privateKey)) {
             $privateKey = Tea::getConfig('TeaBase.privateHashKey');
         }
         $strArr = array();
-        if (is_string($data)) {
+        if (!is_array($data)) {
             $strArr[] = $data;
-        } else if (is_array($data)) {
+        } else {
             $strArr = $data;
         }
         $hashedArr = array();
@@ -52,6 +62,12 @@ class MiscHelper {
         return implode(' ', $hashedArr);
     }
     
+    /**
+     * 公共解密字符串函数。
+     * @param string $data 加密后的字符串。
+     * @param string $privateKey 秘钥，默认为配置项'TeaBase.privateHashKey'。若mcrypt扩展未开启，则此函数仅用base64_decode加密。
+     * @return mixed 返回解密字符串或者多个解密字符串的数组。
+     */
     public static function commonDecode($data, $privateKey = null) {
         if (empty($privateKey)) {
             $privateKey = Tea::getConfig('TeaBase.privateHashKey');
@@ -73,14 +89,55 @@ class MiscHelper {
         }
     }
     
+    /**
+     * 加密链接参数。
+     * @param array $params 链接http get请求的参数数组。
+     * @param string $privateKey 秘钥，默认为配置项'TeaBase.privateHashKey'。若mcrypt扩展未开启，则此函数仅用base64_encode加密。
+     * @return string 返回加密字符串。
+     */
     public static function commonEncodeHttpQuery($params, $privateKey = null) {
         return self::commonEncode(http_build_query($params), $privateKey);
     }
     
+    /**
+     * 解密链接参数。
+     * @param string $encodedQuery 加密后的http get请求字符串。
+     * @param string $privateKey 秘钥，默认为配置项'TeaBase.privateHashKey'。若mcrypt扩展未开启，则此函数仅用base64_decode加密。
+     * @return array 返回链接参数。
+     */
     public static function commonDecodeHttpQuery($encodedQuery, $privateKey = null) {
         $params = array();
         parse_str(self::commonDecode($encodedQuery, $privateKey), $params);
         return $params;
+    }
+    
+    /**
+     * 获取浏览器默认语言。
+     * @param bool $lowercase 是否小写。
+     * @return string 被检测到的默认语言。
+     */
+    public static function getDefaultLang($lowercase = false) {
+        if (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) && strlen($_SERVER["HTTP_ACCEPT_LANGUAGE"]) > 1) {
+            $x = explode(",", $_SERVER["HTTP_ACCEPT_LANGUAGE"]);
+            $lang = array();
+            $defaultLang = null;
+            foreach ($x as $val) {
+                if (preg_match("/(.*);q=([0-1]{0,1}.d{0,4})/i", $val, $matches)) {
+                    $lang[$matches[1]] = (float) $matches[2];
+                } else {
+                    $lang[$val] = 1.0;
+                }
+            }
+            $qval = 0.0;
+            foreach ($lang as $key => $value) {
+                if ($value > $qval) {
+                    $qval = (float) $value;
+                    $defaultLang = $key;
+                }
+            }
+            return $lowercase ? strtolower($defaultLang) : $defaultLang;
+        }
+        return null;
     }
 
 }
