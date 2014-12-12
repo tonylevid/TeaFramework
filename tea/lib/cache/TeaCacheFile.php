@@ -25,7 +25,7 @@ class TeaCacheFile implements TeaICache {
             DirectoryHelper::mkdirs($fileFolder);
         }
         $data = array(
-            $this->cacheExpireKey => intval($expire) > 0 ? time() + intval($expire) : 0,
+            $this->cacheExpireKey => time() + intval($expire),
             $this->cacheKeyKey => $key,
             $this->cacheDataKey => $val
         );
@@ -45,7 +45,8 @@ FILESTR;
         $fileContent = include $file;
         if (is_array($fileContent) && isset($fileContent[$this->cacheExpireKey]) && isset($fileContent[$this->cacheDataKey])) {
             $expireTime = intval($fileContent[$this->cacheExpireKey]);
-            if ($expireTime > 0 && time() >= $expireTime) {
+            if ($expireTime !== 0 && time() >= $expireTime) {
+                @unlink($file);
                 return false;
             }
             return $fileContent[$this->cacheDataKey];
