@@ -362,12 +362,20 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
      * @return string Generated sql string.
      */
     public function update($tblName, $vals, $criteria = null) {
+        $tblAlias = $this->getTableAlias($tblName);
+        if (!empty($tblAlias)) {
+            if (isset($criteria['orderBy'])) {
+                unset($criteria['orderBy']);
+            }
+            if (isset($criteria['limit'])) {
+                unset($criteria['limit']);
+            }
+        }
         $colVals = array();
         foreach ($vals as $colName => $val) {
             $colVals[] = $this->quoteColumn($colName) . " = " . Tea::getDbQuery()->escape($val);
         }
         $colValsSql = implode(', ', $colVals);
-        $tblAlias = $this->getTableAlias($tblName);
         $asSql = !empty($tblAlias) ? " AS " . $this->normalQuote($tblAlias) : '';
         return "UPDATE " . $this->quoteTable($tblName) . $asSql . " SET " . $colValsSql . $this->getCriteriaSql($tblName, $criteria, __FUNCTION__);
     }
@@ -381,6 +389,14 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
      */
     public function delete($tblName, $criteria = null) {
         $tblAlias = $this->getTableAlias($tblName);
+        if (!empty($tblAlias)) {
+            if (isset($criteria['orderBy'])) {
+                unset($criteria['orderBy']);
+            }
+            if (isset($criteria['limit'])) {
+                unset($criteria['limit']);
+            }
+        }
         $criteriaSql = $this->getCriteriaSql($tblName, $criteria, __FUNCTION__);
         if (!empty($tblAlias)) {
             return "DELETE FROM {$tblAlias} USING " . $this->quoteTable($tblName) . " AS " . $this->normalQuote($tblAlias) . $criteriaSql;

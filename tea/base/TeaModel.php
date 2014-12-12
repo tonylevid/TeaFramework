@@ -555,6 +555,7 @@ class TeaModel {
      * )
      * </pre>
      * @param bool $safe 是否安全更新，默认为true。true表示无论如何都只更新一条数据，false表示会根据条件更新所有符合的数据。
+     * 注意：多表语法，如表名为'{{table->alias}}'时，'orderBy'和'limit'条件将失效，即$safe参数也会无效。
      * @return bool
      */
     public function update($criteria = array(), $vals = array(), $safe = true) {
@@ -590,6 +591,7 @@ class TeaModel {
      * )
      * </pre>
      * @param bool $safe 是否安全更新，默认为true。true表示无论如何都只更新一条数据，false表示会根据条件更新所有符合的数据。
+     * 注意：多表语法，如表名为'{{table->alias}}'时，'orderBy'和'limit'条件将失效，即$safe参数也会无效。
      * @return bool
      */
     public function updateByCondition($condition = array(), $vals = array(), $safe = true) {
@@ -686,6 +688,7 @@ class TeaModel {
      * 根据条件删除一条或者多条数据。
      * @param mixed $criteria TeaDbCriteria类实例或者条件数组。
      * @param bool $safe 是否安全删除，默认为true。true表示无论如何都只删除一条数据，false表示会根据条件删除所有符合的数据。
+     * 注意：多表语法，如表名为'{{table->alias}}'时，'orderBy'和'limit'条件将失效，即$safe参数也会无效。
      * @return bool
      */
     public function delete($criteria = array(), $safe = true) {
@@ -709,6 +712,7 @@ class TeaModel {
      * 根据条件where删除一条或者多条数据。
      * @param array $condition 条件where数组。
      * @param bool $safe 是否安全删除，默认为true。true表示无论如何都只删除一条数据，false表示会根据条件删除所有符合的数据。
+     * 注意：多表语法，如表名为'{{table->alias}}'时，'orderBy'和'limit'条件将失效，即$safe参数也会无效。
      * @return bool
      */
     public function deleteByCondition($condition = array(), $safe = true) {
