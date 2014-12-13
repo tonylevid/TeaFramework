@@ -149,10 +149,9 @@ class TeaBase {
                     $className = basename($file, '.php');
                     if (isset(self::$importMap[$className])) {
                         $importedFile = self::$importMap[$className];
-                        throw new TeaException("Cannot redeclare class '{$className}' in '{$importedFile}'.");
-                    } else {
-                        self::$importMap[$className] = $file;
+                        trigger_error("Cannot redeclare class '{$className}' in '{$importedFile}'.");
                     }
+                    self::$importMap[$className] = $file;
                 }
             }
             return true;
