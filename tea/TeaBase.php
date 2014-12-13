@@ -127,10 +127,23 @@ class TeaBase {
      */
     public static function init($config = array()) {
         session_start();
+        self::clear();
         self::$config = ArrayHelper::mergeArray(self::getTeaBaseConfig(), $config);
         self::$originalConfig = self::$config;
         self::setModuleMap();
         self::setAutoImport();
+    }
+    
+    /**
+     * 清空TeaBase成员。
+     */
+    protected static function clear() {
+        self::$config = array();
+        self::$originalConfig = array();
+        self::$moduleMap = array();
+        self::$importMap = array();
+        self::$_routerInstance = null;
+        self::$_connection = null;
     }
 
     /**
