@@ -75,6 +75,7 @@ class TeaBase {
     /**
      * 运行程序。
      * @param array $config 用户配置数组。
+     * @param array $routeArgs 手动设置的路由参数。
      */
     public static function run($config = array(), $routeArgs = array()) {
         try {
@@ -106,13 +107,16 @@ class TeaBase {
     /**
      * 运行程序并支持cli模式。
      * @param array $config 用户配置数组。
+     * @param array $routeArgs 手动设置的路由参数。
      */
-    public static function runConsole($config = array()) {
-        global $argv;
-        $routeArgs = array();
-        if (isset($argv) && is_array($argv)) {
-            array_shift($argv);
-            $routeArgs = $argv;
+    public static function runConsole($config = array(), $routeArgs = array()) {
+        if (php_sapi_name() === 'cli') {
+            global $argv;
+            $routeArgs = array();
+            if (isset($argv) && is_array($argv)) {
+                array_shift($argv);
+                $routeArgs = $argv;
+            }
         }
         self::run($config, $routeArgs);
     }
