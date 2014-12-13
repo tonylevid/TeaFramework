@@ -25,7 +25,7 @@ class TeaCacheFile implements TeaICache {
             DirectoryHelper::mkdirs($fileFolder);
         }
         $data = array(
-            $this->cacheExpireKey => time() + intval($expire),
+            $this->cacheExpireKey => intval($expire) !== 0 ? time() + intval($expire) : 0,
             $this->cacheKeyKey => $key,
             $this->cacheDataKey => $val
         );
