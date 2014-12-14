@@ -18,10 +18,6 @@ defined('APP_PROTECTED') or define('APP_PROTECTED', 'protected');
 defined('TEA_PATH') or define('TEA_PATH', dirname(__FILE__));
 
 class TeaBase {
-    
-    const GET_ROUTER_INST_FIRST = 'first';
-    
-    const GET_ROUTER_INST_LAST = 'last';
 
     /**
      * Tea配置数组。
@@ -48,10 +44,10 @@ class TeaBase {
     public static $importMap = array();
     
     /**
-     * 当前运行期所有TeaRouter类实例。
-     * @var array
+     * 当前运行期TeaRouter类实例。
+     * @var TeaRouter
      */
-    private static $_routerInstances = array();
+    private static $_routerInstance;
 
     /**
      * 当前运行期所适配的TeaDbConnection子类实例。
@@ -124,6 +120,16 @@ class TeaBase {
         }
         self::run($config, $routeArgs);
     }
+    
+    /**
+     * 运行组件。
+     * @param array $routeArgs 手动设置的路由参数。
+     */
+    public static function runComponent($routeArgs) {
+        $entryRouter = clone self::getRouter();
+        self::getRouter()->route($routeArgs);
+        self::$_routerInstance = $entryRouter;
+    }
 
     /**
      * Tea框架初始化。
@@ -146,7 +152,7 @@ class TeaBase {
         self::$originalConfig = array();
         self::$moduleMap = array();
         self::$importMap = array();
-        self::$_routerInstances = array();
+        self::$_routerInstance = null;
         self::$_connection = null;
     }
 
@@ -313,21 +319,11 @@ class TeaBase {
      * 获取当前运行期TeaRouter类实例。
      * @return TeaRouter 当前运行期TeaRouter类实例。
      */
-    public static function getRouter($constType = self::GET_ROUTER_INST_FIRST) {
-        if (!empty(self::$_routerInstances)) {
-            $routerInstKeys = array_keys(self::$_routerInstances);
-            $firstKey = reset($routerInstKeys);
-            $lastKey = end($routerInstKeys);
-            if ($constType === self::GET_ROUTER_INST_FIRST) {
-                return self::$_routerInstances[$firstKey];
-            } else if ($constType === self::GET_ROUTER_INST_LAST) {
-                return self::$_routerInstances[$lastKey];
-            } else {
-                return false;
-            }
+    public static function getRouter() {
+        if (!self::$_routerInstance instanceof TeaRouter) {
+            self::$_routerInstance = new TeaRouter();
         }
-        self::$_routerInstances[] = new TeaRouter();
-        return self::getRouter($constType);
+        return self::$_routerInstance;
     }
 
     /**
