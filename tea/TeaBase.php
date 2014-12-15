@@ -44,7 +44,7 @@ class TeaBase {
     public static $importMap = array();
     
     /**
-     * 当前运行期TeaRouter类实例。
+     * 当前项目入口TeaRouter类实例。
      * @var TeaRouter
      */
     private static $_routerInstance;
