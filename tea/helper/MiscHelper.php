@@ -103,7 +103,7 @@ class MiscHelper {
             }
         }
         if (count($strArr) === 1) {
-            return implode(' ', $strArr);
+            return implode(self::$encodeSplitter, $strArr);
         } else {
             return $strArr;
         }
