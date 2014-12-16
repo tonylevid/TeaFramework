@@ -46,8 +46,8 @@ class ArrayHelper {
 
     /**
      * Merge two arrays recursively with overwriting
-     * @param array $arr
-     * @param array $userArr
+     * @param array $arr Array to be merged.
+     * @param array $userArr Array to be merged with.
      * @return array
      */
     public static function mergeArray($arr, $userArr) {

@@ -16,6 +16,7 @@ class TeaModel {
      * @var array
      */
     public static $config = array(
+        'requestFilterKey' => 'filter', // request过滤键名。
         'arrayResult' => true, // 是否数组化结果集，false则结果集为object。
         'defaultConnection' => 'default', // 默认数据库连接key。
         'connections' => array( // 数据库连接信息组。
@@ -47,10 +48,16 @@ class TeaModel {
     private $_pkColNames = array();
 
     /**
-     * 由TeaModel::criterias()或者TeaModel::relations()生成的条件数组。
+     * 由TeaModel::criterias()或者TeaModel::joins()生成的条件数组。
      * @var array
      */
     private $_addonCriteriaArr = array();
+    
+    /**
+     * 由TeaModel::setRequestFilter()生成的条件数组。
+     * @var array
+     */
+    private $_requestFilterArr = array();
 
     /**
      * 是否数组化结果集，false则结果集为object。
@@ -64,6 +71,33 @@ class TeaModel {
     public function __construct() {
         Tea::setClassConfig(__CLASS__);
         $this->_arrayResult = Tea::getConfig('TeaModel.arrayResult');
+        $this->setRequestFilter();
+    }
+    
+    /**
+     * 设置请求过滤条件。过滤条件必须由MiscHelper::encodeArr($criteria)方法生成，请求键名默认为'filter'。
+     * 此函数将会生成过滤条件，影响如下方法的结果：
+     * TeaModel::find()，TeaModel::findByCondition()，TeaModel::findByPk()，
+     * TeaModel::findAll()，TeaModel::findAllByCondition()，
+     * TeaModel::count()，TeaModel::countByCondition()。
+     * 比如请求此链接：http://foo.bar/main/index?filter=hashStringGeneratedByMiscHelperEncodeArr，
+     * 假设hashStringGeneratedByMiscHelperEncodeArr可以解码为
+     * <pre>
+     * array(
+     *     'where' => array('id:gt' => 10)
+     * )
+     * </pre>
+     * 则会自动加上此$criteria查询条件。
+     * @param string $key 请求的键名。
+     * @return $this
+     */
+    private function setRequestFilter() {
+        $key = Tea::getConfig('TeaModel.requestFilterKey');
+        $hashStr = Tea::loadLib('TeaRequest')->getRequest($key);
+        $criteria = MiscHelper::decodeArr($hashStr);
+        if (is_array($criteria) && !empty($criteria)) {
+            $this->_requestFilterArr = $criteria;
+        }
     }
 
     /**
@@ -159,14 +193,18 @@ class TeaModel {
 
     /**
      * 附加一个或多个通用条件来查询。
-     * @param string $criteriaName,... 非定长参数，值为TeaModel::criterias()返回数组的键名。
+     * @param string $criteriaName,... 非定长参数，值为TeaModel::criterias()返回数组的键名或者criteria数组或者TeaDbCriteria类实例。
      * @return $this
      */
     public function withCriteria() {
         $criterias = $this->criterias();
         $criteriaNames = func_get_args();
         foreach ($criteriaNames as $criteriaName) {
-            if (array_key_exists($criteriaName, $criterias)) {
+            if (is_array($criteriaName) && !empty($criteriaName)) {
+                $this->_addonCriteriaArr = ArrayHelper::mergeArray($this->_addonCriteriaArr, $criteriaName);
+            } else if ($criteriaName instanceof TeaDbCriteria) {
+                $this->_addonCriteriaArr = ArrayHelper::mergeArray($this->_addonCriteriaArr, $criteriaName->criteriaArr);
+            } else if (array_key_exists($criteriaName, $criterias)) {
                 $addonCriteria = $criterias[$criteriaName];
                 if ($addonCriteria instanceof TeaDbCriteria) {
                     $this->_addonCriteriaArr = ArrayHelper::mergeArray($this->_addonCriteriaArr, $addonCriteria->criteriaArr);
@@ -203,14 +241,22 @@ class TeaModel {
 
     /**
      * 附加一个或多个join通用条件来查询。
-     * @param string $joinName,... 非定长参数，值为TeaModel::joins()返回数组的键名。
+     * @param mixed $joinName,... 非定长参数，值为TeaModel::joins()返回数组的键名或者join数组或者TeaDbCriteria类实例。
      * @return $this
      */
     public function withJoin() {
         $joins = $this->joins();
         $joinNames = func_get_args();
         foreach ($joinNames as $joinName) {
-            if (array_key_exists($joinName, $joins)) {
+            if (is_array($joinName) && !empty($joinName)) {
+                $this->_addonCriteriaArr = ArrayHelper::mergeArray($this->_addonCriteriaArr, array('join' => $joinName));
+            } else if ($joinName instanceof TeaDbCriteria) {
+                $joinCriteria = array();
+                if (isset($joinName->criteriaArr['join'])) {
+                    $joinCriteria = array('join' => $joinName->criteriaArr['join']);
+                }
+                $this->_addonCriteriaArr = ArrayHelper::mergeArray($this->_addonCriteriaArr, $joinCriteria);
+            } else if (is_string($joinName) && array_key_exists($joinName, $joins)) {
                 $addonJoin = $joins[$joinName];
                 if ($addonJoin instanceof TeaDbCriteria) {
                     $joinCriteria = array();
@@ -321,6 +367,7 @@ class TeaModel {
      */
     public function find($criteria = array(), $exprs = null) {
         $this->onBeforeFind();
+        $criteria = ArrayHelper::mergeArray($criteria, $this->_requestFilterArr);
         $properCriteria = $this->getProperCriteria($criteria);
         $sql = Tea::getDbSqlBuilder()->select($this->tableName(), $properCriteria, $this->getProperExprs($properCriteria, $exprs));
         $modelName = get_class($this);
@@ -414,6 +461,7 @@ class TeaModel {
      */
     public function findAll($criteria = array(), $exprs = null) {
         $this->onBeforeFind();
+        $criteria = ArrayHelper::mergeArray($criteria, $this->_requestFilterArr);
         $properCriteria = $this->getProperCriteria($criteria);
         $sql = Tea::getDbSqlBuilder()->select($this->tableName(), $properCriteria, $this->getProperExprs($properCriteria, $exprs));
         $modelName = get_class($this);
@@ -507,6 +555,7 @@ class TeaModel {
      * @return mixed 成功返回条目数，失败则返回false。
      */
     public function count($criteria = array(), $alias = 'total') {
+        $criteria = ArrayHelper::mergeArray($criteria, $this->_requestFilterArr);
         $sql = Tea::getDbSqlBuilder()->count($this->tableName(), $this->getProperCriteria($criteria), $alias);
         $rst = $this->findBySql($sql);
         $totalVal = $this->getColumnValue($rst, $alias);

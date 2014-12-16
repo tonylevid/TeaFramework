@@ -11,6 +11,8 @@
  */
 class MiscHelper {
     
+    public static $encodeSplitter = '&nbsp;';
+
     /**
      * 获取客户端IP地址
      * @return string
@@ -35,10 +37,28 @@ class MiscHelper {
     }
     
     /**
+     * 用户url的base64加密字符串。
+     * @param string $data 待加密字符串。
+     * @return string 加密后的字符串。
+     */
+    public static function base64UrlEncode($data) { 
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '='); 
+    }
+    
+    /**
+     * 用户解密self::base64UrlEncode()加密后的字符串。
+     * @param string $data self::base64UrlEncode()加密后的字符串。
+     * @return string 解密后的字符串
+     */
+    public static function base64UrlDecode($data) { 
+        return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT)); 
+    }
+    
+    /**
      * 公共加密字符串函数。
      * @param mixed $data 字符串或者多个字符串的数组。
-     * @param string $privateKey 秘钥，默认为配置项'TeaBase.privateHashKey'。若mcrypt扩展未开启，则此函数仅用base64_encode加密。
-     * @return string 返回加密字符串，如果$data为数组，则返回用空格连接起来的加密字符串。
+     * @param string $privateKey 秘钥，默认为配置项'TeaBase.privateHashKey'。若mcrypt扩展未开启，则此函数仅用self::base64UrlEncode()加密。
+     * @return string 返回加密字符串，如果$data为数组，则返回用self::$encodeSplitter连接起来的加密字符串。
      */
     public static function commonEncode($data, $privateKey = null) {
         if (empty($privateKey)) {
@@ -54,32 +74,32 @@ class MiscHelper {
         foreach ($strArr as $str) {
             $privateKeyHash = hash('sha256', $privateKey, true);
             if (extension_loaded('mcrypt')) {
-                $hashedArr[] = base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $privateKeyHash, $str, MCRYPT_MODE_ECB));
+                $hashedArr[] = self::base64UrlEncode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $privateKeyHash, $str, MCRYPT_MODE_ECB));
             } else {
-                $hashedArr[] = base64_encode($str);
+                $hashedArr[] = self::base64UrlEncode($str);
             }
         }
-        return implode(' ', $hashedArr);
+        return implode(self::$encodeSplitter, $hashedArr);
     }
     
     /**
      * 公共解密字符串函数。
      * @param string $data 加密后的字符串。
-     * @param string $privateKey 秘钥，默认为配置项'TeaBase.privateHashKey'。若mcrypt扩展未开启，则此函数仅用base64_decode加密。
+     * @param string $privateKey 秘钥，默认为配置项'TeaBase.privateHashKey'。若mcrypt扩展未开启，则此函数仅用self::base64UrlEncode()加密。
      * @return mixed 返回解密字符串或者多个解密字符串的数组。
      */
     public static function commonDecode($data, $privateKey = null) {
         if (empty($privateKey)) {
             $privateKey = Tea::getConfig('TeaBase.privateHashKey');
         }
-        $hashedArr = explode(' ', trim($data));
+        $hashedArr = explode(self::$encodeSplitter, trim($data));
         $strArr = array();
         foreach ($hashedArr as $str) {
             $privateKeyHash = hash('sha256', $privateKey, true);
             if (extension_loaded('mcrypt')) {
-                $strArr[] = trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $privateKeyHash, base64_decode($str), MCRYPT_MODE_ECB));
+                $strArr[] = trim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $privateKeyHash, self::base64UrlDecode($str), MCRYPT_MODE_ECB));
             } else {
-                $strArr[] = base64_decode($str);
+                $strArr[] = self::base64UrlDecode($str);
             }
         }
         if (count($strArr) === 1) {
@@ -109,6 +129,28 @@ class MiscHelper {
         $params = array();
         parse_str(self::commonDecode($encodedQuery, $privateKey), $params);
         return $params;
+    }
+    
+    /**
+     * 加密数组。
+     * @param array $arr 待加密的数组。
+     * @param string $privateKey 秘钥，默认为配置项'TeaBase.privateHashKey'。若mcrypt扩展未开启，则此函数仅用base64_encode加密。
+     * @return string 加密后的字符串。
+     */
+    public static function encodeArr($arr, $privateKey = null) {
+        $json = json_encode($arr);
+        return MiscHelper::commonEncode($json, $privateKey);
+    }
+    
+    /**
+     * 解密数组。
+     * @param string $hashStr 被self::encodeArr()加密后的字符串。
+     * @param string $privateKey 秘钥，默认为配置项'TeaBase.privateHashKey'。若mcrypt扩展未开启，则此函数仅用base64_encode加密。
+     * @return array 解密后的数组。
+     */
+    public static function decodeArr($hashStr, $privateKey = null) {
+        $json = MiscHelper::commonDecode($hashStr, $privateKey);
+        return json_decode($json, true);
     }
     
     /**
