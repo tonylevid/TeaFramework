@@ -190,7 +190,7 @@ class TeaRouter {
             $this->setRouteInfo($routeArgsPathinfo);
             return null;
         }
-        $request = Tea::loadLib('TeaRequest');
+        $request = Tea::$request;
         $queryPathinfo = $request->getQuery(Tea::getConfig('TeaRouter.routeModeGetName'));
         $pathinfo = $request->getPathinfo();
         switch (Tea::getConfig('TeaRouter.routeMode')) {

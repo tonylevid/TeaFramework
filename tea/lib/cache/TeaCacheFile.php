@@ -34,7 +34,8 @@ class TeaCacheFile implements TeaICache {
 <?php
 return $dataStr;
 FILESTR;
-        return file_put_contents($file, $fileStr);
+        $writtenBytes = file_put_contents($file, $fileStr);
+        return $writtenBytes === false ? false : true;
     }
 
     public function getCache($key) {

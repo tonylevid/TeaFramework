@@ -30,6 +30,12 @@ class TeaBase {
      * @var array
      */
     public static $originalConfig = array();
+    
+    /**
+     * 当前TeaRequest类实例。
+     * @var TeaRequest
+     */
+    public static $request;
 
     /**
      * 所有 模块 => 路径 映射数组。
@@ -142,6 +148,7 @@ class TeaBase {
         self::$originalConfig = self::$config;
         self::setModuleMap();
         self::setAutoImport();
+        self::$request = Tea::loadLib('TeaRequest');
     }
     
     /**
@@ -150,6 +157,7 @@ class TeaBase {
     protected static function clear() {
         self::$config = array();
         self::$originalConfig = array();
+        self::$request = null;
         self::$moduleMap = array();
         self::$importMap = array();
         self::$_routerInstance = null;
@@ -474,6 +482,7 @@ class TeaBase {
     /**
      * 通过圆点记法字符串获取运行期配置。
      * @param string $nodeStr 圆点记法字符串，默认为null。如果此项为空，此方法将返回整个配置数组。
+     * @param bool $isOriginal 是否返回原始（即初始化后的）配置，默认为false。
      * @return mixed 成功则返回配置的值，失败则返回false。
      */
     public static function getConfig($nodeStr = null, $isOriginal = false) {
@@ -514,7 +523,7 @@ class TeaBase {
     /**
      * 设置类通用配置项，用于将类配置导入Tea框架。
      * @param string $className 类名称，你可以在当前类使用 __CLASS__ 。
-     * @param string $configParam 类配置项静态变量名，默认为'config'.
+     * @param string $configParam 类配置项静态变量名，默认为'config'。
      */
     public static function setClassConfig($className, $configParam = 'config') {
         $classConfig = self::getConfig($className);

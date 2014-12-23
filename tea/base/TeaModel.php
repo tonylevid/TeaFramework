@@ -93,7 +93,7 @@ class TeaModel {
      */
     private function setRequestFilter() {
         $key = Tea::getConfig('TeaModel.requestFilterKey');
-        $hashStr = Tea::loadLib('TeaRequest')->getRequest($key);
+        $hashStr = Tea::$request->getRequest($key);
         $criteria = MiscHelper::decodeArr($hashStr);
         if (is_array($criteria) && !empty($criteria)) {
             $this->_requestFilterArr = $criteria;

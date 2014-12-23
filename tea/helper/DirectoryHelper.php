@@ -18,11 +18,7 @@ class DirectoryHelper {
      * @return bool
      */
     public static function mkdirs($dir, $mode = 0777) {
-        if (!is_dir($dir)) {
-            self::mkdirs(dirname($dir), $mode);
-            return @mkdir($dir, $mode);
-        }
-        return true;
+        return mkdir($dir, $mode, true);
     }
 
     /**
