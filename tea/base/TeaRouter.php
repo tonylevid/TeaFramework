@@ -227,7 +227,7 @@ class TeaRouter {
     private function setRoutePathinfo($pathinfo) {
         $trimedPathinfo = preg_replace('/' . preg_quote(Tea::getConfig('TeaRouter.urlSuffix'), '/') . '$/', '', $pathinfo);
         $trimedPathinfo = ltrim(rtrim($trimedPathinfo, '/'), '/');
-        $pathSegments = !empty($trimedPathinfo) ? array_filter(explode('/', $trimedPathinfo)) : array();
+        $pathSegments = !empty($trimedPathinfo) ? explode('/', $trimedPathinfo) : array();
         if (isset($pathSegments[0]) && $this->isModule($pathSegments[0])) {
             $this->_urlModuleName = $pathSegments[0];
             $this->_moduleName = $this->getModuleNameBySegment($pathSegments[0]);
