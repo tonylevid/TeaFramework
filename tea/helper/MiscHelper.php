@@ -11,7 +11,7 @@
  */
 class MiscHelper {
     
-    public static $encodeSplitter = '&nbsp;';
+    public static $encodeSplitter = ' ';
 
     /**
      * 获取客户端IP地址
