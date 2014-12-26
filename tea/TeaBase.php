@@ -342,7 +342,7 @@ class TeaBase {
      * @return string 生成的链接。
      */
     public static function createUrl($route = '', $queries = array(), $anchor = null) {
-        $request = self::loadLib('TeaRequest');
+        $request = self::$request;
         $route = rtrim(ltrim($route, '/'), '/');
         $routeMode = self::getConfig('TeaRouter.routeMode');
         $routeModeGetName = self::getConfig('TeaRouter.routeModeGetName');
