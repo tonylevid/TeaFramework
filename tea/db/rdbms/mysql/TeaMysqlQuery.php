@@ -173,7 +173,7 @@ class TeaMysqlQuery extends TeaDbQuery {
             $this->_params = array();
         } catch (PDOException $e) {
             $lastSql = $this->getLastSql();
-            $lastSqlPart = mb_strlen($lastSql, 'utf-8') > 500 ? mb_substr($lastSql, 0, 500, 'utf-8') . '...' : $lastSql;
+            $lastSqlPart = mb_strlen($lastSql) > 500 ? mb_substr($lastSql, 0, 500) . '...' : $lastSql;
             $errMsg = get_class($this) . " prepared sql execution error: {$lastSqlPart}\n";
             $errMsg .= "{$e->getMessage()}\n";
             foreach ($this->_params as $key => $val) {
@@ -202,7 +202,7 @@ class TeaMysqlQuery extends TeaDbQuery {
 
     /**
      * Fetches the next row from a result set
-     * @param int $fetchStyle How the next row will be returned to the caller. 
+     * @param int $fetchStyle How the next row will be returned to the caller.
      * This value must be one of the TeaDbQuery::FETCH_* constants, defaults to TeaDbQuery::FETCH_ASSOC.
      * @param int $curOri For representing a scrollable cursor, this value cursor orientation determines which row will be returned to the caller.
      * This value must be one of the TeaDbQuery::FETCH_ORI_* constants, you must set the parameter $scrollCursor of TeaDbQuery::prepare() or TeaDbQuery::query() to true.
@@ -299,7 +299,7 @@ class TeaMysqlQuery extends TeaDbQuery {
     public function getRowCount() {
         return $this->_statement->rowCount();
     }
-    
+
     /**
      * Get last insert id.
      * Notice: it is not support insert many rows at one time.

@@ -141,9 +141,10 @@ class TeaBase {
      * Tea框架初始化。
      * @param array $config 用户配置数组。
      */
-    public static function init($config = array()) {
+    public static function init($config = array()) {        
         session_start();
         self::clear();
+        self::setCharset();
         self::$config = ArrayHelper::mergeArray(self::getTeaBaseConfig(), $config);
         self::$originalConfig = self::$config;
         self::setModuleMap();
@@ -545,6 +546,17 @@ class TeaBase {
             return true;
         }
         return false;
+    }
+    
+    /**
+     * 设置全局编码。
+     */
+    protected static function setCharset() {
+        mb_internal_encoding('utf-8');
+        if (function_exists('ini_set')) {
+            ini_set('default_charset', 'utf-8');
+        }
+        header('Content-Type:text/html; charset=utf-8');
     }
 
     /**
