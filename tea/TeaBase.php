@@ -167,8 +167,10 @@ class TeaBase {
 
     /**
      * 导入一个类或者一个文件夹下的所有类（不会递归导入）。
+     * 在运行期间不能导入类名相同的文件。
+     * 如果$forceImport为true，则可以导入非类文件。
      * @param string $alias 圆点记法别名。别名可使用配置项TeaBase.pathAliasMap中的别名，如system.lib.*。
-     * @param bool $forceImport 是否立即导入，默认为false，false为惰性加载。注意：$forceImport为true时，如果多次导入相同文件，会照成页面为空。
+     * @param bool $forceImport 是否立即导入，默认为false，false为惰性加载。注意：$forceImport为true时，如果多次导入相同文件，可能会照成页面为空。
      * @return bool
      * @throws TeaException
      */
@@ -184,10 +186,10 @@ class TeaBase {
                 } else {
                     $className = basename($file, '.php');
                     if (isset(self::$importMap[$className])) {
-                        $importedFile = self::$importMap[$className];
-                        trigger_error("Cannot redeclare class '{$className}' in '{$importedFile}'.");
+                        throw new TeaException("Cannot redeclare class '{$className}' in '{$file}'.");
+                    } else {
+                        self::$importMap[$className] = $file;
                     }
-                    self::$importMap[$className] = $file;
                 }
             }
             return true;
