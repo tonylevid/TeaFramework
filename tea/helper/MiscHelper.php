@@ -181,5 +181,43 @@ class MiscHelper {
         }
         return null;
     }
+    
+    /**
+     * 根据过滤函数过滤值。
+     * @param mixed $val 需要过滤的值，可以为数组。
+     * @param mixed $filter 回调函数字符串或者回调函数。
+     * @return mixed 返回过滤后的值。
+     */
+    public static function filterVal($val, $filter) {
+        if (is_array($val)) {
+            $filteredVal = self::filterArr($val, $filter);
+        } else {
+            $filteredVal = call_user_func($filter, $val);
+        }
+        if ($filteredVal !== false) {
+            $val = $filteredVal;
+        }
+        return $val;
+    }
+    
+    /**
+     * 根据过滤函数过滤数组值。
+     * @param array $arr 需要过滤的原始数组。
+     * @param mixed $filter 回调函数字符串或者回调函数。
+     * @return array 返回过滤后的数组，失败则返回false。
+     */
+    private static function filterArr($arr, $filter) {
+        if (is_array($arr)) {
+            foreach ($arr as $key => $val) {
+                if (is_array($val)) {
+                    $arr[$key] = self::filterArr($val, $filter);
+                } else {
+                    $arr[$key] = call_user_func($filter, $val);
+                }
+            }
+            return $arr;
+        }
+        return false;
+    }
 
 }

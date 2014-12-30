@@ -10,70 +10,110 @@
  * @package lib
  */
 class TeaRequest {
+    
+    /**
+     * 类配置数组。
+     * @var array
+     */
+    public static $config = array(
+        'requestOrder' => 'CGP', // $_COOKIE，$_GET，$_POST的注入到$this->_REQUEST_DATA顺序，从左到右，右边的将覆盖左边键名相同的值。
+        'globalFilters' => array('htmlspecialchars', 'trim') // 全局过滤函数，支持回调函数。
+    );
+    
+    public static $requestOrderMap = array(
+        'C' => '_COOKIE_DATA',
+        'G' => '_GET_DATA',
+        'P' => '_POST_DATA'
+    );
+    
+    /**
+     * 全局过滤函数配置项值。
+     * @var array 
+     */
+    private $_globalFilters;
 
     /**
-     * Url host string.
+     * 当前请求头中 Host: 项的内容，如果存在的话。
      * @var string
      */
     private $_host;
 
     /**
-     * Request uri string.
+     * URI用来指定要访问的页面。例如 “/index.html”。
      * @var string
      */
     private $_requestUri;
 
     /**
-     * Pathinfo string.
+     * 包含由客户端提供的、跟在真实脚本名称之后并且在查询语句（query string）之前的路径信息，如果存在的话。
      * @var string
      */
     private $_pathinfo;
     
     /**
-     * Http REQUEST parameters.
+     * HTTP Request变量。
+     * 数组包含了$_COOKIE，$_GET 和 $_POST 的数组。
      * @var array 
      */
     private $_REQUEST_DATA;
+    
+    /**
+     * 通过 HTTP Cookies 方式传递给当前脚本的变量的数组。
+     * @var array 
+     */
+    private $_COOKIE_DATA;
 
     /**
-     * Http GET parameters.
+     * 通过 URL 参数传递给当前脚本的变量的数组。
      * @var array 
      */
     private $_GET_DATA;
 
     /**
-     * Http POST parameters.
+     * 通过 HTTP POST 方法传递给当前脚本的变量的数组。
      * @var array 
      */
     private $_POST_DATA;
 
     /**
-     * Http PUT parameters.
+     * 通过 HTTP PUT 方法传递给当前脚本的变量的数组。
      * @var array
      */
     private $_PUT_DATA;
 
     /**
-     * Http DELETE parameters.
+     * 通过 HTTP DELETE 方法传递给当前脚本的变量的数组。
      * @var array
      */
     private $_DELETE_DATA;
 
     /**
-     * Base url (with http(s)://).
+     * 获取引导URL（包含http(s)://）。
      * @var string
      */
     private $_baseUrl;
 
     /**
-     * Base uri (without http(s)://).
+     * 获取引导URI（不包含http(s)://）。
      * @var string
      */
     private $_baseUri;
     
-    public function __construct($filters = array('htmlspecialchars', 'trim')) {
-        if ($this->_REQUEST_DATA === null) {
-            $this->_REQUEST_DATA = $_REQUEST;
+    /**
+     * 构造函数，加载配置并初始化。
+     * @param type $filters
+     */
+    public function __construct() {
+        Tea::setClassConfig(__CLASS__);
+        $this->init();
+    }
+    
+    /**
+     * 初始化，设置相应值。
+     */
+    public function init() {
+        if ($this->_COOKIE_DATA === null) {
+            $this->_COOKIE_DATA = $_COOKIE;
         }
         if ($this->_GET_DATA === null) {
             $this->_GET_DATA = $_GET;
@@ -87,17 +127,33 @@ class TeaRequest {
         if ($this->_DELETE_DATA === null) {
             $this->_DELETE_DATA = $this->getRequestMethod() === 'DELETE' ? $this->getRestParams() : array();
         }
-        $data = array($this->_REQUEST_DATA, $this->_GET_DATA, $this->_POST_DATA, $this->_PUT_DATA, $this->_DELETE_DATA);
-        foreach ($data as &$raw) {
-            foreach ($filters as $filter) {
-                $filteredRaw = ArrayHelper::filterData($filter, $raw);
-                if ($filteredRaw !== false) {
-                    $raw = $filteredRaw;
+        if ($this->_REQUEST_DATA === null) {
+            $this->_REQUEST_DATA = array();
+            $requestOrders = str_split(Tea::getConfig('TeaRequest.requestOrder'));
+            foreach ($requestOrders as $str) {
+                $upperStr = strtoupper($str);
+                if (array_key_exists($upperStr, self::$requestOrderMap)) {
+                    $mergeVarName = self::$requestOrderMap[$upperStr];
+                    $this->_REQUEST_DATA = array_merge($this->_REQUEST_DATA, $this->{$mergeVarName});
                 }
             }
         }
-        unset($raw);
-        list($this->_REQUEST_DATA, $this->_GET_DATA, $this->_POST_DATA, $this->_PUT_DATA, $this->_DELETE_DATA) = $data;
+        $this->_globalFilters = Tea::getConfig('TeaRequest.globalFilters');
+    }
+    
+    /**
+     * 根据过滤函数过滤值。
+     * @param mixed $val 需要过滤的值。
+     * @param array $filters 数组包含回调函数字符串或者回调函数。
+     * @return mixed 返回过滤后的值。
+     */
+    public function filterVal($val, $filters = array()) {
+        if (is_array($filters) && !empty($filters)) {
+            foreach ($filters as $filter) {
+                $val = MiscHelper::filterVal($val, $filter);
+            }
+        }
+        return $val;
     }
 
     /**
@@ -106,11 +162,14 @@ class TeaRequest {
      * @param mixed $default Default value for $name if not set.
      * @return mixed $_REQUEST value.
      */
-    public function getRequest($name = null, $default = null) {
-        if ($name === null) {
-            return $this->_REQUEST_DATA;
+    public function getRequest($name = null, $default = null, $filters = null) {
+        if ($filters === null) {
+            $filters = $this->_globalFilters;
         }
-        return isset($this->_REQUEST_DATA[$name]) ? $this->_REQUEST_DATA[$name] : $default;
+        if ($name === null) {
+            return $this->filterVal($this->_REQUEST_DATA, $filters);
+        }
+        return isset($this->_REQUEST_DATA[$name]) ? $this->filterVal($this->_REQUEST_DATA[$name], $filters) : $default;
     }
 
     /**
@@ -333,8 +392,9 @@ class TeaRequest {
     }
 
     /**
-     * Get base uri (without http(s)://) string with filename if file name exists in request uri.
-     * @return string Base uri.
+     * 获取引导URI（不包含http(s)://），如果有文件名，引导URI也将包含文件名。
+     * 如请求URL为http://localhost/index.php/foo/bar，引导URI的内容将为/index.php。
+     * @return string 引导URI。
      */
     public function getBaseUri() {
         if ($this->_baseUri === null) {
@@ -344,8 +404,9 @@ class TeaRequest {
     }
 
     /**
-     * Get base url string (with http(s)://).
-     * @return string Base url.
+     * 获取引导URL（包含http(s)://），如果有文件名，引导URL也将包含文件名。
+     * 如请求URL为http://localhost/index.php/foo/bar，引导URL的内容将为http://localhost/index.php。
+     * @return string 引导URL。
      */
     public function getBaseUrl() {
         if ($this->_baseUrl === null) {
@@ -356,7 +417,7 @@ class TeaRequest {
                 $this->_baseUrl = $this->getHttpHost() . str_replace($file, '', $this->getScriptName());
             }
         }
-        return $this->_baseUrl;
+        return rtrim($this->_baseUrl, '/');
     }
 
 }
