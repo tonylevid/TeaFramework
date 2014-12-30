@@ -51,7 +51,7 @@ class TeaRequest {
     private $_pathinfo;
     
     /**
-     * HTTP Request变量。
+     * HTTP Request变量，不受影响php.ini配置项request_order的影响。
      * 数组包含了$_COOKIE，$_GET 和 $_POST 的数组。
      * @var array 
      */
@@ -157,10 +157,11 @@ class TeaRequest {
     }
 
     /**
-     * Get $_REQUEST value by name.
-     * @param string $name Key in $_REQUEST.
-     * @param mixed $default Default value for $name if not set.
-     * @return mixed $_REQUEST value.
+     * 通过键名获取$this->_REQUEST_DATA（通常为$_REQUEST）的键值。
+     * @param string $name $this->_REQUEST_DATA的键名。
+     * @param mixed $default 如果$this->_REQUEST_DATA键名未设置的默认值。
+     * @param mixed $filters 如果为null，则默认为配置TeaRequest.globalFilters的值。如果为数组，则数组需要包含回调函数字符串或者回调函数。需要获取原始值，可以指定为array()。
+     * @return mixed
      */
     public function getRequest($name = null, $default = null, $filters = null) {
         if ($filters === null) {
@@ -171,62 +172,95 @@ class TeaRequest {
         }
         return isset($this->_REQUEST_DATA[$name]) ? $this->filterVal($this->_REQUEST_DATA[$name], $filters) : $default;
     }
-
+    
     /**
-     * Get $_GET value by name.
-     * @param string $name Key in $_GET.
-     * @param mixed $default Default value for $name if not set.
-     * @return mixed $_GET value.
+     * 通过键名获取$_COOKIE的键值。
+     * @param string $name $_COOKIE的键名。
+     * @param mixed $default 如果$_COOKIE键名未设置的默认值。
+     * @param mixed $filters 如果为null，则默认为配置TeaRequest.globalFilters的值。如果为数组，则数组需要包含回调函数字符串或者回调函数。需要获取原始值，可以指定为array()。
+     * @return mixed
      */
-    public function getQuery($name = null, $default = null) {
-        if ($name === null) {
-            return $this->_GET_DATA;
+    public function getCookie($name = null, $default = null, $filters = null) {
+        if ($filters === null) {
+            $filters = $this->_globalFilters;
         }
-        return isset($this->_GET_DATA[$name]) ? $this->_GET_DATA[$name] : $default;
+        if ($name === null) {
+            return $this->filterVal($this->_COOKIE_DATA, $filters);
+        }
+        return isset($this->_COOKIE_DATA[$name]) ? $this->filterVal($this->_COOKIE_DATA[$name], $filters) : $default;
     }
 
     /**
-     * Get $_POST value by name.
-     * @param string $name Key in $_POST.
-     * @param mixed $default Default value for $name if not set.
-     * @return mixed $_POST value.
+     * 通过键名获取$_GET的键值。
+     * @param string $name $_GET的键名。
+     * @param mixed $default 如果$_GET键名未设置的默认值。
+     * @param mixed $filters 如果为null，则默认为配置TeaRequest.globalFilters的值。如果为数组，则数组需要包含回调函数字符串或者回调函数。需要获取原始值，可以指定为array()。
+     * @return mixed
      */
-    public function getPost($name = null, $default = null) {
-        if ($name === null) {
-            return $this->_POST_DATA;
+    public function getQuery($name = null, $default = null, $filters = null) {
+        if ($filters === null) {
+            $filters = $this->_globalFilters;
         }
-        return isset($this->_POST_DATA[$name]) ? $this->_POST_DATA[$name] : $default;
+        if ($name === null) {
+            return $this->filterVal($this->_GET_DATA, $filters);
+        }
+        return isset($this->_GET_DATA[$name]) ? $this->filterVal($this->_GET_DATA[$name], $filters) : $default;
     }
 
     /**
-     * Get PUT value by name.
-     * @param string $name Key in $this->_PUT_DATA.
-     * @param mixed $default Default value for $name if not set.
-     * @return mixed PUT value.
+     * 通过键名获取$_POST的键值。
+     * @param string $name $_POST的键名。
+     * @param mixed $default 如果$_POST键名未设置的默认值。
+     * @param mixed $filters 如果为null，则默认为配置TeaRequest.globalFilters的值。如果为数组，则数组需要包含回调函数字符串或者回调函数。需要获取原始值，可以指定为array()。
+     * @return mixed
      */
-    public function getPut($name = null, $default = null) {
-        if ($name === null) {
-            return $this->_PUT_DATA;
+    public function getPost($name = null, $default = null, $filters = null) {
+        if ($filters === null) {
+            $filters = $this->_globalFilters;
         }
-        return isset($this->_PUT_DATA[$name]) ? $this->_PUT_DATA[$name] : $default;
+        if ($name === null) {
+            return $this->filterVal($this->_POST_DATA, $filters);
+        }
+        return isset($this->_POST_DATA[$name]) ? $this->filterVal($this->_POST_DATA[$name], $filters) : $default;
     }
 
     /**
-     * Get DELETE value by name.
-     * @param string $name Key in $this->_DELETE_DATA.
-     * @param mixed $default Default value for $name if not set.
-     * @return mixed DELETE value.
+     * 通过键名获取$this->_PUT_DATA（即HTTP PUT传递的数组）的键值。
+     * @param string $name $this->_PUT_DATA的键名。
+     * @param mixed $default 如果$this->_PUT_DATA键名未设置的默认值。
+     * @param mixed $filters 如果为null，则默认为配置TeaRequest.globalFilters的值。如果为数组，则数组需要包含回调函数字符串或者回调函数。需要获取原始值，可以指定为array()。
+     * @return mixed
      */
-    public function getDelete($name = null, $default = null) {
-        if ($name === null) {
-            return $this->_DELETE_DATA;
+    public function getPut($name = null, $default = null, $filters = null) {
+        if ($filters === null) {
+            $filters = $this->_globalFilters;
         }
-        return isset($this->_DELETE_DATA[$name]) ? $this->_DELETE_DATA[$name] : $default;
+        if ($name === null) {
+            return $this->filterVal($this->_PUT_DATA, $filters);
+        }
+        return isset($this->_PUT_DATA[$name]) ? $this->filterVal($this->_PUT_DATA[$name], $filters) : $default;
     }
 
     /**
-     * Get PUT or DELETE parameters
-     * @return array PUT or DELETE parameters
+     * 通过键名获取$this->_DELETE_DATA（即HTTP DELETE传递的数组）的键值。
+     * @param string $name $this->_DELETE_DATA的键名。
+     * @param mixed $default 如果$this->_DELETE_DATA键名未设置的默认值。
+     * @param mixed $filters 如果为null，则默认为配置TeaRequest.globalFilters的值。如果为数组，则数组需要包含回调函数字符串或者回调函数。需要获取原始值，可以指定为array()。
+     * @return mixed
+     */
+    public function getDelete($name = null, $default = null, $filters = null) {
+        if ($filters === null) {
+            $filters = $this->_globalFilters;
+        }
+        if ($name === null) {
+            return $this->filterVal($this->_DELETE_DATA, $filters);
+        }
+        return isset($this->_DELETE_DATA[$name]) ? $this->filterVal($this->_DELETE_DATA[$name], $filters) : $default;
+    }
+
+    /**
+     * 获取HTTP PUT或者HTTP DELETE传递的数组
+     * @return array
      */
     public function getRestParams() {
         $params = array();
@@ -239,15 +273,15 @@ class TeaRequest {
     }
 
     /**
-     * Get REQUEST_METHOD.
-     * @return string Request method, such as GET, POST, HEAD, PUT, DELETE.
+     * 获取请求类型。
+     * @return string 请求类型，如GET，POST，HEAD，PUT，DELETE。
      */
     public function getRequestMethod() {
         return strtoupper(isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET');
     }
 
     /**
-     * Check whether request method is GET.
+     * 判断请求类型是否为GET。
      * @return bool
      */
     public function isGet() {
@@ -255,7 +289,7 @@ class TeaRequest {
     }
 
     /**
-     * Check whether request method is POST.
+     * 判断请求类型是否为POST。
      * @return bool
      */
     public function isPost() {
@@ -263,7 +297,7 @@ class TeaRequest {
     }
 
     /**
-     * Check whether request method is PUT.
+     * 判断请求类型是否为PUT。
      * @return bool
      */
     public function isPut() {
@@ -271,7 +305,7 @@ class TeaRequest {
     }
 
     /**
-     * Check whether request method is DELETE.
+     * 判断请求类型是否为DELETE。
      * @return bool
      */
     public function isDelete() {
@@ -292,15 +326,15 @@ class TeaRequest {
     }
 
     /**
-     * Get full url string.
-     * @return string Full url.
+     * 获取完整URL链接。
+     * @return string
      */
     public function getFullUrl() {
         return $this->getHttpHost() . $this->getRequestUri();
     }
 
     /**
-     * Get HTTP_HOST.
+     * 获取包含http(s)://的主机名。
      * @return string
      */
     public function getHttpHost() {
@@ -309,14 +343,14 @@ class TeaRequest {
                 $this->_host = isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off' ? 'https' : 'http';
                 $this->_host .= '://' . $_SERVER['HTTP_HOST'];
             } else {
-                $this->_host = 'http://localhost/';
+                $this->_host = 'http://localhost';
             }
         }
         return $this->_host;
     }
 
     /**
-     * Get SCRIPT_NAME.
+     * 获取执行脚本的绝对路径。
      * @return string
      */
     public function getScriptName() {
@@ -324,7 +358,7 @@ class TeaRequest {
     }
 
     /**
-     * Get PHP_SELF.
+     * 获取执行脚本的文件名，与 document root 有关。
      * @return string
      */
     public function getPhpSelf() {
@@ -332,7 +366,7 @@ class TeaRequest {
     }
 
     /**
-     * Get url directory.
+     * 获取URL链接父级目录。
      * @return string Url directory.
      */
     public function getUrlDir() {
@@ -340,7 +374,7 @@ class TeaRequest {
     }
 
     /**
-     * Get REQUEST_URI.
+     * 获取访问页面的URI。
      * @return string
      */
     public function getRequestUri() {
@@ -369,7 +403,7 @@ class TeaRequest {
     }
 
     /**
-     * Get PATH_INFO.
+     * 获取由客户端提供的、跟在真实脚本名称之后并且在查询语句（query string）之前的路径信息。
      * @return string
      */
     public function getPathinfo() {
@@ -384,7 +418,7 @@ class TeaRequest {
     }
 
     /**
-     * Get QUERY_STRING.
+     * 获取查询字符串。
      * @return string
      */
     public function getQueryStr() {
