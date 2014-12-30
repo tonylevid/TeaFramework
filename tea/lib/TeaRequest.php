@@ -218,6 +218,19 @@ class TeaRequest {
     public function isDelete() {
         return $this->getRequestMethod() === 'DELETE' ? true : false;
     }
+    
+    /**
+     * 是否为ajax请求。
+     * 注意：此方法并不完全可靠，如果使用的是jQuery或者其他主流javascript库，此方法会如期运行。
+     * 如果你自定义header或不清楚的情况下可以显式的设置header的X-Requested-With为XMLHttpRequest。
+     * @return bool
+     */
+    public function isAjax() {
+        if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            return true;
+        }
+        return false;
+    }
 
     /**
      * Get full url string.
