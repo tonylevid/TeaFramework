@@ -372,7 +372,6 @@ class TeaModel {
      */
     public function find($criteria = null, $exprs = null) {
         $this->onBeforeFind();
-        $criteria = ArrayHelper::mergeArray($criteria, $this->_requestFilterArr);
         $properCriteria = $this->getProperCriteria($criteria);
         $sql = Tea::getDbSqlBuilder()->select($this->tableName(), $properCriteria, $this->getProperExprs($properCriteria, $exprs));
         $modelName = get_class($this);
@@ -466,7 +465,6 @@ class TeaModel {
      */
     public function findAll($criteria = null, $exprs = null) {
         $this->onBeforeFind();
-        $criteria = ArrayHelper::mergeArray($criteria, $this->_requestFilterArr);
         $properCriteria = $this->getProperCriteria($criteria);
         $sql = Tea::getDbSqlBuilder()->select($this->tableName(), $properCriteria, $this->getProperExprs($properCriteria, $exprs));
         $modelName = get_class($this);
@@ -560,8 +558,9 @@ class TeaModel {
      * @return mixed 成功返回条目数，失败则返回false。
      */
     public function count($criteria = null, $alias = 'total') {
-        $criteria = ArrayHelper::mergeArray($criteria, $this->_requestFilterArr);
-        $sql = Tea::getDbSqlBuilder()->count($this->tableName(), $this->getProperCriteria($criteria), $alias);
+        $criteria = $this->getProperCriteria($criteria);
+        $countExprs = $this->getProperExprs($criteria, null);
+        $sql = Tea::getDbSqlBuilder()->count($this->tableName(), $criteria, $countExprs, $alias);
         $rst = $this->findBySql($sql);
         $totalVal = $this->getColumnValue($rst, $alias);
         return $totalVal === false ? false : intval($totalVal);
@@ -910,6 +909,7 @@ class TeaModel {
         } else {
             $criteria = $this->_addonCriteriaArr;
         }
+        $criteria = ArrayHelper::mergeArray($criteria, $this->_requestFilterArr);
         $this->_addonCriteriaArr = array(); // clear after merge
         return $criteria;
     }

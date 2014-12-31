@@ -337,11 +337,15 @@ class TeaMysqlSqlBuilder extends TeaDbSqlBuilder {
      * Select count.
      * @param string $tblName Table name.
      * @param mixed $criteria TeaDbCriteria instance or criteria array.
+     * @param mixed $exprs Select exprs, string or array. If empty, it will be 1.
      * @param string $alias Total result column alias.
      * @return mixed Return number of rows on success, false on failure.
      */
-    public function count($tblName, $criteria = null, $alias = 'total') {
-        $selectSql = $this->select($tblName, $criteria, new TeaDbExpr(1));
+    public function count($tblName, $criteria = null, $exprs = null, $alias = 'total') {
+        if (empty($exprs)) {
+            $exprs = new TeaDbExpr(1);
+        }
+        $selectSql = $this->select($tblName, $criteria, $exprs);
         return "SELECT COUNT(*) AS " . $this->quoteColumn($alias) . " FROM ({$selectSql}) AS " . $this->quoteColumn('SELECTSQL');
     }
 
