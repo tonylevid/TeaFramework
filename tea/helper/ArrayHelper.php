@@ -1,7 +1,7 @@
 <?php
 
 /**
- * ArrayHelper class file
+ * 数组帮助类
  *
  * @author tonylevid <tonylevid@gmail.com>
  * @link http://www.tframework.com/
@@ -12,8 +12,8 @@
 class ArrayHelper {
 
     /**
-     * Check array is associative or not.
-     * @param array $arr Array to be checked.
+     * 检查数组是否为关联数组。
+     * @param array $arr 需要检查的数组。
      * @return bool
      */
     public static function isAssoc($arr) {
@@ -21,8 +21,8 @@ class ArrayHelper {
     }
 
     /**
-     * Check array is multi-dimensional or not.
-     * @param array $arr Array to be checked.
+     * 检查数组是否为多维数组。
+     * @param array $arr 需要检查的数组。
      * @return bool
      */
     public static function isMulti($arr) {
@@ -35,9 +35,9 @@ class ArrayHelper {
     }
 
     /**
-     * Flatten multi-dimensional array to one-dimensional.
-     * @param array $arr Array to be flattened.
-     * @param bool $preserveKeys Preserve keys or not.
+     * 把多维数组扁平化为一维数组。
+     * @param array $arr 需要扁平化的数组。
+     * @param bool $preserveKeys 是否保留键名，默认为true。
      * @return array
      */
     public static function flatten($arr, $preserveKeys = true) {
@@ -45,9 +45,9 @@ class ArrayHelper {
     }
 
     /**
-     * Merge two arrays recursively with overwriting
-     * @param array $arr Array to be merged.
-     * @param array $userArr Array to be merged with.
+     * 覆盖合并两个数组。此方法在合并配置时非常有用。
+     * @param array $arr 被覆盖的数组。
+     * @param array $userArr 用于覆盖$arr的数组。
      * @return array
      */
     public static function mergeArray($arr, $userArr) {
@@ -70,8 +70,8 @@ class ArrayHelper {
     }
 
     /**
-     * Get the keys of continuous values of an array. For example:
-     * Change this array:
+     * 获取连续相同键值的键名数组。例如：
+     * 可以把此数组：
      * <pre>
      * array(
      *      2 => 11,
@@ -85,7 +85,7 @@ class ArrayHelper {
      *      12 => 14
      * )
      * </pre>
-     * to this one:
+     * 转换为如下数组：
      * <pre>
      * array(
      *     array(2, 3, 4),
@@ -95,8 +95,8 @@ class ArrayHelper {
      *     array(12)
      * )
      * </pre>
-     * @param array $arr Input array.
-     * @return array Keys of continuous values.
+     * @param array $arr 需要转换的数组。
+     * @return array
      */
     public static function getArrKeysOfCV($arr) {
         $rst = array();
@@ -113,9 +113,9 @@ class ArrayHelper {
     }
 
     /**
-     * Convert result array to primary key indexed array.
-     * @param array $arr Result array.
-     * @param string $pkColName Primary key column name.
+     * 把类似数据库结果集的数组转换成唯一值索引为键名的数组。
+     * @param array $arr 类似数据库结果集的数组。
+     * @param string $pkColName 唯一值的键名。
      * @return array
      */
     public static function pkIndex($arr, $pkColName = 'id') {
@@ -125,9 +125,9 @@ class ArrayHelper {
     }
     
     /**
-     * Get tree array.
-     * @param array $arr Result array.
-     * @param array $options Tree options, defaults to the options in the function.
+     * 获取树形数组。
+     * @param array $arr 类似数据库结果集的数组。
+     * @param array $options 树形数组选项，默认选项请查看方法内的$options变量。
      * @return array
      */
     public static function getTree($arr, $options = array()) {
@@ -153,11 +153,10 @@ class ArrayHelper {
     }
     
     /**
-     * Sort database result array by column. See array_multisort().
-     * @param array $data1 An array to be sorted.
-     * @param string $colName Column name to be sorted.
-     * @param mixed $sortOrder Sort order constant.
-     * ...
+     * 通过字段名排序类似数据库结果集的数组，请参看array_multisort()函数。
+     * @param array $data1 需要排序的数组。
+     * @param string $colName 排序字段名。
+     * @param mixed $sortOrder SORT_*的排序常量。
      * @return array
      */
     public static function orderBy() {
