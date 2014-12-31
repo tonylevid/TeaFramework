@@ -377,6 +377,30 @@ class TeaBase {
         $returnUrl = !empty($url) ? $request->getBaseUri() . '/' . $url : '/';
         return $returnUrl;
     }
+    
+    /**
+     * 获取生成请求过滤条件的完整url用于TeaModel::withRequestFilter()。
+     * @param mixed $criteria TeaDbCriteria类实例或者条件数组。
+     * @return string
+     */
+    public static function getModelFilterUrl($criteria = null) {
+        if ($criteria instanceof TeaDbCriteria) {
+            $criteriaArr = $criteria->criteriaArr;
+        } else if (is_array($criteria) && !empty($criteria)) {
+            $criteriaArr = $criteria;
+        } else {
+            $criteriaArr = array();
+        }
+        $filterKey = Tea::getConfig('TeaModel.requestFilterKey');
+        $filterParam = array(
+            $filterKey => MiscHelper::encodeArr($criteriaArr)
+        );
+        $queries = Tea::$request->getQuery();
+        $filterQueries = array_merge($queries, $filterParam);
+        $queryStr = http_build_query($filterQueries);
+        $nowUrl = Tea::$request->getBasePathUrl() . ($queryStr ? '?' . $queryStr : null);
+        return $nowUrl;
+    }
 
     /**
      * 根据数据库连接信息获取适配的TeaDbConnection子类实例，并当配置autoConnect是true时自动连接。

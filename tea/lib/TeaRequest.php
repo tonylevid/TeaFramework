@@ -404,6 +404,7 @@ class TeaRequest {
 
     /**
      * 获取由客户端提供的、跟在真实脚本名称之后并且在查询语句（query string）之前的路径信息。
+     * 注意pathinfo的前面是带有'/'的，如：'/main/foo/bar'。
      * @return string
      */
     public function getPathinfo() {
@@ -415,6 +416,14 @@ class TeaRequest {
             }
         }
         return $this->_pathinfo;
+    }
+    
+    /**
+     * 获取查询字符串之前的URL。
+     * @return string
+     */
+    public function getBasePathUrl() {
+        return $this->getBaseUrl() . $this->getPathinfo();
     }
 
     /**

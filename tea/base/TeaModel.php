@@ -52,9 +52,9 @@ class TeaModel {
      * @var array
      */
     private $_addonCriteriaArr = array();
-    
+
     /**
-     * 由TeaModel::setRequestFilter()生成的条件数组。
+     * 由TeaModel::withRequestFilter()生成的条件数组。
      * @var array
      */
     private $_requestFilterArr = array();
@@ -71,11 +71,11 @@ class TeaModel {
     public function __construct() {
         Tea::setClassConfig(__CLASS__);
         $this->_arrayResult = Tea::getConfig('TeaModel.arrayResult');
-        $this->setRequestFilter();
     }
     
     /**
-     * 设置请求过滤条件。过滤条件必须由MiscHelper::encodeArr($criteria)方法生成，请求键名默认为'filter'。
+     * 设置请求过滤条件。过滤条件必须由MiscHelper::encodeArr($criteriaArr)方法生成，请求键名默认为'filter'。
+     * 可以使用Tea::getModelFilterUrl()生成带过滤条件的完整url。
      * 此函数将会生成过滤条件，影响如下方法的结果：
      * TeaModel::find()，TeaModel::findByCondition()，TeaModel::findByPk()，
      * TeaModel::findAll()，TeaModel::findAllByCondition()，
@@ -88,16 +88,21 @@ class TeaModel {
      * )
      * </pre>
      * 则会自动加上此$criteria查询条件。
-     * @param string $key 请求的键名。
+     * @param bool $with 是否带上请求过滤条件。
      * @return $this
      */
-    private function setRequestFilter() {
-        $key = Tea::getConfig('TeaModel.requestFilterKey');
-        $hashStr = Tea::$request->getRequest($key);
-        $criteria = MiscHelper::decodeArr($hashStr);
-        if (is_array($criteria) && !empty($criteria)) {
-            $this->_requestFilterArr = $criteria;
+    public function withRequestFilter($with = true) {
+        if ($with) {
+            $key = Tea::getConfig('TeaModel.requestFilterKey');
+            $hashStr = Tea::$request->getRequest($key);
+            $criteria = MiscHelper::decodeArr($hashStr);
+            if (is_array($criteria) && !empty($criteria)) {
+                $this->_requestFilterArr = $criteria;
+            }
+        } else {
+            $this->_requestFilterArr = array();
         }
+        return $this;
     }
 
     /**
@@ -193,7 +198,7 @@ class TeaModel {
 
     /**
      * 附加一个或多个通用条件来查询。
-     * @param string $criteriaName,... 非定长参数，值为TeaModel::criterias()返回数组的键名或者criteria数组或者TeaDbCriteria类实例。
+     * @param mixed $criteriaName,... 非定长参数，值为TeaModel::criterias()返回数组的键名或者criteria数组或者TeaDbCriteria类实例。
      * @return $this
      */
     public function withCriteria() {
@@ -365,7 +370,7 @@ class TeaModel {
      * 若$expr为空，且$criteria包含join条件，则会在选取的所有字段前自动加上表前缀。
      * @return mixed 根据获取风格返回数组或对象，请用empty()来判断是否获取成功。
      */
-    public function find($criteria = array(), $exprs = null) {
+    public function find($criteria = null, $exprs = null) {
         $this->onBeforeFind();
         $criteria = ArrayHelper::mergeArray($criteria, $this->_requestFilterArr);
         $properCriteria = $this->getProperCriteria($criteria);
@@ -459,7 +464,7 @@ class TeaModel {
      * 若$expr为空，且$criteria包含join条件，则会在选取的所有字段前自动加上表前缀。
      * @return array 根据获取风格返回数组或对象数组，请用empty()来判断是否获取成功。
      */
-    public function findAll($criteria = array(), $exprs = null) {
+    public function findAll($criteria = null, $exprs = null) {
         $this->onBeforeFind();
         $criteria = ArrayHelper::mergeArray($criteria, $this->_requestFilterArr);
         $properCriteria = $this->getProperCriteria($criteria);
@@ -521,7 +526,7 @@ class TeaModel {
      * @param string $alias 别名，默认为'exists'。
      * @return bool
      */
-    public function exists($criteria = array(), $alias = 'exists') {
+    public function exists($criteria = null, $alias = 'exists') {
         $sql = Tea::getDbSqlBuilder()->exists($this->tableName(), $this->getProperCriteria($criteria), $alias);
         $rst = $this->findBySql($sql);
         $existsVal = $this->getColumnValue($rst, $alias);
@@ -554,7 +559,7 @@ class TeaModel {
      * @param string $alias 别名，默认为'total'。
      * @return mixed 成功返回条目数，失败则返回false。
      */
-    public function count($criteria = array(), $alias = 'total') {
+    public function count($criteria = null, $alias = 'total') {
         $criteria = ArrayHelper::mergeArray($criteria, $this->_requestFilterArr);
         $sql = Tea::getDbSqlBuilder()->count($this->tableName(), $this->getProperCriteria($criteria), $alias);
         $rst = $this->findBySql($sql);
@@ -607,7 +612,7 @@ class TeaModel {
      * 注意：多表语法，如表名为'{{table->alias}}'时，'orderBy'和'limit'条件将失效，即$safe参数也会无效。
      * @return bool
      */
-    public function update($criteria = array(), $vals = array(), $safe = true) {
+    public function update($criteria = null, $vals = array(), $safe = true) {
         if (empty($vals)) {
             $vals = $this->getSetRecord();
         }
@@ -740,7 +745,7 @@ class TeaModel {
      * 注意：多表语法，如表名为'{{table->alias}}'时，'orderBy'和'limit'条件将失效，即$safe参数也会无效。
      * @return bool
      */
-    public function delete($criteria = array(), $safe = true) {
+    public function delete($criteria = null, $safe = true) {
         if ($safe) {
             if ($criteria instanceof TeaDbCriteria) {
                 $criteria->limit(array(1));
