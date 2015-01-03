@@ -383,7 +383,7 @@ class TeaBase {
      * @param mixed $criteria TeaDbCriteria类实例或者条件数组。
      * @return string
      */
-    public static function getModelFilterUrl($criteria = null) {
+    public static function getModelFilterUrl($criteria = null, $route = '') {
         if ($criteria instanceof TeaDbCriteria) {
             $criteriaArr = $criteria->criteriaArr;
         } else if (is_array($criteria) && !empty($criteria)) {
@@ -398,7 +398,12 @@ class TeaBase {
         $queries = Tea::$request->getQuery();
         $filterQueries = array_merge($queries, $filterParam);
         $queryStr = http_build_query($filterQueries);
-        $nowUrl = Tea::$request->getBasePathUrl() . ($queryStr ? '?' . $queryStr : null);
+        if (empty($route)) {
+            $basePathUrl = Tea::$request->getBasePathUrl();
+        } else {
+            $basePathUrl = Tea::$request->getBaseUrl() . '/' . $route;
+        }
+        $nowUrl = $basePathUrl . ($queryStr ? '?' . $queryStr : null);
         return $nowUrl;
     }
 

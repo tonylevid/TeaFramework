@@ -180,6 +180,23 @@ class TeaRouter {
     public function getActionParams() {
         return $this->_actionParams;
     }
+    
+    /**
+     * 获取url路由数组。
+     * @return type
+     */
+    public function getUrlRouteParams() {
+        $routeParams = array_merge(array($this->_urlModuleName, $this->_urlControllerName, $this->_urlActionName), $this->_actionParams);
+        return $routeParams;
+    }
+    
+    /**
+     * 获取url路由字符串。
+     * @return string
+     */
+    public function getUrlRouteStr() {
+        return implode('/', $this->getUrlRouteParams());
+    }
 
     /**
      * 设置模块名，控制器名，动作名和动作接收参数。
