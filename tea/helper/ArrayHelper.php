@@ -233,7 +233,7 @@ class ArrayHelper {
     }
     
     /**
-     * 二维化数组（处理类似$_POST的多维数组）
+     * 二维化数组（处理类似$_POST的多维数组）。
      * 如可以把以下格式数组：
      * <pre>
      * array(
@@ -254,9 +254,9 @@ class ArrayHelper {
      *     )
      * )
      * </pre>
-     * @param array $arr 待处理数组
-     * @param array $filterKeys 需要被处理的键名过滤
-     * @return array 二维化后的数组
+     * @param array $arr 待处理数组。
+     * @param array $filterKeys 需要被处理的键名过滤。
+     * @return array 二维化后的数组。
      */
     public static function normalize($arr, $filterKeys = array()) {
         $filterKeys = empty($filterKeys) ? array_keys($arr) : $filterKeys;
@@ -269,6 +269,27 @@ class ArrayHelper {
             }
         }
         return $newArr;
+    }
+    
+    /**
+     * 递归地删除数组中的空值。
+     * @param array $arr 待处理数组。
+     * @return array 处理后的数组。
+     */
+    public static function removeEmptyItems($arr) {        
+        $filter = function (&$arr) use (&$filter) {
+            foreach ($arr as $key => &$val) {
+                if (is_array($val)) {
+                    $filter($val);
+                } else {
+                    if (empty($val)) {
+                        unset($arr[$key]);
+                    }
+                }
+            }
+        };
+        $filter($arr);
+        return $arr;
     }
 
 }

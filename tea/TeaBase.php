@@ -381,6 +381,7 @@ class TeaBase {
     /**
      * 获取生成请求过滤条件的完整url用于TeaModel::withRequestFilter()。
      * @param mixed $criteria TeaDbCriteria类实例或者条件数组。
+     * @param string $route 路由字符串。如果为空则为当前路由字符串。
      * @return string
      */
     public static function getModelFilterUrl($criteria = null, $route = '') {
@@ -405,6 +406,20 @@ class TeaBase {
         }
         $nowUrl = $basePathUrl . ($queryStr ? '?' . $queryStr : null);
         return $nowUrl;
+    }
+    
+    /**
+     * 获取当前链接的过滤条件数组（如果存在）用于TeaModel::withRequestFilter()。
+     * @return array
+     */
+    public static function getModelFilterUrlParams() {
+        $filterKey = Tea::getConfig('TeaModel.requestFilterKey');
+        $hashStr = Tea::$request->getRequest($filterKey);
+        $criteria = MiscHelper::decodeArr($hashStr);
+        if (is_array($criteria) && !empty($criteria)) {
+            return $criteria;
+        }
+        return array();
     }
 
     /**

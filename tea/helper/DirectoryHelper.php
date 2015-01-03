@@ -30,7 +30,7 @@ class DirectoryHelper {
     public static function dirTree($dir, $filters = array()) {
         $dirs = array_diff(scandir($dir), array_merge(array('.', '..'), $filters));
         $dirArr = array();
-        foreach ($dir as $d) {
+        foreach ($dirs as $d) {
             if (is_dir($dir . DIRECTORY_SEPARATOR. $d)) {
                 $dirArr[$d] = self::dirTree($dir . DIRECTORY_SEPARATOR . $d, $filters);
             } else {
