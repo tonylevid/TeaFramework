@@ -74,7 +74,7 @@ class TeaModel {
     }
     
     /**
-     * 设置请求过滤条件。过滤条件必须由MiscHelper::encodeArr($criteriaArr)方法生成，请求键名默认为'filter'。
+     * 设置请求过滤条件，请求过滤条件大于其他过滤条件。过滤条件必须由MiscHelper::encodeArr($criteriaArr)方法生成，请求键名默认为'filter'。
      * 可以使用Tea::getModelFilterUrl()生成带过滤条件的完整url。
      * 此函数将会生成过滤条件，影响如下方法的结果：
      * TeaModel::find()，TeaModel::findByCondition()，TeaModel::findByPk()，
@@ -89,11 +89,12 @@ class TeaModel {
      * </pre>
      * 则会自动加上此$criteria查询条件。
      * @param bool $with 是否带上请求过滤条件。
+     * @param mixed $userCriteria criteria数组或者TeaDbCriteria类实例。
      * @return $this
      */
-    public function withRequestFilter($with = true) {
+    public function withRequestFilter($with = true, $userCriteria = null) {
         if ($with) {
-            $this->_requestFilterArr = Tea::getModelFilterUrlParams();
+            $this->_requestFilterArr = Tea::getModelFilterUrlParams($userCriteria);
         } else {
             $this->_requestFilterArr = array();
         }

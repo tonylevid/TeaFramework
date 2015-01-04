@@ -410,16 +410,24 @@ class TeaBase {
     
     /**
      * 获取当前链接的过滤条件数组（如果存在）用于TeaModel::withRequestFilter()。
+     * @param mixed $userCriteria criteria数组或者TeaDbCriteria类实例。
      * @return array
      */
-    public static function getModelFilterUrlParams() {
+    public static function getModelFilterUrlParams($userCriteria = null) {
+        if ($userCriteria instanceof TeaDbCriteria) {
+            $userCriteriaArr = $userCriteria->criteriaArr;
+        } else if (is_array($userCriteria) && !empty($userCriteria)) {
+            $userCriteriaArr = $userCriteria;
+        } else {
+            $userCriteriaArr = array();
+        }
         $filterKey = Tea::getConfig('TeaModel.requestFilterKey');
         $hashStr = Tea::$request->getRequest($filterKey);
-        $criteria = MiscHelper::decodeArr($hashStr);
-        if (is_array($criteria) && !empty($criteria)) {
-            return $criteria;
+        $filterCriteriaArr = MiscHelper::decodeArr($hashStr);
+        if (empty($filterCriteriaArr)) {
+            $filterCriteriaArr = array();
         }
-        return array();
+        return ArrayHelper::mergeArray($filterCriteriaArr, $userCriteriaArr);
     }
 
     /**
