@@ -16,15 +16,52 @@ class TeaRequest {
      * @var array
      */
     public static $config = array(
-        'requestOrder' => 'CGP', // $_COOKIE，$_GET，$_POST的注入到$this->_REQUEST_DATA顺序，从左到右，右边的将覆盖左边键名相同的值。
+        'requestOrder' => 'CGP', // $_COOKIE，$_GET，$_POST的注入到$this->REQUEST_DATA顺序，从左到右，右边的将覆盖左边键名相同的值。
         'globalFilters' => array('htmlspecialchars', 'trim') // 全局过滤函数，支持回调函数。
     );
     
     public static $requestOrderMap = array(
-        'C' => '_COOKIE_DATA',
-        'G' => '_GET_DATA',
-        'P' => '_POST_DATA'
+        'C' => 'COOKIE_DATA',
+        'G' => 'GET_DATA',
+        'P' => 'POST_DATA'
     );
+    
+    /**
+     * HTTP Request变量，不受影响php.ini配置项request_order的影响。
+     * 数组包含了$_COOKIE，$_GET 和 $_POST 的数组。
+     * @var array 
+     */
+    public $REQUEST_DATA;
+    
+    /**
+     * 通过 HTTP Cookies 方式传递给当前脚本的变量的数组。
+     * @var array 
+     */
+    public $COOKIE_DATA;
+
+    /**
+     * 通过 URL 参数传递给当前脚本的变量的数组。
+     * @var array 
+     */
+    public $GET_DATA;
+
+    /**
+     * 通过 HTTP POST 方法传递给当前脚本的变量的数组。
+     * @var array 
+     */
+    public $POST_DATA;
+
+    /**
+     * 通过 HTTP PUT 方法传递给当前脚本的变量的数组。
+     * @var array
+     */
+    public $PUT_DATA;
+
+    /**
+     * 通过 HTTP DELETE 方法传递给当前脚本的变量的数组。
+     * @var array
+     */
+    public $DELETE_DATA;
     
     /**
      * 全局过滤函数配置项值。
@@ -51,43 +88,6 @@ class TeaRequest {
     private $_pathinfo;
     
     /**
-     * HTTP Request变量，不受影响php.ini配置项request_order的影响。
-     * 数组包含了$_COOKIE，$_GET 和 $_POST 的数组。
-     * @var array 
-     */
-    private $_REQUEST_DATA;
-    
-    /**
-     * 通过 HTTP Cookies 方式传递给当前脚本的变量的数组。
-     * @var array 
-     */
-    private $_COOKIE_DATA;
-
-    /**
-     * 通过 URL 参数传递给当前脚本的变量的数组。
-     * @var array 
-     */
-    private $_GET_DATA;
-
-    /**
-     * 通过 HTTP POST 方法传递给当前脚本的变量的数组。
-     * @var array 
-     */
-    private $_POST_DATA;
-
-    /**
-     * 通过 HTTP PUT 方法传递给当前脚本的变量的数组。
-     * @var array
-     */
-    private $_PUT_DATA;
-
-    /**
-     * 通过 HTTP DELETE 方法传递给当前脚本的变量的数组。
-     * @var array
-     */
-    private $_DELETE_DATA;
-
-    /**
      * 获取引导URL（包含http(s)://）。
      * @var string
      */
@@ -112,29 +112,29 @@ class TeaRequest {
      * 初始化，设置相应值。
      */
     public function init() {
-        if ($this->_COOKIE_DATA === null) {
-            $this->_COOKIE_DATA = $_COOKIE;
+        if ($this->COOKIE_DATA === null) {
+            $this->COOKIE_DATA = $_COOKIE;
         }
-        if ($this->_GET_DATA === null) {
-            $this->_GET_DATA = $_GET;
+        if ($this->GET_DATA === null) {
+            $this->GET_DATA = $_GET;
         }
-        if ($this->_POST_DATA === null) {
-            $this->_POST_DATA = $_POST;
+        if ($this->POST_DATA === null) {
+            $this->POST_DATA = $_POST;
         }
-        if ($this->_PUT_DATA === null) {
-            $this->_PUT_DATA = $this->getRequestMethod() === 'PUT' ? $this->getRestParams() : array();
+        if ($this->PUT_DATA === null) {
+            $this->PUT_DATA = $this->getRequestMethod() === 'PUT' ? $this->getRestParams() : array();
         }
-        if ($this->_DELETE_DATA === null) {
-            $this->_DELETE_DATA = $this->getRequestMethod() === 'DELETE' ? $this->getRestParams() : array();
+        if ($this->DELETE_DATA === null) {
+            $this->DELETE_DATA = $this->getRequestMethod() === 'DELETE' ? $this->getRestParams() : array();
         }
-        if ($this->_REQUEST_DATA === null) {
-            $this->_REQUEST_DATA = array();
+        if ($this->REQUEST_DATA === null) {
+            $this->REQUEST_DATA = array();
             $requestOrders = str_split(Tea::getConfig('TeaRequest.requestOrder'));
             foreach ($requestOrders as $str) {
                 $upperStr = strtoupper($str);
                 if (array_key_exists($upperStr, self::$requestOrderMap)) {
                     $mergeVarName = self::$requestOrderMap[$upperStr];
-                    $this->_REQUEST_DATA = array_merge($this->_REQUEST_DATA, $this->{$mergeVarName});
+                    $this->REQUEST_DATA = array_merge($this->REQUEST_DATA, $this->{$mergeVarName});
                 }
             }
         }
@@ -157,9 +157,9 @@ class TeaRequest {
     }
 
     /**
-     * 通过键名获取$this->_REQUEST_DATA（通常为$_REQUEST）的键值。
-     * @param string $name $this->_REQUEST_DATA的键名。
-     * @param mixed $default 如果$this->_REQUEST_DATA键名未设置的默认值。
+     * 通过键名获取$this->REQUEST_DATA（通常为$_REQUEST）的键值。
+     * @param string $name $this->REQUEST_DATA的键名。
+     * @param mixed $default 如果$this->REQUEST_DATA键名未设置的默认值。
      * @param mixed $filters 如果为null，则默认为配置TeaRequest.globalFilters的值。如果为数组，则数组需要包含回调函数字符串或者回调函数。需要获取原始值，可以指定为array()。
      * @return mixed
      */
@@ -168,9 +168,9 @@ class TeaRequest {
             $filters = $this->_globalFilters;
         }
         if ($name === null) {
-            return $this->filterVal($this->_REQUEST_DATA, $filters);
+            return $this->filterVal($this->REQUEST_DATA, $filters);
         }
-        return isset($this->_REQUEST_DATA[$name]) ? $this->filterVal($this->_REQUEST_DATA[$name], $filters) : $default;
+        return isset($this->REQUEST_DATA[$name]) ? $this->filterVal($this->REQUEST_DATA[$name], $filters) : $default;
     }
     
     /**
@@ -185,9 +185,9 @@ class TeaRequest {
             $filters = $this->_globalFilters;
         }
         if ($name === null) {
-            return $this->filterVal($this->_COOKIE_DATA, $filters);
+            return $this->filterVal($this->COOKIE_DATA, $filters);
         }
-        return isset($this->_COOKIE_DATA[$name]) ? $this->filterVal($this->_COOKIE_DATA[$name], $filters) : $default;
+        return isset($this->COOKIE_DATA[$name]) ? $this->filterVal($this->COOKIE_DATA[$name], $filters) : $default;
     }
 
     /**
@@ -202,9 +202,9 @@ class TeaRequest {
             $filters = $this->_globalFilters;
         }
         if ($name === null) {
-            return $this->filterVal($this->_GET_DATA, $filters);
+            return $this->filterVal($this->GET_DATA, $filters);
         }
-        return isset($this->_GET_DATA[$name]) ? $this->filterVal($this->_GET_DATA[$name], $filters) : $default;
+        return isset($this->GET_DATA[$name]) ? $this->filterVal($this->GET_DATA[$name], $filters) : $default;
     }
 
     /**
@@ -219,15 +219,15 @@ class TeaRequest {
             $filters = $this->_globalFilters;
         }
         if ($name === null) {
-            return $this->filterVal($this->_POST_DATA, $filters);
+            return $this->filterVal($this->POST_DATA, $filters);
         }
-        return isset($this->_POST_DATA[$name]) ? $this->filterVal($this->_POST_DATA[$name], $filters) : $default;
+        return isset($this->POST_DATA[$name]) ? $this->filterVal($this->POST_DATA[$name], $filters) : $default;
     }
 
     /**
-     * 通过键名获取$this->_PUT_DATA（即HTTP PUT传递的数组）的键值。
-     * @param string $name $this->_PUT_DATA的键名。
-     * @param mixed $default 如果$this->_PUT_DATA键名未设置的默认值。
+     * 通过键名获取$this->PUT_DATA（即HTTP PUT传递的数组）的键值。
+     * @param string $name $this->PUT_DATA的键名。
+     * @param mixed $default 如果$this->PUT_DATA键名未设置的默认值。
      * @param mixed $filters 如果为null，则默认为配置TeaRequest.globalFilters的值。如果为数组，则数组需要包含回调函数字符串或者回调函数。需要获取原始值，可以指定为array()。
      * @return mixed
      */
@@ -236,15 +236,15 @@ class TeaRequest {
             $filters = $this->_globalFilters;
         }
         if ($name === null) {
-            return $this->filterVal($this->_PUT_DATA, $filters);
+            return $this->filterVal($this->PUT_DATA, $filters);
         }
-        return isset($this->_PUT_DATA[$name]) ? $this->filterVal($this->_PUT_DATA[$name], $filters) : $default;
+        return isset($this->PUT_DATA[$name]) ? $this->filterVal($this->PUT_DATA[$name], $filters) : $default;
     }
 
     /**
-     * 通过键名获取$this->_DELETE_DATA（即HTTP DELETE传递的数组）的键值。
-     * @param string $name $this->_DELETE_DATA的键名。
-     * @param mixed $default 如果$this->_DELETE_DATA键名未设置的默认值。
+     * 通过键名获取$this->DELETE_DATA（即HTTP DELETE传递的数组）的键值。
+     * @param string $name $this->DELETE_DATA的键名。
+     * @param mixed $default 如果$this->DELETE_DATA键名未设置的默认值。
      * @param mixed $filters 如果为null，则默认为配置TeaRequest.globalFilters的值。如果为数组，则数组需要包含回调函数字符串或者回调函数。需要获取原始值，可以指定为array()。
      * @return mixed
      */
@@ -253,9 +253,9 @@ class TeaRequest {
             $filters = $this->_globalFilters;
         }
         if ($name === null) {
-            return $this->filterVal($this->_DELETE_DATA, $filters);
+            return $this->filterVal($this->DELETE_DATA, $filters);
         }
-        return isset($this->_DELETE_DATA[$name]) ? $this->filterVal($this->_DELETE_DATA[$name], $filters) : $default;
+        return isset($this->DELETE_DATA[$name]) ? $this->filterVal($this->DELETE_DATA[$name], $filters) : $default;
     }
 
     /**
