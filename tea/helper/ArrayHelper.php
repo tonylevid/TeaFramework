@@ -277,18 +277,14 @@ class ArrayHelper {
      * @return array 处理后的数组。
      */
     public static function removeEmptyItems($arr) {        
-        $filter = function (&$arr) use (&$filter) {
-            foreach ($arr as $key => &$val) {
-                if (is_array($val)) {
-                    $filter($val);
-                } else {
-                    if (empty($val)) {
-                        unset($arr[$key]);
-                    }
-                }
+        foreach ($arr as $key => $value) {
+            if (is_array($value)) {
+                $arr[$key] = self::removeEmptyItems($arr[$key]);
             }
-        };
-        $filter($arr);
+            if (empty($arr[$key])) {
+                unset($arr[$key]);
+            }
+        }
         return $arr;
     }
 
