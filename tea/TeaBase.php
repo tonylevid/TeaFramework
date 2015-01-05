@@ -84,30 +84,12 @@ class TeaBase {
      * @param array $routeArgs 手动设置的路由参数。
      */
     public static function run($config = array(), $routeArgs = array()) {
-        try {
-            self::init($config);
-            self::getRouter()->route($routeArgs);
-            defined('APP_END_TIME') or define('APP_END_TIME', microtime(true));
-            defined('APP_END_MEM') or define('APP_END_MEM', memory_get_usage());
-            defined('APP_USED_TIME') or define('APP_USED_TIME', APP_END_TIME - APP_BEGIN_TIME);
-            defined('APP_USED_MEM') or define('APP_USED_MEM', APP_END_MEM - APP_BEGIN_MEM);
-        } catch (Exception $exception) {
-            $exceptionFile = self::getConfig('TeaBase.exceptionFile');
-            $tryExcptFile = self::aliasToPath($exceptionFile) . '.php';
-            if (is_file($tryExcptFile)) {
-                $exceptionFile = $tryExcptFile;
-            }
-            $errorPageUrl = self::getConfig('TeaBase.errorPageUrl');
-            if (!empty($exceptionFile) && is_file($exceptionFile)) {
-                include $exceptionFile;
-            } else if (!empty($errorPageUrl)) {
-                self::getRouter()->getController()->redirect($errorPageUrl);
-            } else {
-                echo $exception->getMessage();
-                echo "\n";
-                echo $exception->getTraceAsString();
-            }
-        }
+        self::init($config);
+        self::getRouter()->route($routeArgs);
+        defined('APP_END_TIME') or define('APP_END_TIME', microtime(true));
+        defined('APP_END_MEM') or define('APP_END_MEM', memory_get_usage());
+        defined('APP_USED_TIME') or define('APP_USED_TIME', APP_END_TIME - APP_BEGIN_TIME);
+        defined('APP_USED_MEM') or define('APP_USED_MEM', APP_END_MEM - APP_BEGIN_MEM);
     }
 
     /**
@@ -141,7 +123,7 @@ class TeaBase {
      * Tea框架初始化。
      * @param array $config 用户配置数组。
      */
-    public static function init($config = array()) {        
+    public static function init($config = array()) {
         session_start();
         self::clear();
         self::setCharset();
@@ -150,6 +132,8 @@ class TeaBase {
         self::setModuleMap();
         self::setAutoImport();
         self::$request = Tea::loadLib('TeaRequest');
+        set_error_handler(__CLASS__ . '::errorHandler', E_ALL);
+        set_exception_handler(__CLASS__ . '::exceptionHandler');
     }
     
     /**
@@ -638,6 +622,44 @@ class TeaBase {
             }
         }
     }
+    
+    /**
+     * 异常处理回调方法。
+     */
+    protected static function exceptionHandler($exception) {
+        $exceptionFile = self::aliasToPath(self::getConfig('TeaBase.exceptionFile')) . '.php';
+        $errorPageUrl = self::getConfig('TeaBase.errorPageUrl');
+        $debug = self::getConfig('TeaBase.debug');
+        $logErrors = self::getConfig('TeaBase.logErrors');
+        $errorsMsg = date('Y-m-d H:i:s') . ": " . $exception->getMessage() . "\n" . $exception->getTraceAsString() . "\n";
+        if ($logErrors) {
+            $logFile = self::aliasToPath('protected.log') . DIRECTORY_SEPARATOR . 'php-error-' . date('Y-m-d') . '.log';
+            file_put_contents($logFile, $errorsMsg, FILE_APPEND);
+        }
+        if (!empty($errorPageUrl)) {
+            self::getRouter()->getController()->redirect($errorPageUrl);
+        }
+        if ($debug) {
+            error_reporting(E_ALL);
+            if (is_file($exceptionFile)) {
+                include $exceptionFile;
+                exit();
+            } else {
+                echo $errorsMsg;
+            }
+        } else {
+            ini_set('display_errors', 'Off');
+            error_reporting(0);
+        }
+    }
+    
+    /**
+     * 错误处理回调方法。
+     */
+    protected static function errorHandler($errno, $errstr, $errfile, $errline) {
+        $errorsMsg = $errstr . " in " . $errfile . " on line ". $errline;
+        throw new TeaException($errorsMsg);
+    }
 
     /**
      * 获取TeaBase默认配置。
@@ -668,6 +690,8 @@ class TeaBase {
                     'system.db.rdbms.sqlite.*',
                 ),
                 'privateHashKey' => 'TeaFrameworkRocks',
+                'debug' => true,
+                'logErrors' => false,
                 'exceptionFile' => null,
                 'errorPageUrl' => null
             )
