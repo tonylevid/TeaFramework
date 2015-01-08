@@ -20,6 +20,7 @@ class TeaRouter {
         'routeMode' => 'auto',  // 路由模式，共三种'path', 'get' 和 'auto'。
         'routeModeGetName' => 'r',  // 路由参数名，仅当路由模式为'get'时有效。
         'urlSuffix' => '', // url后缀。
+        'emptyController' => 'EmptyController', // 控制器为空时的默认控制器。
         'openRouteRules' => false, // 是否开启路由规则。
         'routeRules' => array() // 路由规则数组，数组格式：array(regexp => route, ...)
     );
@@ -288,12 +289,22 @@ class TeaRouter {
     private function importController() {
         $moduleName = $this->getModuleName();
         $controllerName = $this->getControllerName();
-        if (empty($moduleName)) {
-            $status = Tea::import("protected.controller.{$controllerName}");
-        } else {
-            $status = Tea::import("module.{$moduleName}.controller.{$controllerName}");
+        $emptyController = Tea::getConfig('TeaRouter.emptyController');
+        $ctrlAliasPath = "protected.controller.{$controllerName}";
+        $moduleCtrlAliasPath = "module.{$moduleName}.controller.{$controllerName}";
+        if (!file_exists(Tea::aliasToFile($ctrlAliasPath)) && !file_exists(Tea::aliasToFile($moduleCtrlAliasPath)) && !empty($emptyController)) {
+            $ctrlAliasPath = "protected.controller.{$emptyController}";
+            $moduleCtrlAliasPath = "module.{$moduleName}.controller.{$emptyController}";
+            if (!file_exists(Tea::aliasToFile($moduleCtrlAliasPath))) { // 如果模块里的EmptyController控制器不存在，则尝试为主目录的EmptyController。
+                $moduleCtrlAliasPath = $ctrlAliasPath;
+            }
+            $this->_controllerName = $emptyController;
         }
-        var_dump($status);
+        if (empty($moduleName)) {
+            Tea::import($ctrlAliasPath);
+        } else {
+            Tea::import($moduleCtrlAliasPath);
+        }
     }
 
     /**

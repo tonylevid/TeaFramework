@@ -503,6 +503,19 @@ class TeaBase {
     }
     
     /**
+     * 根据路径别名获取文件路径。
+     * @param string $alias 路径别名。
+     * @return mixed 返回文件路径，如果没有文件则返回false。
+     */
+    public static function aliasToFile($alias) {
+        $aliasFile = self::aliasToPath($alias) . '.php';
+        if (file_exists($aliasFile)) {
+            return $aliasFile;
+        }
+        return false;
+    }
+
+    /**
      * 根据路径别名获取真实路径下的文件。
      * @param string $alias 路径别名。
      * @return mixed 返回文件路径数组，如果没有文件或失败则返回false。
