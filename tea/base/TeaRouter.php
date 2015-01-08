@@ -289,10 +289,11 @@ class TeaRouter {
         $moduleName = $this->getModuleName();
         $controllerName = $this->getControllerName();
         if (empty($moduleName)) {
-            Tea::import("protected.controller.{$controllerName}");
+            $status = Tea::import("protected.controller.{$controllerName}");
         } else {
-            Tea::import("module.{$moduleName}.controller.{$controllerName}");
+            $status = Tea::import("module.{$moduleName}.controller.{$controllerName}");
         }
+        var_dump($status);
     }
 
     /**
