@@ -291,7 +291,7 @@ class TeaImage {
      */
     public static function captchaOptions() {
         return array(
-            'randomStr' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            'randomStr' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ这是东风路上看见老师的放假了看见老师看见的法律框架来得及',
             'bgColor' => array(255, 255, 255),
             'charsCount' => 5,
             'charLeftPadding' => 8,
