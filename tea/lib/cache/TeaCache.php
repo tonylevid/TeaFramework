@@ -1,7 +1,20 @@
 <?php
 
+/**
+ * 缓存工厂类。
+ *
+ * @author tonylevid <tonylevid@gmail.com>
+ * @link http://www.teaframework.com/
+ * @copyright http://tonylevid.com/
+ * @license http://www.teaframework.com/license/
+ * @package lib.cache
+ */
 class TeaCache implements TeaICache {
     
+    /**
+     * 适配的缓存类实例。
+     * @var $this
+     */
     protected $_cacheInstance;
     
     /**

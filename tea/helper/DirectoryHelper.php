@@ -1,21 +1,21 @@
 <?php
 
 /**
- * DirectoryHelper class file
+ * 目录帮助类
  *
  * @author tonylevid <tonylevid@gmail.com>
- * @link http://www.tframework.com/
+ * @link http://www.teaframework.com/
  * @copyright http://tonylevid.com/
- * @license http://www.tframework.com/license/
+ * @license http://www.teaframework.com/license/
  * @package helper
  */
 class DirectoryHelper {
 
     /**
-     * Make directories recursively.
-     * @param string $dir The directory path.
-     * @param int $mode Directory mode number.
-     * @return bool
+     * 新建文件夹。
+     * @param string $dir 文件夹目录。
+     * @param int $mode 权限值。
+     * @return bool 成功返回true，失败返回false。
      */
     public static function mkdirs($dir, $mode = 0777) {
         if (is_dir($dir)) {
@@ -25,10 +25,10 @@ class DirectoryHelper {
     }
 
     /**
-     * Get directory tree information array.
-     * @param string $dir The directory path.
-     * @param array $filters Directories or files to be filtered.
-     * @return array Directory tree.
+     * 获取目录树形数组。
+     * @param string $dir 文件夹目录。
+     * @param array $filters 过滤掉的文件夹。
+     * @return array 目录树形数组。
      */
     public static function dirTree($dir, $filters = array()) {
         $dirs = array_diff(scandir($dir), array_merge(array('.', '..'), $filters));

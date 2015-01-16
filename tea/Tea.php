@@ -8,9 +8,9 @@ require dirname(__FILE__) . DIRECTORY_SEPARATOR . 'TeaBase.php';
  * 你可以用此类自定义一些TeaBase基础方法。
  *
  * @author tonylevid <tonylevid@gmail.com>
- * @link http://www.tframework.com/
+ * @link http://www.teaframework.com/
  * @copyright http://tonylevid.com/
- * @license http://www.tframework.com/license/
+ * @license http://www.teaframework.com/license/
  * @package system
  */
 class Tea extends TeaBase {

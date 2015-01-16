@@ -1,12 +1,12 @@
 <?php
 
 /**
- * StringHelper class file
+ * 字符串帮助类。
  *
  * @author tonylevid <tonylevid@gmail.com>
- * @link http://www.tframework.com/
+ * @link http://www.teaframework.com/
  * @copyright http://tonylevid.com/
- * @license http://www.tframework.com/license/
+ * @license http://www.teaframework.com/license/
  * @package helper
  */
 class StringHelper {

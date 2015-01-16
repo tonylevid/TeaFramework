@@ -1,96 +1,96 @@
 <?php
 
 /**
- * TeaBaseStyledPager class file.
+ * 样式分页基础抽象类。
  *
  * @author tonylevid <tonylevid@gmail.com>
- * @link http://www.tframework.com/
+ * @link http://www.teaframework.com/
  * @copyright http://tonylevid.com/
- * @license http://www.tframework.com/license/
+ * @license http://www.teaframework.com/license/
  * @package lib.pager
  */
 abstract class TeaBaseStyledPager extends TeaBasePager {
 
     /**
-     * Pager container css class.
+     * 分页容器css类名。
      * @var string
      */
     public $containerCssClass = 'tea-pager';
 
     /**
-     * Pager total css class.
+     * 总页码容器css类名。
      * @var string
      */
     public $totalCssClass = 'tea-total';
 
     /**
-     * Pager total number css class.
+     * 总页码span css类名。
      * @var string
      */
     public $totalNumCssClass = 'tea-total-num';
 
     /**
-     * Pager previous css class.
+     * 上一页容器css类名。
      * @var string
      */
     public $prevCssClass = 'tea-prev';
 
     /**
-     * Pager previous text.
+     * 上一页文字。
      * @var string
      */
     public $prevText = '上一页';
 
     /**
-     * Pager next css class.
+     * 下一页容器css类名。
      * @var string
      */
     public $nextCssClass = 'tea-next';
 
     /**
-     * Pager next text.
+     * 下一页文字。
      * @var string
      */
     public $nextText = '下一页';
 
     /**
-     * Pager first css class.
+     * 首页容器css类名。
      * @var string
      */
     public $firstCssClass = 'tea-first';
 
     /**
-     * Pager first text.
+     * 首页文字。
      * @var string
      */
     public $firstText = '首页';
 
     /**
-     * Pager last css class.
+     * 尾页容器css类名。
      * @var string
      */
     public $lastCssClass = 'tea-last';
 
     /**
-     * Pager last text.
+     * 尾页文字。
      * @var string
      */
     public $lastText = '尾页';
 
     /**
-     * Pager current css class.
+     * 当前页容器css类名。
      * @var string
      */
     public $currentCssClass = 'tea-current';
 
     /**
-     * Pager current number css class.
+     * 当前页码span css类名。
      * @var string
      */
     public $currentNumCssClass = 'tea-current-num';
 
     /**
-     * Get pager previous link address.
+     * 获取上一页链接。
      * @return string
      */
     public function getPrevLink() {
@@ -99,7 +99,7 @@ abstract class TeaBaseStyledPager extends TeaBasePager {
     }
 
     /**
-     * Get pager next link address.
+     * 获取下一页链接。
      * @return string
      */
     public function getNextLink() {
@@ -108,7 +108,7 @@ abstract class TeaBaseStyledPager extends TeaBasePager {
     }
 
     /**
-     * Get pager first link address.
+     * 获取首页链接。
      * @return string
      */
     public function getFirstLink() {
@@ -116,7 +116,7 @@ abstract class TeaBaseStyledPager extends TeaBasePager {
     }
 
     /**
-     * Get pager last link address.
+     * 获取尾页链接。
      * @return string
      */
     public function getLastLink() {
@@ -124,9 +124,9 @@ abstract class TeaBaseStyledPager extends TeaBasePager {
     }
 
     /**
-     * Pager content.
-     * @param string $content User defined pager content, defaults to null.
-     * @return string Pager content.
+     * 分页内容html。
+     * @param string $content 自定义分页内容html，默认为null。
+     * @return string 分页内容html。
      */
     abstract public function content($content = null);
 }

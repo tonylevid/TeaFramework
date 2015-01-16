@@ -1,24 +1,24 @@
 <?php
 
 /**
- * TeaImage class file
+ * 图像类。
  *
  * @author tonylevid <tonylevid@gmail.com>
- * @link http://www.tframework.com/
+ * @link http://www.teaframework.com/
  * @copyright http://tonylevid.com/
- * @license http://www.tframework.com/license/
+ * @license http://www.teaframework.com/license/
  * @package lib
  */
 class TeaImage {
 
     /**
-     * Common font file, this will be set in constructor.
+     * 默认字体文件。
      * @var string
      */
     public static $commonFontFile;
 
     /**
-     * Image type to gd output function map.
+     * 图像类型对应gd输出函数映射数组。
      * @var array
      */
     protected static $_imgOutputFuncMap = array(
@@ -33,42 +33,40 @@ class TeaImage {
     );
 
     /**
-     * Captcha value.
+     * 验证码值。
      * @var string
      */
     private $_captchaVal;
 
     /**
-     * Gd resource.
+     * gd资源。
      * @var resource
      */
     private $_gdRes;
 
     /**
-     * Constructor, set default common font file.
+     * 构造函数，设置默认字体为app.public.font目录下的STHeiti-Light.ttc字体文件。
      */
     public function __construct() {
         if (!extension_loaded('gd')) {
             throw new Exception('TeaImage requires gd extension loaded.');
         }
-        if (defined('APP_PATH')) {
-            $defaultFont = APP_PATH . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'font' . DIRECTORY_SEPARATOR . 'STHeiti-Light.ttc';
-            if (file_exists($defaultFont)) {
-                $this->setCommonFontFile($defaultFont);
-            }
+        $defaultFont = APP_PATH . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'font' . DIRECTORY_SEPARATOR . 'STHeiti-Light.ttc';
+        if (file_exists($defaultFont)) {
+            $this->setCommonFontFile($defaultFont);
         }
     }
 
     /**
-     * Destructor, destroy gd resource.
+     * 析构函数，销毁gd资源。
      */
     public function __destruct() {
         imagedestroy($this->_gdRes);
     }
 
     /**
-     * Set common font file.
-     * @param string $fontFile Font file path.
+     * 设置默认字体文件。
+     * @param string $fontFile 字体文件路径。
      * @return $this
      */
     public function setCommonFontFile($fontFile) {
@@ -81,8 +79,8 @@ class TeaImage {
     }
 
     /**
-     * Load image to gd resource.
-     * @param string $file Image file path.
+     * 加载图像资源。
+     * @param string $file 图像文件路径。
      * @return $this
      */
     public function loadImage($file) {
@@ -96,7 +94,7 @@ class TeaImage {
     }
 
     /**
-     * Get gd resource image width.
+     * 获取图像宽度。
      * @return int
      */
     public function getImageWidth() {
@@ -104,7 +102,7 @@ class TeaImage {
     }
 
     /**
-     * Get gd resource image height.
+     * 获取图像高度。
      * @return int
      */
     public function getImageHeight() {
@@ -112,9 +110,9 @@ class TeaImage {
     }
 
     /**
-     * Thumbnail image.
-     * @param int $width Thumbnail width.
-     * @param int $height Thumbnail height.
+     * 缩略图。
+     * @param int $width 缩略图宽度。
+     * @param int $height 缩略图高度。
      * @return $this
      */
     public function thumbnail($width, $height) {
@@ -128,10 +126,10 @@ class TeaImage {
     }
 
     /**
-     * Watermark image with text.
-     * @param string $text Watermark text.
-     * @param string|array $position String indicates position, see $this->getCalcPositions(), or array indicates left and top.
-     * @param array $options Watermark text options, see self::watermarkTextOptions().
+     * 文字水印。
+     * @param string $text 水印字符串。
+     * @param string|array $position 表示位置的字符串，请参考$this->getCalcPositions()，或者表示左和上坐标的数组。
+     * @param array $options 文字水印配置数组，请参考self::watermarkTextOptions().
      * @return $this
      */
     public function watermarkText($text, $position = 'RB', $options = array()) {
@@ -160,7 +158,7 @@ class TeaImage {
     }
 
     /**
-     * WatermarkText options.
+     * 文字水印配置数组。
      * @return array
      */
     public static function watermarkTextOptions() {
@@ -174,10 +172,10 @@ class TeaImage {
     }
 
     /**
-     * Watermark image with image.
-     * @param string $file Watermark image file path.
-     * @param string|array $position String indicates position, see $this->getCalcPositions(), or array indicates left and top.
-     * @param float $alpha Watermark image alpha, from 0 to 1.
+     * 图片水印。
+     * @param string $file 水印图片文件路径。
+     * @param string|array $position 表示位置的字符串，请参考$this->getCalcPositions()，或者表示左和上坐标的数组。
+     * @param float $alpha 水印图片透明度，从0到1表示完全透明到完全不透明。
      * @return $this
      */
     public function watermarkImage($file, $position = 'RB', $alpha = 1) {
@@ -201,28 +199,28 @@ class TeaImage {
     }
 
     /**
-     * Make captcha image.
-     * @param int $width Captcha image width.
-     * @param int $height Captcha image height.
-     * @param array $options Captcha options, see self::captchaOptions().
+     * 验证码。
+     * @param int $width 验证码图片宽度。
+     * @param int $height 验证码图片高度。
+     * @param array $options 验证码配置数组，请参考self::captchaOptions().
      * @return $this
      */
     public function captcha($width = 100, $height = 30, $options = array()) {
         $options = array_merge(self::captchaOptions(), $options);
         $this->_captchaVal = null;
         $this->_gdRes = imagecreatetruecolor($width, $height);
-        // fill background
+        // 填充背景
         $bgRgbColor = $this->getRgbColor($options['bgColor']);
         $bgColor = imagecolorallocate($this->_gdRes, $bgRgbColor['red'], $bgRgbColor['green'], $bgRgbColor['blue']);
         imagefill($this->_gdRes, 0, 0, $bgColor);
-        // draw points
+        // 画点
         for ($i = 0; $i < $options['pointsNum']; $i++) {
             $x = mt_rand(0, $width);
             $y = mt_rand(0, $height);
             $color = imagecolorallocate($this->_gdRes, mt_rand(0, 255), mt_rand(0, 255), mt_rand(0, 255));
             imagesetpixel($this->_gdRes, $x, $y, $color);
         }
-        // draw lines
+        // 画直线
         for ($i = 0; $i < $options['linesNum']; $i++) {
             $x1 = mt_rand(0, $width / 3);
             $y1 = mt_rand(0, $height);
@@ -231,7 +229,7 @@ class TeaImage {
             $color = imagecolorallocate($this->_gdRes, mt_rand(0, 255), mt_rand(0, 255), mt_rand(0, 255));
             imageline($this->_gdRes, $x1, $y1, $x2, $y2, $color);
         }
-        // draw arcs
+        // 画弧线
         for ($i = 0; $i < $options['arcsNum']; $i++) {
             $cx = mt_rand($width / 3,  2 * $width / 3);
             $cy = mt_rand(0, $height);
@@ -242,11 +240,11 @@ class TeaImage {
             $color = imagecolorallocate($this->_gdRes, mt_rand(0, 255), mt_rand(0, 255), mt_rand(0, 255));
             imagearc($this->_gdRes, $cx, $cy, $w, $h, $s, $e, $color);
         }
-        // set font color
+        // 设置字体颜色
         $fontRgbColor = $this->getRgbColor($options['fontColor']);
         $fontColor = imagecolorallocate($this->_gdRes, $fontRgbColor['red'], $fontRgbColor['green'], $fontRgbColor['blue']);
-        // get random characters
-        $text = str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
+        // 获取随机字符串
+        $text = str_shuffle($options['randomStr']);
         $textLen = mb_strlen($text);
         $chars = preg_split('/(?<!^)(?!$)/u', $text);
         $randChars = array();
@@ -262,7 +260,7 @@ class TeaImage {
         // $top = $calcPositions['MM'][1] + $textBox['top'];
         // imagettftext($this->_gdRes, floatval($options['fontSize']), 0, $left, $top, $fontColor, $options['fontFile'], $randStr);
 
-        // render each character
+        // 渲染每个字符。
         $prevCharWidth = 0;
         $left = 0;
         foreach ($randChars as $char) {
@@ -280,19 +278,20 @@ class TeaImage {
     }
 
     /**
-     * get captcha value.
-     * @return mixed
+     * 获取验证码值。
+     * @return string
      */
     public function getCaptchaVal() {
         return $this->_captchaVal;
     }
 
     /**
-     * Captcha options
+     * 验证码配置数组。
      * @return array
      */
     public static function captchaOptions() {
         return array(
+            'randomStr' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
             'bgColor' => array(255, 255, 255),
             'charsCount' => 5,
             'charLeftPadding' => 8,
@@ -306,8 +305,8 @@ class TeaImage {
     }
 
     /**
-     * Output image.
-     * @param int $constImageType IMAGETYPE_XXX constant.
+     * 输出图像。
+     * @param int $constImageType 表示图像格式的IMAGETYPE_XXX常量。
      */
     public function output($constImageType = IMAGETYPE_PNG) {
         $imgType = image_type_to_extension($constImageType, false);
@@ -320,8 +319,8 @@ class TeaImage {
     }
 
     /**
-     * Save image.
-     * @param string $file Save file path.
+     * 保存图像。
+     * @param string $file 保存图像文件路径。
      * @return bool
      */
     public function save($file) {
@@ -336,10 +335,10 @@ class TeaImage {
     }
 
     /**
-     * Get calculated positions with source image width and height.
-     * @param int $srcWidth Source image width.
-     * @param int $srcHeight Source image height.
-     * @return array Array indicates different positions.
+     * 根据图像宽高计算图像相对于画布的位置字符串数组。
+     * @param int $srcWidth 图像宽度。
+     * @param int $srcHeight 图像高度。
+     * @return array 图像相对于画布的位置字符串数组。
      */
     protected function getCalcPositions($srcWidth, $srcHeight) {
         list($targetWidth, $targetHeight) = array($this->getImageWidth(), $this->getImageHeight());
@@ -358,12 +357,12 @@ class TeaImage {
     }
 
     /**
-     * Calculate text box information.
-     * @param string $text String to calculated.
-     * @param string $fontFile Font file path.
-     * @param float $fontSize  Font size.
-     * @param float $fontAngle Font angle.
-     * @return array Array indicates text box information.
+     * 计算文字盒子信息数组。
+     * @param string $text 待计算的字符串。
+     * @param string $fontFile 字体文件路径。
+     * @param float $fontSize  字体大小。
+     * @param float $fontAngle 字体角度。
+     * @return array 文字盒子信息数组。
      */
     protected function calculateTextBox($text, $fontFile, $fontSize, $fontAngle) {
         $rect = imagettfbbox($fontSize, $fontAngle, $fontFile, $text);
@@ -381,8 +380,8 @@ class TeaImage {
     }
 
     /**
-     * Get rgb color array.
-     * @param string|array $val Hex color string or rgb color array.
+     * 获取rgb颜色信息数组。
+     * @param string|array $val 16进制颜色或者rgb颜色数组，如 #FFFFFF 或 array(0, 0, 0)。
      * @return array
      */
     protected function getRgbColor($val) {
@@ -409,10 +408,10 @@ class TeaImage {
     }
 
     /**
-     * Hex color to rgb color.
-     * @param string $hexStr Hex color string.
-     * @param bool $returnStr Return as string or not.
-     * @param string $seperator The seperator for rgb color if $returnStr is true.
+     * 16进制颜色转rgb颜色。
+     * @param string $hexStr 16进制颜色字符串。
+     * @param bool $returnStr 是否返回字符串，默认为false。true表示返回返回字符串，false表示返回数组。
+     * @param string $seperator 如果返回字符串，此参数代表rgb颜色分隔符，默认为','。
      * @return string|array
      */
     protected function hexColorToRgbColor($hexStr, $returnStr = false, $seperator = ',') {
@@ -434,9 +433,9 @@ class TeaImage {
     }
 
     /**
-     * Rgba alpha to image alpha for function imagecopymerge().
-     * @param float $rgbaAlpha Alpha number from 0 to 1.
-     * @return int Image alpha for function imagecopymerge().
+     * rgba的alpha值转换成gd imagecopymerge()函数的alpha值。
+     * @param float $rgbaAlpha rgba的alpha值，从0到1。
+     * @return int gd imagecopymerge()函数的alpha值。
      */
     protected function rgbaAlphaToImageAlpha($rgbaAlpha) {
         if ($rgbaAlpha < 0) {
@@ -448,9 +447,9 @@ class TeaImage {
     }
 
     /**
-     * Rgba alpha to gd alpha for function imagecolorallocatealpha().
-     * @param float $rgbaAlpha Alpha number from 0 to 1.
-     * @return int Gd alpha for function imagecolorallocatealpha().
+     * rgba的alpha值转换成gd imagecolorallocatealpha()函数的alpha值。
+     * @param float $rgbaAlpha rgba的alpha值，从0到1。
+     * @return int gd imagecolorallocatealpha()函数的alpha值。
      */
     protected function rgbaAlphaToGdAlpha($rgbaAlpha) {
         if ($rgbaAlpha < 0) {

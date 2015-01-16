@@ -6,9 +6,9 @@ require dirname(__FILE__) . DIRECTORY_SEPARATOR . 'helper' . DIRECTORY_SEPARATOR
  * TeaBase类文件。
  *
  * @author tonylevid <tonylevid@gmail.com>
- * @link http://www.tframework.com/
+ * @link http://www.teaframework.com/
  * @copyright http://tonylevid.com/
- * @license http://www.tframework.com/license/
+ * @license http://www.teaframework.com/license/
  * @package system
  */
 defined('APP_BEGIN_TIME') or define('APP_BEGIN_TIME', microtime(true));
@@ -654,7 +654,14 @@ class TeaBase {
             file_put_contents($logFile, $errorsMsg, FILE_APPEND);
         }
         if (!empty($errorPageUrl)) {
-            self::getRouter()->getController()->redirect($errorPageUrl);
+            $redirectUrl = null;
+            if (is_string($errorPageUrl)) {
+                $redirectUrl = $errorPageUrl;
+            } else if (is_array($errorPageUrl)) {
+                $redirectUrl = call_user_func_array('Tea::createUrl', $errorPageUrl);
+            }
+            header("Location: {$redirectUrl}");
+            exit();
         }
         if ($debug) {
             error_reporting(E_ALL);
@@ -698,6 +705,7 @@ class TeaBase {
                     'system.lib.cache.*',
                     'system.lib.pager.*',
                     'system.vendor.*',
+                    'system.vendor.curl.*',
                     'system.db.rdbms.*',
                     'system.db.rdbms.mssql.*',
                     'system.db.rdbms.mysql.*',

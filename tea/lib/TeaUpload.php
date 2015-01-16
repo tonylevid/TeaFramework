@@ -1,29 +1,39 @@
 <?php
 
 /**
- * TeaUpload class file
+ * 文件上传类。
  *
  * @author tonylevid <tonylevid@gmail.com>
- * @link http://www.tframework.com/
+ * @link http://www.teaframework.com/
  * @copyright http://tonylevid.com/
- * @license http://www.tframework.com/license/
+ * @license http://www.teaframework.com/license/
  * @package lib
  */
 class TeaUpload {
-
+    /**
+     * 上传错误类型：不允许上传。
+     */
     const UPLOAD_ERR_TYPE_NOT_ALLOWED = 21;
+    
+    /**
+     * 上传错误类型：文件夹创建失败。
+     */
     const UPLOAD_ERR_CREATE_FOLDER_DENIED = 22;
+    
+    /**
+     * 上传错误类型：文件保存失败。
+     */
     const UPLOAD_ERR_SAVE_FILE_FAILED = 23;
 
     /**
-     * Uploaded files information.
+     * 上传文件信息数组。
      * @var array
      */
     protected $_fileInfo = array();
 
     /**
-     * Constructor
-     * @param array $fileInfo File info array like $_FILES, defaults to $_FILES.
+     * 构造函数。
+     * @param array $fileInfo 类似$_FILES结构的信息数组，默认为$_FILES.
      */
     public function __construct($fileInfo = array()) {
         if (empty($fileInfo)) {
@@ -33,10 +43,10 @@ class TeaUpload {
     }
 
     /**
-     * Process upload information.
-     * @param string $saveFolder Folder path to save file, without '/' in the end. Defaults to 'public/upload' relative to application path.
-     * @param array $allowedTypes Mime types allowed to upload.
-     * @param bool $overwrite Overwrite existed file or not.
+     * 处理上传。
+     * @param string $saveFolder 上传文件夹路径，尾部不包含'/'。默认为应用目录下的'public/upload'文件夹。
+     * @param array $allowedTypes 限制上传的mime文件类型。
+     * @param bool $overwrite 是否覆盖已存在文件。
      * @return $this
      */
     public function upload($saveFolder = null, $allowedTypes = array(), $overwrite = true) {
@@ -65,7 +75,7 @@ class TeaUpload {
                     $saveName = date('YmdHis') . '_' . uniqid() . $uploadSuffix;
                     $savePath = $saveFolder . DIRECTORY_SEPARATOR . $saveName;
                     if (file_exists($savePath) && $overwrite) {
-                        unlink($savePath);
+                        @unlink($savePath);
                     }
                     if ($file['error'] === 0) {
                         $moveStatus = @move_uploaded_file($file['tmp_name'], $savePath);
@@ -86,7 +96,7 @@ class TeaUpload {
     }
 
     /**
-     * Get uploaded files information.
+     * 获取上传文件信息数组。
      * @return array
      */
     public function getFileInfo() {
@@ -94,9 +104,9 @@ class TeaUpload {
     }
 
     /**
-     * Get error message by error code.
-     * @param int $errCode Error code.
-     * @return string Error message.
+     * 根据错误代码获取错误信息。
+     * @param int $errCode 错误代码。
+     * @return string 错误信息。
      */
     public function getErrMsg($errCode) {
         $errMsg = '';
@@ -142,8 +152,8 @@ class TeaUpload {
     }
 
     /**
-     * Normalize file info array.
-     * @param array $fileInfo Array structure like $_FILES.
+     * 把类似$_FILES结构的信息数组格式化成类似结果集结构数组。
+     * @param array $fileInfo 类似$_FILES结构的信息数组。
      * @return array
      */
     public function normalizeFileinfo($fileInfo) {
@@ -166,7 +176,7 @@ class TeaUpload {
     }
 
     /**
-     * Get extension to mime map array.
+     * 文件后缀对应mime类型映射数组。
      * @return array
      */
     public static function extensionToMimeMap() {

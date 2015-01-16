@@ -1,20 +1,20 @@
 <?php
 
 /**
- * TeaLinkPager class file.
+ * 链接分页类。
  *
  * @author tonylevid <tonylevid@gmail.com>
- * @link http://www.tframework.com/
+ * @link http://www.teaframework.com/
  * @copyright http://tonylevid.com/
- * @license http://www.tframework.com/license/
+ * @license http://www.teaframework.com/license/
  * @package lib.pager
  */
 class TeaLinkPager extends TeaBaseStyledPager {
 
     /**
-     * Pager content.
-     * @param string $content User defined pager content, defaults to null.
-     * @return string Pager content.
+     * 分页内容html。
+     * @param string $content 自定义分页内容html，默认为null。
+     * @return string 分页内容html。
      */
     public function content($content = null) {
         if (!empty($content)) {
