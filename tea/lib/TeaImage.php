@@ -291,7 +291,7 @@ class TeaImage {
      */
     public static function captchaOptions() {
         return array(
-            'randomStr' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+            'randomStr' => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
             'bgColor' => array(255, 255, 255),
             'charsCount' => 5,
             'charLeftPadding' => 8,
