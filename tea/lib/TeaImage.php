@@ -244,7 +244,9 @@ class TeaImage {
         $fontRgbColor = $this->getRgbColor($options['fontColor']);
         $fontColor = imagecolorallocate($this->_gdRes, $fontRgbColor['red'], $fontRgbColor['green'], $fontRgbColor['blue']);
         // 获取随机字符串
-        $text = str_shuffle($options['randomStr']);
+        $textTmpArr = preg_split('//u', $options['randomStr'], -1, PREG_SPLIT_NO_EMPTY);
+        shuffle($textTmpArr);
+        $text = implode('', $textTmpArr);
         $textLen = mb_strlen($text);
         $chars = preg_split('/(?<!^)(?!$)/u', $text);
         $randChars = array();

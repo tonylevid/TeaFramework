@@ -604,46 +604,9 @@ class TeaBase {
     }
     
     /**
-     * 设置全局编码。
-     */
-    protected static function setCharset() {
-        mb_internal_encoding('utf-8');
-        if (function_exists('ini_set')) {
-            ini_set('default_charset', 'utf-8');
-        }
-        header('Content-Type:text/html; charset=utf-8');
-    }
-
-    /**
-     * 设置模块映射。
-     */
-    protected static function setModuleMap() {
-        $modulePaths = glob(self::aliasToPath('module.*'), GLOB_ONLYDIR);
-        if (is_array($modulePaths) && !empty($modulePaths)) {
-            foreach ($modulePaths as $modulePath) {
-                $moduleName = basename($modulePath);
-                self::$moduleMap[$moduleName] = $modulePath;
-            }
-        }
-    }
-
-    /**
-     * 设置自动导入。
-     */
-    protected static function setAutoImport() {
-        // import core classes and autoImport in main config.
-        $defaultLoads = self::getConfig('TeaBase.autoImport');
-        if (is_array($defaultLoads) && !empty($defaultLoads)) {
-            foreach ($defaultLoads as $alias) {
-                self::import($alias);
-            }
-        }
-    }
-    
-    /**
      * 异常处理回调方法。
      */
-    protected static function exceptionHandler($exception) {
+    public static function exceptionHandler($exception) {
         $exceptionFile = self::aliasToPath(self::getConfig('TeaBase.exceptionFile')) . '.php';
         $errorPageUrl = self::getConfig('TeaBase.errorPageUrl');
         $debug = self::getConfig('TeaBase.debug');
@@ -680,9 +643,46 @@ class TeaBase {
     /**
      * 错误处理回调方法。
      */
-    protected static function errorHandler($errno, $errstr, $errfile, $errline) {
+    public static function errorHandler($errno, $errstr, $errfile, $errline) {
         $errorsMsg = $errstr . " in " . $errfile . " on line ". $errline;
         throw new TeaException($errorsMsg);
+    }
+    
+    /**
+     * 设置全局编码。
+     */
+    protected static function setCharset() {
+        mb_internal_encoding('utf-8');
+        if (function_exists('ini_set')) {
+            ini_set('default_charset', 'utf-8');
+        }
+        header('Content-Type:text/html; charset=utf-8');
+    }
+
+    /**
+     * 设置模块映射。
+     */
+    protected static function setModuleMap() {
+        $modulePaths = glob(self::aliasToPath('module.*'), GLOB_ONLYDIR);
+        if (is_array($modulePaths) && !empty($modulePaths)) {
+            foreach ($modulePaths as $modulePath) {
+                $moduleName = basename($modulePath);
+                self::$moduleMap[$moduleName] = $modulePath;
+            }
+        }
+    }
+
+    /**
+     * 设置自动导入。
+     */
+    protected static function setAutoImport() {
+        // import core classes and autoImport in main config.
+        $defaultLoads = self::getConfig('TeaBase.autoImport');
+        if (is_array($defaultLoads) && !empty($defaultLoads)) {
+            foreach ($defaultLoads as $alias) {
+                self::import($alias);
+            }
+        }
     }
 
     /**
