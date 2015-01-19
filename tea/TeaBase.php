@@ -614,7 +614,7 @@ class TeaBase {
         $errorsMsg = date('Y-m-d H:i:s') . ": " . $exception->getMessage() . "\n" . $exception->getTraceAsString() . "\n";
         if ($logErrors) {
             $logFile = self::aliasToPath('protected.log') . DIRECTORY_SEPARATOR . 'php-error-' . date('Y-m-d') . '.log';
-            if (is_writable($logFile)) {
+            if (is_writable(dirname($logFile))) {
                 file_put_contents($logFile, $errorsMsg, FILE_APPEND);
             }
         }
