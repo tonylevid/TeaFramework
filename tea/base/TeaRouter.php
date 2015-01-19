@@ -250,6 +250,9 @@ class TeaRouter {
             $this->_urlModuleName = $pathSegments[0];
             $this->_moduleName = $this->getModuleNameBySegment($pathSegments[0]);
             array_shift($pathSegments);
+        } else {
+            $this->_urlModuleName = null;
+            $this->_moduleName = null;
         }
         $this->_urlControllerName = isset($pathSegments[0]) ? $pathSegments[0] : TeaController::$config['defaultController'];
         $this->_controllerName = $this->getControllerNameBySegment($this->_urlControllerName);
