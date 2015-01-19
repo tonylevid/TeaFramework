@@ -614,7 +614,9 @@ class TeaBase {
         $errorsMsg = date('Y-m-d H:i:s') . ": " . $exception->getMessage() . "\n" . $exception->getTraceAsString() . "\n";
         if ($logErrors) {
             $logFile = self::aliasToPath('protected.log') . DIRECTORY_SEPARATOR . 'php-error-' . date('Y-m-d') . '.log';
-            file_put_contents($logFile, $errorsMsg, FILE_APPEND);
+            if (is_writable($logFile)) {
+                file_put_contents($logFile, $errorsMsg, FILE_APPEND);
+            }
         }
         if (!empty($errorPageUrl)) {
             $redirectUrl = null;
