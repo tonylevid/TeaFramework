@@ -623,7 +623,7 @@ class TeaBase {
             } else if (is_array($errorPageUrl)) {
                 $redirectUrl = call_user_func_array('Tea::createUrl', $errorPageUrl);
             }
-            header("Location: {$redirectUrl}");
+            @header("Location: {$redirectUrl}");
             exit();
         }
         if ($debug) {
