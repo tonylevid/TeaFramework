@@ -251,6 +251,7 @@ class TeaRouter {
             $this->_moduleName = $this->getModuleNameBySegment($pathSegments[0]);
             array_shift($pathSegments);
         } else {
+            // 运行组件时，若模块为空
             $this->_urlModuleName = null;
             $this->_moduleName = null;
         }
