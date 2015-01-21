@@ -136,7 +136,7 @@ class TeaBase {
         self::setModuleMap();
         self::setAutoImport();
         self::$request = Tea::loadLib('TeaRequest');
-        set_error_handler(__CLASS__ . '::errorHandler', E_ALL);
+        //set_error_handler(__CLASS__ . '::errorHandler', E_ALL);
         set_exception_handler(__CLASS__ . '::exceptionHandler');
     }
     
