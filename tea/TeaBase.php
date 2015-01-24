@@ -611,7 +611,13 @@ class TeaBase {
         $errorPageUrl = self::getConfig('TeaBase.errorPageUrl');
         $debug = self::getConfig('TeaBase.debug');
         $logErrors = self::getConfig('TeaBase.logErrors');
-        $errorsMsg = date('Y-m-d H:i:s') . ": " . $exception->getMessage() . "\n" . $exception->getTraceAsString() . "\n";
+        $logInfo = json_encode(array(
+            'TeaLogInfo' => array(
+                'ip' => MiscHelper::getClientIp(),
+                'time' => date('Y-m-d H:i:s')
+            )
+        ));
+        $errorsMsg = $logInfo . ": " . $exception->getMessage() . "\n" . $exception->getTraceAsString() . "\n";
         if ($logErrors) {
             $logFile = self::aliasToPath('protected.log') . DIRECTORY_SEPARATOR . 'php-error-' . date('Y-m-d') . '.log';
             if (is_writable(dirname($logFile))) {
