@@ -274,15 +274,22 @@ class ArrayHelper {
     /**
      * 递归地删除数组中的空值。
      * @param array $arr 待处理数组。
+     * @param array $emptyVals 表示空值的数组，默认采用php函数empty。
      * @return array 处理后的数组。
      */
-    public static function removeEmptyItems($arr) {        
+    public static function removeEmptyItems($arr, $emptyVals = array()) {
         foreach ($arr as $key => $value) {
             if (is_array($value)) {
-                $arr[$key] = self::removeEmptyItems($arr[$key]);
+                $arr[$key] = self::removeEmptyItems($arr[$key], $emptyVals);
             }
-            if (empty($arr[$key])) {
-                unset($arr[$key]);
+            if (is_array($emptyVals) && !empty($emptyVals)) {
+                if (in_array($arr[$key], $emptyVals, true)) {
+                    unset($arr[$key]);
+                }
+            } else {
+                if (empty($arr[$key])) {
+                    unset($arr[$key]);
+                }
             }
         }
         return $arr;
