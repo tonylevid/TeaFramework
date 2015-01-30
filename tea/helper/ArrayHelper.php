@@ -52,7 +52,7 @@ class ArrayHelper {
      */
     public static function mergeArray($arr, $userArr) {
         foreach ($userArr as $key => $val) {
-            if (array_key_exists($key, $arr) && is_array($val)) {
+            if (is_array($arr) && array_key_exists($key, $arr) && is_array($val)) {
                 if (is_string($key)) {
                     $arr[$key] = self::mergeArray($arr[$key], $userArr[$key]);
                 } else {
