@@ -390,7 +390,7 @@ class TeaBase {
         if (empty($route)) {
             $basePathUrl = Tea::$request->getBasePathUrl();
         } else {
-            $basePathUrl = Tea::$request->getBaseUri() . '/' . $route;
+            $basePathUrl = Tea::$request->getBaseUri() . '/' . ltrim($route, '/');
         }
         $nowUrl = $basePathUrl . ($queryStr ? '?' . $queryStr : null);
         return $nowUrl;
