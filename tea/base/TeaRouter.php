@@ -188,7 +188,7 @@ class TeaRouter {
      */
     public function getUrlRouteParams() {
         $routeParams = array_merge(array($this->_urlModuleName, $this->_urlControllerName, $this->_urlActionName), $this->_actionParams);
-        return $routeParams;
+        return array_filter($routeParams);
     }
     
     /**
