@@ -369,10 +369,12 @@ class TeaBase {
     /**
      * 获取生成请求过滤条件的完整url用于TeaModel::withRequestFilter()。
      * @param mixed $criteria TeaDbCriteria类实例或者条件数组。
-     * @param string $route 路由字符串。如果为空则为当前路由字符串。
+     * @param string $route 路由字符串。
+     * @param array $queries $_GET相关参数。
+     * @param string $anchor 链接后面的锚点，默认为null。
      * @return string
      */
-    public static function getModelFilterUrl($criteria = null, $route = '') {
+    public static function getModelFilterUrl($criteria = null, $route = '', $queries = array(), $anchor = null) {
         if ($criteria instanceof TeaDbCriteria) {
             $criteriaArr = $criteria->criteriaArr;
         } else if (is_array($criteria) && !empty($criteria)) {
@@ -384,16 +386,8 @@ class TeaBase {
         $filterParam = array(
             $filterKey => MiscHelper::encodeArr($criteriaArr)
         );
-        $queries = Tea::$request->getQuery();
-        $filterQueries = array_merge($queries, $filterParam);
-        $queryStr = http_build_query($filterQueries);
-        if (empty($route)) {
-            $basePathUrl = Tea::$request->getBasePathUrl();
-        } else {
-            $basePathUrl = Tea::$request->getBaseUri() . '/' . ltrim($route, '/');
-        }
-        $nowUrl = $basePathUrl . ($queryStr ? '?' . $queryStr : null);
-        return $nowUrl;
+        $filterQueries = array_merge($_GET, $queries, $filterParam);
+        return self::createUrl($route, $filterQueries, $anchor);
     }
     
     /**

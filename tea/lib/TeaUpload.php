@@ -185,6 +185,7 @@ class TeaUpload {
             "hqx" => "application/mac-binhex40",
             "cpt" => "application/mac-compactpro",
             "doc" => "application/msword",
+            "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             "bin" => "application/octet-stream",
             "dms" => "application/octet-stream",
             "lha" => "application/octet-stream",

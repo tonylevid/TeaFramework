@@ -115,7 +115,7 @@ class TeaBasePager {
             $route = ltrim(rtrim($route, '/'), '/');
         }
         if (empty($queries)) {
-            $queries = Tea::$request->getQuery();
+            $queries = $_GET;
         }
         $this->_createUrlArgs = array($route, $queries, $anchor);
         return $this;
